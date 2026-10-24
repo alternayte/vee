@@ -27,5 +27,7 @@ jobs:
         run: just check
       - name: Catalogue validation
         run: just catalogue
-      - name: Tests
+      - name: Tests (V2–V4)
         run: just test
+      - name: V5 simulation
+        run: just sim

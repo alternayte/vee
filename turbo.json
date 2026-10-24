@@ -4,6 +4,8 @@
     "build": { "dependsOn": ["^build"], "outputs": ["dist/**"] },
     "typecheck": { "dependsOn": ["^build"] },
     "test": { "dependsOn": ["^build"] },
-    "test:props": { "dependsOn": ["^build"] }
+    "test:props": { "dependsOn": ["^build"] },
+    "test:golden": { "dependsOn": ["^build"] },
+    "sim": { "dependsOn": ["^build"] }
   }
 }
