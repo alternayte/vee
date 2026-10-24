@@ -1,0 +1,32 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+/* Generated from packages/tokens/src/index.ts by `bun run css`. Do not edit. */
+@layer theme {
+  :root {
+    @variant dark {
+      --color-background: #0e1114;
+      --color-surface: #171b20;
+      --color-surface-raised: #20262d;
+      --color-border: #323a43;
+      --color-text: #e8eaed;
+      --color-text-muted: #9aa3ad;
+      --color-accent: #c9a253;
+      --color-accent-text: #14110a;
+      --color-good: #5cb87a;
+      --color-warning: #e0a43c;
+      --color-critical: #e5675c;
+    }
+    @variant light {
+      --color-background: #f4f2ee;
+      --color-surface: #ffffff;
+      --color-surface-raised: #ebe8e2;
+      --color-border: #c9c4ba;
+      --color-text: #16191d;
+      --color-text-muted: #535a63;
+      --color-accent: #7d5d1c;
+      --color-accent-text: #ffffff;
+      --color-good: #22693a;
+      --color-warning: #8a5a00;
+      --color-critical: #b3261e;
+    }
+  }
+}
