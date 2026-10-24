@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Leak guard on the staged files (I9), then the licence header check (V14).
+set -euo pipefail
+bun tools/leak-guard.ts --staged
+bun tools/spdx.ts

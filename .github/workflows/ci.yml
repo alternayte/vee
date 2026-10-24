@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+name: ci
+
+on:
+  push:
+    branches: [main, "b[0-9][0-9]-*"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - uses: extractions/setup-just@v3
+      - run: bun install --frozen-lockfile
+      - name: V13 leak guard
+        run: just leak
+      - name: V14 licence headers
+        run: just spdx
+      - name: V1 types and lint
+        run: just check
+      - name: Tests
+        run: just test
