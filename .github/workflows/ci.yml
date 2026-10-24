@@ -31,3 +31,20 @@ jobs:
         run: just test
       - name: V5 simulation
         run: just sim
+
+  server:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - uses: extractions/setup-just@v3
+      - run: bun install --frozen-lockfile
+      - name: V7 API against Postgres
+        run: just test-api
+      - name: V8 sync against Postgres and PowerSync
+        run: just test-sync

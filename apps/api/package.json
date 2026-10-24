@@ -20,10 +20,15 @@
     "zod": "4.6.7"
   },
   "devDependencies": {
+    "@hono/node-server": "2.1.5",
+    "@powersync/common": "2.4.0",
+    "@powersync/drizzle-driver": "0.8.0",
     "@powersync/node": "1.2.0",
     "@types/bun": "1.4.4",
     "@types/nodemailer": "8.0.2",
     "@types/pg": "8.23.1",
-    "typescript": "7.0.2"
+    "@vee/sync": "workspace:*",
+    "typescript": "7.0.2",
+    "vitest": "5.0.5"
   }
 }

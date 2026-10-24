@@ -26,11 +26,16 @@
         "zod": "4.6.7",
       },
       "devDependencies": {
+        "@hono/node-server": "2.1.5",
+        "@powersync/common": "2.4.0",
+        "@powersync/drizzle-driver": "0.8.0",
         "@powersync/node": "1.2.0",
         "@types/bun": "1.4.4",
         "@types/nodemailer": "8.0.2",
         "@types/pg": "8.23.1",
+        "@vee/sync": "workspace:*",
         "typescript": "7.0.2",
+        "vitest": "5.0.5",
       },
     },
     "apps/mobile": {
@@ -140,6 +145,16 @@
         "@types/bun": "1.4.4",
         "typescript": "7.0.2",
         "vitest": "5.0.5",
+      },
+    },
+    "packages/sync": {
+      "name": "@vee/sync",
+      "devDependencies": {
+        "@powersync/common": "2.4.0",
+        "typescript": "7.0.2",
+      },
+      "peerDependencies": {
+        "@powersync/common": "2.4.0",
       },
     },
     "packages/tokens": {
@@ -421,6 +436,8 @@
     "@expo/xcpretty": ["@expo/xcpretty@4.4.7", "", { "dependencies": { "@babel/code-frame": "^7.20.0", "chalk": "^4.1.0", "js-yaml": "^4.1.0" }, "bin": { "excpretty": "build/cli.js" } }, "sha512-EbxYllZ7/ozONVZd425cm4XnolfW+AmSFT5aP7Jdno6oc3WrYQcHz2CO20z/2rwWwYgztmV2PXvYH+BQ8YFjqg=="],
 
     "@hexagon/base64": ["@hexagon/base64@1.1.28", "", {}, "sha512-lhqDEAvWixy3bZ+UOYbPwUbBkwBq5C1LAJ/xPC8Oi+lL54oyakv/npbA0aU2hgCsx/1NUd4IBvV03+aUBWxerw=="],
+
+    "@hono/node-server": ["@hono/node-server@2.1.5", "", { "peerDependencies": { "hono": "^4 || ^5.0.0-0" } }, "sha512-MgP/I06GdvsilDspMk/qmRzpk8LOUStP6jFAbSRi40W09DhoyUn+Mj7eyKICPqeYKybOjVFLVIAQzvu1bfIa7Q=="],
 
     "@isaacs/ttlcache": ["@isaacs/ttlcache@1.4.1", "", {}, "sha512-RQgQ4uQ+pLbqXfOmieB91ejmLwvSgv9nLx6sT6sD83s7umBypgg+OIBOBbEUiJXrfpnp9j0mRhYYdzp9uqq3lA=="],
 
@@ -733,6 +750,8 @@
     "@vee/nutrition": ["@vee/nutrition@workspace:packages/nutrition"],
 
     "@vee/schema": ["@vee/schema@workspace:packages/schema"],
+
+    "@vee/sync": ["@vee/sync@workspace:packages/sync"],
 
     "@vee/tokens": ["@vee/tokens@workspace:packages/tokens"],
 

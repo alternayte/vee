@@ -44,7 +44,18 @@ test-api:
         -c wal_level=logical >/dev/null
     trap 'docker rm -f vee-test-pg >/dev/null 2>&1 || true' EXIT
     until docker exec vee-test-pg pg_isready -U postgres -h 127.0.0.1 >/dev/null 2>&1; do sleep 0.5; done
-    TEST_DATABASE_URL=postgres://postgres:vee@localhost:54391/postgres bun test apps/api/test
+    TEST_DATABASE_URL=postgres://postgres:vee@localhost:54391/postgres bun test apps/api/test/
+
+# V8: sync tests against Postgres and the PowerSync service in Docker
+test-sync:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    compose="docker compose -f infra/compose.test.yaml"
+    $compose down -v >/dev/null 2>&1 || true
+    $compose up -d --wait postgres >/dev/null
+    $compose up -d powersync >/dev/null
+    trap '$compose down -v >/dev/null 2>&1 || true' EXIT
+    cd apps/api && node node_modules/vitest/vitest.mjs run test-sync --testTimeout 120000 --hookTimeout 180000
 
 # Android release APK for arm64 (bundles the JavaScript, so no Metro server)
 apk:
