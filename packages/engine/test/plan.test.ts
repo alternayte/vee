@@ -99,6 +99,26 @@ describe("generatePlan", () => {
     expect(first?.reasons.exercise.ruleId).toBe("PLAN_PICK_LOWER");
   });
 
+  test("a new ladder whose rung 1 the kit rules out starts at the lowest rung it allows", () => {
+    const noBand = homeKit.filter((k) => k.kind !== "band");
+    const p = generatePlan(input({ kit: noBand }), V_TAPER_LEAN_GAIN);
+    const lateral = day(p, "A").items.find((i) => i.family === "lateral-raise");
+    expect(lateral?.exerciseId).toBe("lateral-raise-db");
+    expect(lateral?.reasons.exercise.ruleId).toBe("PLAN_PICK_START");
+  });
+
+  test("an owned rung never falls back to a higher rung", () => {
+    const noBand = homeKit.filter((k) => k.kind !== "band");
+    const p = generatePlan(
+      input({
+        kit: noBand,
+        history: { ...emptyHistory(), progress: [{ family: "lateral-raise", rung: 1 }] },
+      }),
+      V_TAPER_LEAN_GAIN,
+    );
+    expect(day(p, "A").items.some((i) => i.family === "lateral-raise")).toBe(false);
+  });
+
   test("an acute shoulder flag empties the vertical-pull slot and says why", () => {
     const flags = [{ joint: "shoulder", severity: "acute", activeFrom: "2026-10-01" }] as const;
     const p = generatePlan(input({ flags: [...flags] }), V_TAPER_LEAN_GAIN);

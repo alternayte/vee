@@ -233,6 +233,24 @@ describe("closeSession and rebuildProgress", () => {
     expect(i.history.progress.find((p) => p.family === "squat")?.loadKg).toBe(18);
   });
 
+  test("a deload session resets every stall count, so the same stalls do not start another deload", () => {
+    const stalled = (family: string): ProgressState => ({
+      family,
+      rung: 1,
+      streaks: { top: 0, miss: 0, stall: 3, hold: 0 },
+    });
+    const history: History = {
+      ...emptyHistory(),
+      progress: [stalled("row"), stalled("curl")],
+      sessions: [{ id: "d1", kind: "main", dayType: "B", status: "done", date: "2026-11-30", deload: true }],
+      prescriptions: [
+        { ...prescribe(input({ programme }), day("B"), { readiness: "full" }), sessionId: "d1" },
+      ],
+    };
+    const closed = closeSession(input({ programme, history }), "d1");
+    for (const p of closed.progress) expect(p.streaks?.stall ?? 0).toBe(0);
+  });
+
   test("rebuilding from history gives the same progress as closing each session", () => {
     let i = input({
       programme,

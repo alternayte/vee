@@ -5,6 +5,7 @@ import fc from "fast-check";
 import { describe, test } from "vitest";
 import {
   bandOptions,
+  CALIBRATION_SESSIONS,
   checkAllowed,
   type Effort,
   estimateSeconds,
@@ -41,6 +42,7 @@ function stateFor(e: Exercise, k: KitItem[]) {
       miss: fc.integer({ min: 0, max: 3 }),
       stall: fc.integer({ min: 0, max: 4 }),
       best: fc.option(fc.integer({ min: 0, max: 30 }), { nil: undefined }),
+      seen: fc.integer({ min: 0, max: 5 }),
     })
     .map((r): ProgressState => {
       const s: ProgressState = {
@@ -54,6 +56,7 @@ function stateFor(e: Exercise, k: KitItem[]) {
       if (e.load === "dial" || e.load === "fixed") s.tempoStage = r.stage;
       if (e.load === "timed") s.holdS = r.hold;
       if (r.best !== undefined) s.best = r.best;
+      s.seen = r.seen;
       return s;
     });
 }
@@ -153,7 +156,7 @@ describe("progression properties", () => {
     );
   });
 
-  test("a load jump above 15% happens only after every micro-step", () => {
+  test("a load jump above 15% happens only after every micro-step, or in calibration", () => {
     fc.assert(
       fc.property(scenario, (x) => {
         const next = runEval(x, "full").next;
@@ -161,7 +164,7 @@ describe("progression properties", () => {
         const to = next.loadKg;
         if (next.exerciseId !== x.state.exerciseId || from === undefined || to === undefined || to <= from)
           return true;
-        return !isBigJump(from, to) || x.state.tempoStage === 3;
+        return !isBigJump(from, to) || x.state.tempoStage === 3 || (x.state.seen ?? 0) < CALIBRATION_SESSIONS;
       }),
       RUNS,
     );

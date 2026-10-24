@@ -48,7 +48,12 @@ export function deloadStatus(input: EngineInput): DeloadStatus {
     return { deload: true, kind, startEarly: false, reasons: [reason("DELOAD_WEEK", { week: DELOAD_WEEK })] };
   }
 
-  const last7 = [...input.history.checkins].sort((a, b) => a.date.localeCompare(b.date)).slice(-7);
+  // Only check-ins in the current block count, so a past low week does not start a second deload.
+  const from = p?.blockStart ?? "";
+  const last7 = input.history.checkins
+    .filter((c) => c.date >= from)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(-7);
   const low = last7.filter((c) => readinessMode(readinessScore(c)) !== "full").length;
   if (low >= 4) {
     return {

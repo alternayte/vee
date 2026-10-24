@@ -101,6 +101,15 @@ describe("blocks and deload", () => {
     ).toBe(false);
   });
 
+  test("check-ins from before the block start do not count", () => {
+    const low = (d: number) =>
+      checkin({ date: addDays("2026-10-28", d), energy: 1, soreness: 5, sleep: "bad" });
+    const rows = [low(0), low(1), low(2), low(3)]; // 28 to 31 October, before the block
+    expect(
+      deloadStatus(input({ programme, history: { ...emptyHistory(), checkins: rows } })).startEarly,
+    ).toBe(false);
+  });
+
   test("only the last 7 check-ins count", () => {
     const low = (d: number) =>
       checkin({ date: addDays("2026-11-02", d), energy: 1, soreness: 5, sleep: "bad" });

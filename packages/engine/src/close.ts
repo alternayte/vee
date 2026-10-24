@@ -38,6 +38,12 @@ function closeOne(
     out = [...out.filter((p) => p.family !== item.family), r.next];
     if (r.reasons.length > 0) reasons[item.family] = r.reasons;
   }
+  // A deload answers the stalls, so their counts start again from zero.
+  if (session.deload) {
+    out = out.map((p) =>
+      (p.streaks?.stall ?? 0) > 0 ? { ...p, streaks: { ...ZERO_STREAKS, ...p.streaks, stall: 0 } } : p,
+    );
+  }
   return { progress: out.sort((a, b) => a.family.localeCompare(b.family)), reasons };
 }
 

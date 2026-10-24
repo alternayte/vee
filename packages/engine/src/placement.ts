@@ -9,6 +9,7 @@ import type { EngineInput, ProgressState, Reason, TestItem, TestResult } from ".
 
 /** A monthly test can move a rung up by at most this. A baseline (no state) is not capped. */
 export const PLACEMENT_MAX_UP = 2;
+export const SPLIT_SQUAT_SHARE = 0.5;
 
 export type RungPlacement = {
   family: string;
@@ -72,11 +73,28 @@ function tables(input: EngineInput, results: TestResult[]): Table[] {
   const plank = r.get("plank");
   if (plank) out.push({ family: "core", rung: band(plank.value, [45]), from: "plank", value: plank.value });
   const carry = r.get("carry");
-  if (carry) out.push({ family: "carry", rung: band(carry.value, [30]), from: "carry", value: carry.value });
+  if (carry) {
+    out.push({
+      family: "carry",
+      rung: band(carry.value, [30]),
+      ...(carry.loadKg === undefined ? {} : { loadKg: carry.loadKg }),
+      from: "carry",
+      value: carry.value,
+    });
+  }
   const squat = r.get("goblet_squat");
   if (squat) {
-    if (squat.value >= 15) out.push({ family: "squat", rung: 2, from: "goblet_squat", value: squat.value });
-    else {
+    if (squat.value >= 15) {
+      // The split squat loads one leg, so it starts at half the goblet squat load.
+      const loadKg = squat.loadKg === undefined ? undefined : squat.loadKg * SPLIT_SQUAT_SHARE;
+      out.push({
+        family: "squat",
+        rung: 2,
+        ...(loadKg === undefined ? {} : { loadKg }),
+        from: "goblet_squat",
+        value: squat.value,
+      });
+    } else {
       const goblet = input.catalogue.exercises.find((e) => e.id === "goblet-squat");
       const loads = goblet ? loadOptions(goblet, input.kit) : [];
       const at = squat.loadKg === undefined ? undefined : snapLoad(loads, squat.loadKg);

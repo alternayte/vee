@@ -58,6 +58,8 @@ export type ProgressState = {
   repOverride?: { low: number; high: number };
   /** Best reps or seconds in one set at the current step. */
   best?: number;
+  /** Full sessions logged on the current exercise. Calibration uses it. */
+  seen?: number;
   streaks?: Streaks;
 };
 

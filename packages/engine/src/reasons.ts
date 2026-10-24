@@ -7,6 +7,8 @@ const TEMPLATES: Record<string, string> = {
     "This is rung {rung} of the {familyName} ladder. It is your current rung, and your kit and flags allow it.",
   PLAN_PICK_LOWER:
     "Your kit or flags do not allow rung {owned} of the {familyName} ladder. Rung {rung} is the nearest rung below.",
+  PLAN_PICK_START:
+    "Your kit or flags do not allow the first rungs of the {familyName} ladder. You start at rung {rung}, the lowest rung they allow.",
   PLAN_NO_OPTION: "Your kit and flags allow no {familyName} exercise. This slot is empty.",
   SETS_BASE: "This {role} movement starts at {sets} sets.",
   SETS_FILL: "{group} needs {target} sets in week {week}. The plan adds {added} here.",
@@ -17,6 +19,8 @@ const TEMPLATES: Record<string, string> = {
   P1_MISS:
     "A set was below {low} {unit} at Hard or Failed. One more session with a miss moves this down one step.",
   P2_ONCE: "You hit {high} {unit} on all sets at Easy or Good. One more session like this moves you up.",
+  P2_CALIBRATE:
+    "All sets at {high} reps were Easy in one of your first {sessions} sessions on this exercise, so the dial goes {from} → {to} kg.",
   P2_UP: "{high} {unit} hit twice at Easy or Good, so {change}.",
   P2_RANGE: "{high} {unit} hit twice, so the range goes to the standard {newLow} to {newHigh} {unit}.",
   P2_TOP: "{high} {unit} hit twice, but your kit and flags allow no step up. Stay here and add reps.",

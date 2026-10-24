@@ -58,19 +58,35 @@ export function familyName(input: Pick<EngineInput, "catalogue">, family: string
   return input.catalogue.families.find((f) => f.id === family)?.names.en.toLowerCase() ?? family;
 }
 
-/** The highest rung the user owns that kit and flags allow. */
+/**
+ * The highest rung the user owns that kit and flags allow. A ladder with no
+ * progress state starts at the lowest rung that kit and flags allow.
+ */
 export function pickExercise(input: EngineInput, family: string): Picked | undefined {
   const state = input.history.progress.find((p) => p.family === family);
-  const owned = state?.rung ?? 1;
-  const candidates = input.catalogue.exercises.filter(
-    (e) => e.family === family && e.rung <= owned && checkAllowed(e, input.kit, input.flags, input.today).ok,
+  const allowed = input.catalogue.exercises.filter(
+    (e) => e.family === family && checkAllowed(e, input.kit, input.flags, input.today).ok,
   );
-  const best = rankCandidates(candidates, state?.exerciseId)[0];
+  const name = familyName(input, family);
+  if (!state) {
+    const lowest = Math.min(...allowed.map((e) => e.rung));
+    const best = rankCandidates(allowed.filter((e) => e.rung === lowest))[0];
+    if (!best) return undefined;
+    const ruleId = best.rung === 1 ? "PLAN_PICK" : "PLAN_PICK_START";
+    return {
+      exercise: best,
+      reason: reason(ruleId, { family, familyName: name, rung: best.rung, owned: 1 }),
+    };
+  }
+  const best = rankCandidates(
+    allowed.filter((e) => e.rung <= state.rung),
+    state.exerciseId,
+  )[0];
   if (!best) return undefined;
-  const ruleId = best.rung === owned ? "PLAN_PICK" : "PLAN_PICK_LOWER";
+  const ruleId = best.rung === state.rung ? "PLAN_PICK" : "PLAN_PICK_LOWER";
   return {
     exercise: best,
-    reason: reason(ruleId, { family, familyName: familyName(input, family), rung: best.rung, owned }),
+    reason: reason(ruleId, { family, familyName: name, rung: best.rung, owned: state.rung }),
   };
 }
 

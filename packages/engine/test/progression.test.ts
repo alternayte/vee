@@ -205,6 +205,35 @@ describe("P2 top of range", () => {
   });
 });
 
+describe("calibration", () => {
+  const easyTop: [number[], Effort] = [[12, 12, 12], "easy"];
+
+  test("in the first 3 sessions on a dumbbell exercise, Easy at the top moves one dial step at once", () => {
+    const r = run(state("row-single-arm-db", { loadKg: 2 }), [easyTop, easyTop, easyTop, easyTop]);
+    expect(r.reasons).toEqual([["P2_CALIBRATE"], ["P2_CALIBRATE"], ["P2_CALIBRATE"], ["P2_ONCE"]]);
+    expect(r.state.loadKg).toBe(8);
+    expect(r.state.tempoStage ?? 0).toBe(0);
+  });
+
+  test("Good at the top during calibration uses the normal rules", () => {
+    const r = run(state("row-single-arm-db", { loadKg: 2 }), [[[12, 12, 12], "good"]]);
+    expect(r.reasons).toEqual([["P2_ONCE"]]);
+    expect(r.state.loadKg).toBe(2);
+  });
+
+  test("calibration starts again on a new exercise", () => {
+    const top: [number[], Effort] = [[12, 12, 12], "easy"];
+    const r = run(state("goblet-squat", { loadKg: 24, seen: 5 }), [top, top, [[12, 12, 12], "easy"]]);
+    expect(r.state.exerciseId).toBe("split-squat");
+    expect(r.reasons[2]).toEqual(["P2_CALIBRATE"]);
+  });
+
+  test("bodyweight work has no calibration", () => {
+    const r = run(state("pullup-negative"), [[[5, 5, 5], "easy"]]);
+    expect(r.reasons).toEqual([["P2_ONCE"]]);
+  });
+});
+
 describe("P1 and P6 misses", () => {
   test("one miss session marks a miss; a second steps down", () => {
     const r = run(state("goblet-squat", { loadKg: 14 }), [
@@ -275,6 +304,17 @@ describe("P4 timed holds", () => {
     const r = run(state("dead-hang", { holdS: 60 }), [[[60, 60, 60]], [[60, 60, 60]]]);
     expect(r.state.exerciseId).toBe("scapular-pull");
     expect(r.state.holdS).toBeUndefined();
+  });
+
+  test("a loaded hold at the cap goes to the next load and starts the hold again", () => {
+    const r = run(state("suitcase-carry", { holdS: 60, loadKg: 10 }), [[[60, 60, 60]], [[60, 60, 60]]]);
+    expect(r.state).toMatchObject({ exerciseId: "suitcase-carry", loadKg: 12, holdS: 20 });
+    expect(r.reasons[1]).toEqual(["P4_RUNG"]);
+  });
+
+  test("a loaded hold at the top load goes to the next rung", () => {
+    const r = run(state("goblet-carry", { holdS: 60, loadKg: 24 }), [[[60, 60, 60]], [[60, 60, 60]]]);
+    expect(r.state.exerciseId).toBe("suitcase-carry");
   });
 
   test("a timed rung starts at the low end of its range", () => {

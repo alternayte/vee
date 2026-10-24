@@ -63,6 +63,25 @@ describe("placeFromTest: other ladders", () => {
     expect(rungOf(placeFromTest(input(), [t("goblet_squat", 5, { loadKg: 12 })]), "squat")?.loadKg).toBe(10);
   });
 
+  test("the split squat starts at half the goblet squat test load", () => {
+    const placed = placeFromTest(input(), [t("goblet_squat", 16, { loadKg: 16 })]);
+    expect(rungOf(placed, "squat")).toMatchObject({ rung: 2, loadKg: 8 });
+    const progress = applyPlacements(input(), [], placed);
+    expect(progress.find((p) => p.family === "squat")).toMatchObject({
+      exerciseId: "split-squat",
+      loadKg: 8,
+    });
+  });
+
+  test("a carry test with a load starts the carry at that load", () => {
+    const placed = placeFromTest(input(), [t("carry", 40, { loadKg: 14 })]);
+    const progress = applyPlacements(input(), [], placed);
+    expect(progress.find((p) => p.family === "carry")).toMatchObject({
+      exerciseId: "suitcase-carry",
+      loadKg: 14,
+    });
+  });
+
   test("burpees and waist place nothing", () => {
     expect(placeFromTest(input(), [t("burpees", 40), t("waist", 82)])).toEqual([]);
   });

@@ -26,6 +26,8 @@ export const MISS_SESSIONS = 2;
 export const HOLD_SESSIONS = 2;
 export const STALL_LIMIT = 3;
 export const HOLD_STEP_S = 5;
+/** Sessions on a new dumbbell exercise in which Easy at the top moves one dial step at once. */
+export const CALIBRATION_SESSIONS = 3;
 /** A new dial rung starts at the lightest load at or above this share of the last load. */
 export const NEW_RUNG_LOAD_SHARE = 0.5;
 
@@ -135,6 +137,20 @@ export function stepUp(ctx: ProgressContext, s: ProgressState, e: Exercise): Ste
       inputs: { from, to: to.setting },
     };
   }
+  if (e.load === "timed") {
+    const loads = loadOptions(e, ctx.kit);
+    const cur = s.loadKg;
+    const nxt = cur === undefined ? undefined : nextLoad(loads, cur);
+    const low = e.default.seconds?.[0];
+    if (cur !== undefined && nxt !== undefined && low !== undefined) {
+      return {
+        next: { ...s, loadKg: nxt, holdS: low },
+        moved: true,
+        change: `the load goes ${cur} → ${nxt} kg and the hold starts again at ${low} s`,
+        inputs: { from: cur, to: nxt, holdTo: low },
+      };
+    }
+  }
   return moveRung(ctx, s, e, "up");
 }
 
@@ -208,6 +224,24 @@ export function evaluate(
   sets: LoggedSet[],
   session: SessionRecord,
 ): Evaluation {
+  const r = rules(ctx, state, item, sets, session);
+  const counted =
+    session.kind !== "micro" &&
+    !session.deload &&
+    (session.readinessMode ?? "full") === "full" &&
+    sets.some((x) => x.exerciseId === item.exerciseId && x.deletedAt === undefined);
+  if (!counted || r.next.exerciseId !== item.exerciseId) return r;
+  const before = state.exerciseId === item.exerciseId ? (state.seen ?? 0) : 0;
+  return { ...r, next: { ...r.next, seen: before + 1 } };
+}
+
+function rules(
+  ctx: ProgressContext,
+  state: ProgressState,
+  item: PrescribedItem,
+  sets: LoggedSet[],
+  session: SessionRecord,
+): Evaluation {
   const e = exercise(ctx, item.exerciseId);
   const mine = sets.filter((x) => x.exerciseId === e.id && x.deletedAt === undefined);
   if (mine.length === 0) return { next: state, reasons: [] };
@@ -257,6 +291,27 @@ export function evaluate(
 
   const rows = item.sets * (e.unilateral ? 2 : 1);
   const complete = mine.length >= rows;
+
+  // Calibration: a new dumbbell exercise starts at the lightest load, so Easy at
+  // the top in the first sessions moves one dial step with no micro-steps.
+  if (
+    isLoaded(e) &&
+    (s.seen ?? 0) < CALIBRATION_SESSIONS &&
+    complete &&
+    values.every((v) => v >= high) &&
+    mine.every((x) => x.effort === "easy")
+  ) {
+    const loads = loadOptions(e, ctx.kit);
+    const cur = s.loadKg ?? (loads[0] as number);
+    const nxt = nextLoad(loads, cur);
+    if (nxt !== undefined) {
+      const { tempoStage: _t, best: _b, ...rest } = s;
+      return {
+        next: { ...rest, loadKg: nxt, streaks: { ...ZERO_STREAKS } },
+        reasons: [reason("P2_CALIBRATE", { high, from: cur, to: nxt, sessions: CALIBRATION_SESSIONS })],
+      };
+    }
+  }
 
   if (unit === "seconds") {
     const hold = s.holdS ?? low;
