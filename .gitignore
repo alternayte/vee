@@ -2,4 +2,8 @@
 .internal/
 *.internal.*
 .env*
+!.env.example
 node_modules
+.turbo
+dist
+.claude/worktrees/

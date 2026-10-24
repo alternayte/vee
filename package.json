@@ -1,0 +1,19 @@
+{
+  "name": "vee",
+  "private": true,
+  "license": "AGPL-3.0-or-later",
+  "packageManager": "bun@1.4.3",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.3",
+    "@types/bun": "1.4.4",
+    "turbo": "2.11.10",
+    "typescript": "7.0.2"
+  }
+}
