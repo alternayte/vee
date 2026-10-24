@@ -1,0 +1,19 @@
+{
+  "name": "@vee/sync",
+  "private": true,
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/connector.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "peerDependencies": {
+    "@powersync/common": "2.4.0"
+  },
+  "devDependencies": {
+    "@powersync/common": "2.4.0",
+    "typescript": "7.0.2"
+  }
+}
