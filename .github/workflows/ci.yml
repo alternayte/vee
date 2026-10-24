@@ -25,5 +25,7 @@ jobs:
         run: just spdx
       - name: V1 types and lint
         run: just check
+      - name: Catalogue validation
+        run: just catalogue
       - name: Tests
         run: just test

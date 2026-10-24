@@ -20,6 +20,10 @@ test target="":
         bunx turbo run test --filter="@vee/{{target}}"
     fi
 
+# Catalogue validation: build the family YAML into dist/catalogue.v{N}.json
+catalogue:
+    bunx turbo run build --filter=@vee/catalogue
+
 # V13: leak guard over all files (CI mode)
 leak:
     bun tools/leak-guard.ts
@@ -29,7 +33,7 @@ spdx:
     bun tools/spdx.ts
 
 # All fast gates
-verify: check test leak spdx
+verify: check catalogue test leak spdx
 
 # Install the pre-commit hook
 hooks:
