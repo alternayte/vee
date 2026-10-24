@@ -8,7 +8,16 @@ import { join } from "node:path";
 import { serve } from "@hono/node-server";
 import { DrizzleAppSchema, wrapPowerSyncWithDrizzle } from "@powersync/drizzle-driver";
 import { PowerSyncDatabase } from "@powersync/node";
-import { clientSchema, kit_items, runner_state, sets, syncedTables, ui_prefs, uuidv7 } from "@vee/schema";
+import {
+  clientSchema,
+  kit_items,
+  runner_state,
+  sessions as sessionsTable,
+  sets,
+  syncedTables,
+  ui_prefs,
+  uuidv7,
+} from "@vee/schema";
 import { createConnector, type Rejected } from "@vee/sync";
 import { eq } from "drizzle-orm";
 import pg from "pg";
@@ -56,8 +65,12 @@ async function signIn(email: string): Promise<string> {
       body: JSON.stringify({ email, callbackURL: "/" }),
     }),
   );
-  const url = new URL(app.mailer.sent.at(-1)?.text.match(/https?:\/\/\S+/)?.[0] ?? "");
-  const r = await app.fetch(new Request(`${API_URL}${url.pathname}${url.search}`, { redirect: "manual" }));
+  const token0 = app.mailer.sent.at(-1)?.text.match(/token=([^\s&]+)/)?.[1] ?? "";
+  const r = await app.fetch(
+    new Request(`${API_URL}/api/auth/magic-link/verify?token=${token0}&callbackURL=%2F`, {
+      redirect: "manual",
+    }),
+  );
   const token = r.headers.get("set-auth-token");
   if (!token) throw new Error("no session token");
   return token;
@@ -243,6 +256,71 @@ describe("V8 sync", () => {
     const onA = await a1.ps.getAll<{ id: string }>("SELECT id FROM kit_items WHERE id = ?", [mine]);
     expect(onA).toEqual([]);
   });
+
+  test("6 months of history written with no account uploads after sign-in (I10)", async () => {
+    const solo = device("solo", "");
+    const sessionsMade: string[] = [];
+    let setCount = 0;
+    const start = Date.now() - 182 * 86_400_000;
+    for (let week = 0; week < 26; week++) {
+      for (const day of [0, 2, 4, 5]) {
+        const at = new Date(start + (week * 7 + day) * 86_400_000).toISOString();
+        const sid = uuidv7();
+        sessionsMade.push(sid);
+        await solo.db.transaction(async (tx) => {
+          await tx.insert(sessionsTable).values({
+            id: sid,
+            kind: "main",
+            status: "done",
+            date: at.slice(0, 10),
+            created_at: at,
+            updated_at: at,
+          });
+          for (let s = 0; s < 12; s++) {
+            await tx.insert(sets).values({
+              id: uuidv7(),
+              session_id: sid,
+              exercise_id: s % 2 ? "goblet-squat" : "row-single-arm-db",
+              reps: 8 + (s % 5),
+              load_kg: 10 + (week % 6) * 2,
+              effort: "good",
+              logged_at: at,
+              created_at: at,
+              updated_at: at,
+            });
+            setCount++;
+          }
+        });
+      }
+    }
+    const pending = await solo.ps.getAll<{ n: number }>("SELECT count(*) AS n FROM ps_crud");
+    expect(pending[0]?.n).toBe(sessionsMade.length + setCount);
+
+    const token = await signIn("solo@example.test");
+    const signedIn = device("solo", token);
+    await solo.ps.close();
+    await signedIn.connect();
+    const userId = await waitFor("solo user id", async () => {
+      const r = await pgQuery<{ id: string }>(`SELECT id FROM "user" WHERE email = 'solo@example.test'`);
+      return r[0]?.id;
+    });
+    await waitFor(
+      "all history on the server",
+      async () => {
+        const r = await pgQuery<{ n: string }>("SELECT count(*) AS n FROM sets WHERE user_id = $1", [userId]);
+        return Number(r[0]?.n) === setCount;
+      },
+      120_000,
+    );
+    await waitFor("rows synced back with the owner set", async () => {
+      const r = await signedIn.ps.getAll<{ n: number }>("SELECT count(*) AS n FROM sets WHERE user_id = ?", [
+        userId,
+      ]);
+      return r[0]?.n === setCount;
+    });
+    expect(signedIn.rejected).toEqual([]);
+    await signedIn.ps.close();
+  }, 180_000);
 
   test("local-only tables never upload", async () => {
     await a1.db.insert(ui_prefs).values({ id: uuidv7(), key: "theme", value: "dark" });

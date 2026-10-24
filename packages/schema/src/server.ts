@@ -56,7 +56,16 @@ export const audit_log = pgTable("audit_log", {
   at: timestamp("at", { withTimezone: true }).notNull(),
 });
 
-export const serverSchema = { ...pgSynced, ai_usage, audit_log };
+/** A full data export behind a 24-hour capability link. */
+export const exports = pgTable("exports", {
+  id: text("id").primaryKey(),
+  user_id: text("user_id").notNull(),
+  json: text("json").notNull(),
+  csv: text("csv").notNull(),
+  expires_at: timestamp("expires_at", { withTimezone: true }).notNull(),
+});
+
+export const serverSchema = { ...pgSynced, ai_usage, audit_log, exports };
 
 const q = (name: string) => `"${name.replaceAll('"', '""')}"`;
 

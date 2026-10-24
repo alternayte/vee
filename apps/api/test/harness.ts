@@ -41,6 +41,14 @@ export function request(app: App, path: string, init: RequestInit & { token?: st
   return app.fetch(new Request(`http://localhost:3999${path}`, { ...init, headers }));
 }
 
+/** The verify call the app makes with the token from the newest sign-in mail. */
+export function verifyPath(app: App, email: string): string {
+  const mail = [...app.mailer.sent].reverse().find((m) => m.to === email);
+  const token = mail?.text.match(/token=([^\s&]+)/)?.[1];
+  if (!token) throw new Error("no magic link in the mail");
+  return `/api/auth/magic-link/verify?token=${token}&callbackURL=%2F`;
+}
+
 /** Signs in through the magic link flow and returns the bearer session token. */
 export async function signIn(app: App, email: string): Promise<{ token: string; userId: string }> {
   const sent = await request(app, "/api/auth/sign-in/magic-link", {
@@ -48,10 +56,7 @@ export async function signIn(app: App, email: string): Promise<{ token: string; 
     body: JSON.stringify({ email, callbackURL: "/" }),
   });
   if (sent.status !== 200) throw new Error(`magic link request failed: ${sent.status} ${await sent.text()}`);
-  const mail = [...app.mailer.sent].reverse().find((m) => m.to === email);
-  const url = mail?.text.match(/https?:\/\/\S+/)?.[0];
-  if (!url) throw new Error("no magic link in the mail");
-  const verify = await request(app, new URL(url).pathname + new URL(url).search, { redirect: "manual" });
+  const verify = await request(app, verifyPath(app, email), { redirect: "manual" });
   const token = verify.headers.get("set-auth-token");
   if (!token) throw new Error(`no session token: ${verify.status}`);
   const session = await request(app, "/api/auth/get-session", { token });

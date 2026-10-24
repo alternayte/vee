@@ -3,7 +3,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { createLocalJWKSet, decodeJwt, jwtVerify } from "jose";
 import type { App } from "../src/app";
-import { freshDatabase, OWNER_EMAIL, query, request, signIn, startApp } from "./harness";
+import { freshDatabase, OWNER_EMAIL, query, request, signIn, startApp, verifyPath } from "./harness";
 
 let app: App;
 let a: { token: string; userId: string };
@@ -79,10 +79,10 @@ describe("auth", () => {
       method: "POST",
       body: JSON.stringify({ email: "once@example.test", callbackURL: "/" }),
     });
-    const url = new URL(app.mailer.sent.at(-1)?.text.match(/https?:\/\/\S+/)?.[0] ?? "");
-    const first = await request(app, url.pathname + url.search, { redirect: "manual" });
+    const path = verifyPath(app, "once@example.test");
+    const first = await request(app, path, { redirect: "manual" });
     expect(first.headers.get("set-auth-token")).toBeTruthy();
-    const second = await request(app, url.pathname + url.search, { redirect: "manual" });
+    const second = await request(app, path, { redirect: "manual" });
     expect(second.headers.get("set-auth-token")).toBeNull();
   });
 

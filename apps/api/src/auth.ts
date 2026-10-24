@@ -53,11 +53,14 @@ export function createAuth(env: Env, pool: pg.Pool, db: Db, mailer: Mailer) {
     plugins: [
       magicLink({
         expiresIn: MAGIC_LINK_SECONDS,
-        sendMagicLink: async ({ email, url }) => {
+        // The link opens the app (Android App Link on the API domain). The app
+        // then verifies the token itself and keeps the session token.
+        sendMagicLink: async ({ email, token }) => {
+          const link = `${env.BASE_URL}/app/auth/magic?token=${encodeURIComponent(token)}`;
           await mailer.send({
             to: email,
             subject: "Your Vee sign-in link",
-            text: `Open this link to sign in to Vee. The link works once and expires in 10 minutes.\n\n${url}\n`,
+            text: `Open this link on your phone to sign in to Vee. The link works once and expires in 10 minutes.\n\n${link}\n`,
           });
         },
       }),
