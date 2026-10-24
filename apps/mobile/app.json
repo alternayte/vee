@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "Vee",
+    "slug": "vee",
+    "scheme": ["vee", "app.vee.mobile"],
+    "version": "0.1.0",
+    "orientation": "default",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#0e1114",
+    "newArchEnabled": true,
+    "android": {
+      "package": "app.vee.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#0e1114",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "ios": {
+      "bundleIdentifier": "app.vee.mobile",
+      "supportsTablet": true
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 160,
+          "backgroundColor": "#0e1114"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

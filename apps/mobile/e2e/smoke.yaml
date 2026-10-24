@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# V9 smoke: the app starts offline on Today, every tab opens, and the local
+# database passes every query type.
+appId: app.vee.mobile
+---
+- clearState
+- setAirplaneMode: enabled
+- launchApp
+- extendedWaitUntil:
+    visible: "You have no plan yet.*"
+    timeout: 20000
+- tapOn: "Plan"
+- assertVisible: "Your programme shows here after setup."
+- tapOn: "Body"
+- assertVisible: "Your tests, measurements and charts show here."
+- tapOn: "Food"
+- assertVisible: "Your portions, meals and shopping list show here."
+- tapOn: "Coach"
+- assertVisible: "AI and coach messages need an account and a connection."
+- tapOn: "Today"
+- openLink: "app.vee.mobile://dev/db"
+- extendedWaitUntil:
+    visible:
+      id: "db-spike-summary"
+      text: "Database spike: all passed"
+    timeout: 20000
+- setAirplaneMode: disabled
