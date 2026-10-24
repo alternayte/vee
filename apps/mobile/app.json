@@ -33,7 +33,10 @@
           "imageWidth": 160,
           "backgroundColor": "#0e1114"
         }
-      ]
+      ],
+      "expo-secure-store",
+      "expo-web-browser",
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true
