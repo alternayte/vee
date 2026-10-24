@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./load": "./scripts/load.ts",
     "./catalogue.v1.json": "./dist/catalogue.v1.json"
   },
   "scripts": {

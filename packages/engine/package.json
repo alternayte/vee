@@ -1,0 +1,23 @@
+{
+  "name": "@vee/engine",
+  "private": true,
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run --exclude 'test/props/**'",
+    "test:props": "vitest run test/props"
+  },
+  "dependencies": {
+    "@vee/catalogue": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "1.4.4",
+    "fast-check": "4.10.2",
+    "typescript": "7.0.2",
+    "vitest": "5.0.5"
+  }
+}
