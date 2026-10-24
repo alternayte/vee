@@ -1,0 +1,48 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+family: core-hold
+names: { en: Core hold }
+kind: pool
+exercises:
+  - id: plank
+    rung: 1
+    names: { en: Plank }
+    pattern: core-anti-extension
+    muscles: { abs: 1.0, obliques: 0.4, front-delts: 0.2 }
+    load: timed
+    unilateral: false
+    default: { sets: 3, seconds: [20, 60], rest_s: 60 }
+    cues:
+      - Put your forearms on the floor under your shoulders.
+      - Keep your body in a straight line from head to heels.
+      - Squeeze your glutes and breathe.
+    clip: plank
+
+  - id: side-plank
+    rung: 1
+    names: { en: Side plank }
+    pattern: core-anti-lateral
+    muscles: { obliques: 1.0, abs: 0.4, glutes: 0.3 }
+    load: timed
+    unilateral: true
+    default: { sets: 2, seconds: [15, 45], rest_s: 45 }
+    cues:
+      - Lie on your side with your forearm under your shoulder.
+      - Lift your hips until your body is straight.
+      - Hold, then change sides.
+    flags_block: [shoulder:acute]
+    clip: side-plank
+
+  - id: hollow-hold
+    rung: 1
+    names: { en: Hollow hold }
+    pattern: core-anti-extension
+    muscles: { abs: 1.0, hip-flexors: 0.4 }
+    load: timed
+    unilateral: false
+    default: { sets: 3, seconds: [10, 40], rest_s: 60 }
+    cues:
+      - Lie on your back and push your lower back into the floor.
+      - Lift your shoulders and legs a little off the floor.
+      - Hold and breathe.
+    flags_block: [lower-back:acute]
+    clip: hollow-hold

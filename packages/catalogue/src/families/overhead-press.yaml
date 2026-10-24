@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+family: overhead-press
+names: { en: Overhead press }
+kind: ladder
+exercises:
+  - id: press-half-kneeling-db
+    rung: 1
+    names: { en: Half-kneeling single-arm press }
+    pattern: vertical-push
+    muscles: { front-delts: 1.0, side-delts: 0.5, triceps: 0.6, abs: 0.3 }
+    requires: [{ kind: dumbbell }]
+    load: dial
+    unilateral: true
+    default: { sets: 3, reps: [8, 12], tempo: "2-0-1-0", rest_s: 90 }
+    cues:
+      - Kneel on one knee and hold the dumbbell at your shoulder.
+      - Push the dumbbell up until your arm is straight.
+      - Keep your ribs down and lower slowly.
+    flags_block: [shoulder:mild]
+    clip: press-half-kneeling-db
+
+  - id: press-standing-db
+    rung: 2
+    names: { en: Standing single-arm press }
+    pattern: vertical-push
+    muscles: { front-delts: 1.0, side-delts: 0.5, triceps: 0.6, obliques: 0.4 }
+    requires: [{ kind: dumbbell }]
+    load: dial
+    unilateral: true
+    default: { sets: 3, reps: [6, 10], tempo: "2-0-1-0", rest_s: 90 }
+    cues:
+      - Stand tall and hold the dumbbell at your shoulder.
+      - Push the dumbbell up until your arm is straight.
+      - Keep your body still and lower slowly.
+    flags_block: [shoulder:mild]
+    clip: press-standing-db

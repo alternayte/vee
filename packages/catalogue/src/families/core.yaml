@@ -1,0 +1,82 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+family: core
+names: { en: Core }
+kind: ladder
+exercises:
+  - id: dead-bug
+    rung: 1
+    names: { en: Dead bug }
+    pattern: core-anti-extension
+    muscles: { abs: 1.0, hip-flexors: 0.3, obliques: 0.3 }
+    load: bodyweight
+    unilateral: false
+    default: { sets: 3, reps: [6, 12], tempo: "2-1-2-0", rest_s: 60 }
+    cues:
+      - Lie on your back with your arms up and your knees above your hips.
+      - Push your lower back into the floor.
+      - Extend one arm and the opposite leg, then change sides.
+    clip: dead-bug
+
+  - id: hanging-knee-raise
+    rung: 2
+    names: { en: Hanging knee raise }
+    pattern: core-flexion
+    muscles: { abs: 1.0, hip-flexors: 0.6, grip: 0.4 }
+    requires: [{ kind: pullup_station }]
+    load: bodyweight
+    unilateral: false
+    default: { sets: 3, reps: [6, 12], tempo: "2-0-1-1", rest_s: 75 }
+    cues:
+      - Hang from the bar with straight arms.
+      - Lift your knees to your chest without a swing.
+      - Lower your legs slowly.
+    flags_block: [shoulder:acute, lower-back:acute]
+    clip: hanging-knee-raise
+
+  - id: hanging-leg-raise
+    rung: 3
+    names: { en: Hanging leg raise }
+    pattern: core-flexion
+    muscles: { abs: 1.0, hip-flexors: 0.8, grip: 0.4 }
+    requires: [{ kind: pullup_station }]
+    load: bodyweight
+    unilateral: false
+    default: { sets: 3, reps: [5, 10], tempo: "2-0-1-1", rest_s: 75 }
+    cues:
+      - Hang from the bar with straight arms.
+      - Lift your straight legs until they are level with your hips.
+      - Lower your legs slowly.
+    flags_block: [shoulder:acute, lower-back:acute]
+    clip: hanging-leg-raise
+
+  - id: l-sit-tuck
+    rung: 4
+    names: { en: Tuck L-sit }
+    pattern: core-flexion
+    muscles: { abs: 1.0, hip-flexors: 0.8, triceps: 0.4 }
+    requires: [{ kind: pullup_station, feature: dip_handles }]
+    load: timed
+    unilateral: false
+    default: { sets: 3, seconds: [10, 30], rest_s: 75 }
+    cues:
+      - Push up on the dip handles until your arms are straight.
+      - Lift your knees to your chest.
+      - Keep your shoulders down.
+    flags_block: [shoulder:acute, wrist:acute]
+    clip: l-sit-tuck
+
+  - id: l-sit
+    rung: 5
+    names: { en: L-sit }
+    pattern: core-flexion
+    muscles: { abs: 1.0, hip-flexors: 0.9, triceps: 0.4, quads: 0.3 }
+    requires: [{ kind: pullup_station, feature: dip_handles }]
+    load: timed
+    unilateral: false
+    default: { sets: 3, seconds: [5, 30], rest_s: 90 }
+    cues:
+      - Push up on the dip handles until your arms are straight.
+      - Lift your straight legs until they are level with your hips.
+      - Keep your shoulders down.
+    flags_block: [shoulder:acute, wrist:acute]
+    clip: l-sit

@@ -1,0 +1,84 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+family: squat
+names: { en: Squat }
+kind: ladder
+exercises:
+  - id: goblet-squat
+    rung: 1
+    names: { en: Goblet squat }
+    pattern: squat
+    muscles: { quads: 1.0, glutes: 0.7, adductors: 0.4, abs: 0.3 }
+    requires: [{ kind: dumbbell }]
+    load: dial
+    unilateral: false
+    default: { sets: 3, reps: [8, 12], tempo: "3-0-1-0", rest_s: 120 }
+    cues:
+      - Hold the dumbbell at your chest with both hands.
+      - Sit down between your heels and keep your chest up.
+      - Push the floor away to stand up.
+    flags_block: [knee:acute]
+    clip: goblet-squat
+
+  - id: squat-bodyweight
+    rung: 1
+    names: { en: Bodyweight squat }
+    pattern: squat
+    muscles: { quads: 1.0, glutes: 0.7, adductors: 0.4 }
+    load: bodyweight
+    unilateral: false
+    default: { sets: 3, reps: [10, 20], tempo: "3-0-1-0", rest_s: 90 }
+    cues:
+      - Put your feet at shoulder width.
+      - Sit down between your heels and keep your chest up.
+      - Push the floor away to stand up.
+    flags_block: [knee:acute]
+    clip: squat-bodyweight
+
+  - id: split-squat
+    rung: 2
+    names: { en: Split squat }
+    pattern: lunge
+    muscles: { quads: 1.0, glutes: 0.8, adductors: 0.4 }
+    requires: [{ kind: dumbbell }]
+    load: dial
+    unilateral: true
+    default: { sets: 3, reps: [8, 12], tempo: "3-0-1-0", rest_s: 120 }
+    cues:
+      - Hold the dumbbell at your chest and step one foot forward.
+      - Lower your back knee near the floor.
+      - Push through your front foot to stand up.
+    flags_block: [knee:acute]
+    clip: split-squat
+
+  - id: split-squat-rear-foot-raised
+    rung: 3
+    names: { en: Rear-foot-raised split squat }
+    pattern: lunge
+    muscles: { quads: 1.0, glutes: 0.9, adductors: 0.4 }
+    requires: [{ kind: dumbbell }]
+    load: dial
+    unilateral: true
+    default: { sets: 3, reps: [6, 10], tempo: "3-0-1-0", rest_s: 120 }
+    cues:
+      - Put your rear foot on a sofa or a chair.
+      - Hold the dumbbell at your chest.
+      - Lower your back knee near the floor.
+      - Push through your front foot to stand up.
+    flags_block: [knee:mild]
+    clip: split-squat-rear-foot-raised
+
+  - id: split-squat-rear-foot-raised-slow
+    rung: 4
+    names: { en: Slow rear-foot-raised split squat }
+    pattern: lunge
+    muscles: { quads: 1.0, glutes: 0.9, adductors: 0.4 }
+    requires: [{ kind: dumbbell }]
+    load: dial
+    unilateral: true
+    default: { sets: 3, reps: [6, 8], tempo: "4-1-1-0", rest_s: 120 }
+    cues:
+      - Put your rear foot on a sofa or a chair.
+      - Lower for 4 seconds and stop for 1 second at the bottom.
+      - Push through your front foot to stand up.
+    flags_block: [knee:mild]
+    clip: split-squat-rear-foot-raised-slow

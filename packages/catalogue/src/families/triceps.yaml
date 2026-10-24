@@ -1,0 +1,52 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+family: triceps
+names: { en: Triceps }
+kind: ladder
+exercises:
+  - id: triceps-pushdown-band
+    rung: 1
+    names: { en: Band triceps pushdown }
+    pattern: elbow-extension
+    muscles: { triceps: 1.0 }
+    requires: [{ kind: band, use: resist }]
+    load: band-resist
+    unilateral: false
+    default: { sets: 3, reps: [12, 20], tempo: "2-0-1-1", rest_s: 60 }
+    cues:
+      - Attach the band high on the station.
+      - Keep your elbows at your sides.
+      - Push your hands down until your arms are straight.
+    flags_block: [elbow:acute]
+    clip: triceps-pushdown-band
+
+  - id: triceps-overhead-db
+    rung: 2
+    names: { en: Single-arm overhead extension }
+    pattern: elbow-extension
+    muscles: { triceps: 1.0, abs: 0.2 }
+    requires: [{ kind: dumbbell }]
+    load: dial
+    unilateral: true
+    default: { sets: 3, reps: [10, 15], tempo: "2-0-1-0", rest_s: 60 }
+    cues:
+      - Hold the dumbbell above your head with a straight arm.
+      - Lower the dumbbell behind your head and keep your elbow up.
+      - Straighten your arm.
+    flags_block: [elbow:acute, shoulder:acute]
+    clip: triceps-overhead-db
+
+  - id: triceps-floor-extension-db
+    rung: 3
+    names: { en: Lying dumbbell extension }
+    pattern: elbow-extension
+    muscles: { triceps: 1.0 }
+    requires: [{ kind: dumbbell }]
+    load: dial
+    unilateral: false
+    default: { sets: 3, reps: [8, 12], tempo: "3-0-1-0", rest_s: 60 }
+    cues:
+      - Lie on your back and hold the dumbbell with both hands above your chest.
+      - Bend your elbows and lower the dumbbell near your forehead.
+      - Straighten your arms.
+    flags_block: [elbow:acute]
+    clip: triceps-floor-extension-db

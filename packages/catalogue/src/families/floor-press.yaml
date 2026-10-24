@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+family: floor-press
+names: { en: Floor press }
+kind: ladder
+exercises:
+  - id: floor-press-db
+    rung: 1
+    names: { en: Single-arm dumbbell floor press }
+    pattern: horizontal-push
+    muscles: { chest: 1.0, triceps: 0.6, front-delts: 0.4, obliques: 0.2 }
+    requires: [{ kind: dumbbell }]
+    load: dial
+    unilateral: true
+    default: { sets: 3, reps: [8, 12], tempo: "2-1-1-0", rest_s: 90 }
+    cues:
+      - Lie on your back and hold the dumbbell above your chest.
+      - Lower until your upper arm touches the floor.
+      - Push the dumbbell up until your arm is straight.
+    flags_block: [shoulder:acute]
+    clip: floor-press-db

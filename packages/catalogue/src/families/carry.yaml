@@ -1,0 +1,35 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+family: carry
+names: { en: Carry }
+kind: ladder
+exercises:
+  - id: goblet-carry
+    rung: 1
+    names: { en: Goblet carry }
+    pattern: carry
+    muscles: { abs: 1.0, upper-back: 0.5, grip: 0.5, biceps: 0.3 }
+    requires: [{ kind: dumbbell }]
+    load: timed
+    unilateral: false
+    default: { sets: 3, seconds: [20, 60], rest_s: 60 }
+    cues:
+      - Hold the dumbbell at your chest with both hands.
+      - Walk with short steps and keep your body tall.
+    flags_block: [lower-back:acute]
+    clip: goblet-carry
+
+  - id: suitcase-carry
+    rung: 2
+    names: { en: Suitcase carry }
+    pattern: carry
+    muscles: { obliques: 1.0, grip: 0.8, abs: 0.5, upper-back: 0.4 }
+    requires: [{ kind: dumbbell }]
+    load: timed
+    unilateral: true
+    default: { sets: 2, seconds: [20, 60], rest_s: 60 }
+    cues:
+      - Hold the dumbbell at your side in one hand.
+      - Walk with short steps and do not lean to the side.
+      - Change hands after each set.
+    flags_block: [lower-back:acute]
+    clip: suitcase-carry

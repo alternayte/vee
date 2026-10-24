@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+family: conditioning
+names: { en: Conditioning }
+kind: pool
+exercises:
+  - id: burpee
+    rung: 1
+    names: { en: Burpee }
+    pattern: conditioning
+    muscles: { quads: 1.0, chest: 0.5, abs: 0.4, triceps: 0.3, glutes: 0.4 }
+    load: bodyweight
+    unilateral: false
+    default: { sets: 3, reps: [5, 15], rest_s: 60 }
+    cues:
+      - Squat down and put your hands on the floor.
+      - Jump your feet back to a push-up position.
+      - Jump your feet forward and jump up.
+    flags_block: [wrist:acute, knee:acute, lower-back:acute, shoulder:acute]
+    clip: burpee

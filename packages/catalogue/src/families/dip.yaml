@@ -1,0 +1,100 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+family: dip
+names: { en: Dip }
+kind: ladder
+exercises:
+  - id: dip-support-hold
+    rung: 1
+    names: { en: Dip support hold }
+    pattern: dip
+    muscles: { triceps: 1.0, chest: 0.4, front-delts: 0.4, abs: 0.3 }
+    requires: [{ kind: pullup_station, feature: dip_handles }]
+    load: timed
+    unilateral: false
+    default: { sets: 3, seconds: [10, 45], rest_s: 90 }
+    cues:
+      - Push up on the handles until your arms are straight.
+      - Keep your shoulders down and your body still.
+    flags_block: [shoulder:acute, wrist:acute]
+    clip: dip-support-hold
+
+  - id: dip-negative
+    rung: 2
+    names: { en: Negative dip }
+    pattern: dip
+    muscles: { chest: 1.0, triceps: 0.9, front-delts: 0.5 }
+    requires: [{ kind: pullup_station, feature: dip_handles }]
+    load: bodyweight
+    unilateral: false
+    default: { sets: 3, reps: [3, 5], tempo: "4-0-X-0", rest_s: 120 }
+    cues:
+      - Start at the top with straight arms.
+      - Lower your body for 3 to 5 seconds.
+      - Stop when your shoulders are level with your elbows.
+      - Step back to the top position.
+    flags_block: [shoulder:mild, elbow:acute, wrist:acute]
+    clip: dip-negative
+
+  - id: dip-band-assisted
+    rung: 3
+    names: { en: Band-assisted dip }
+    pattern: dip
+    muscles: { chest: 1.0, triceps: 0.9, front-delts: 0.5 }
+    requires: [{ kind: pullup_station, feature: dip_handles }, { kind: band, use: assist }]
+    load: band-assist
+    unilateral: false
+    default: { sets: 3, reps: [5, 8], tempo: "2-0-1-0", rest_s: 120 }
+    cues:
+      - Put the band across the handles and kneel on it.
+      - Lower until your shoulders are level with your elbows.
+      - Push up until your arms are straight.
+    flags_block: [shoulder:mild, elbow:acute, wrist:acute]
+    clip: dip-band-assisted
+
+  - id: dip-full
+    rung: 4
+    names: { en: Dip }
+    pattern: dip
+    muscles: { chest: 1.0, triceps: 0.9, front-delts: 0.5 }
+    requires: [{ kind: pullup_station, feature: dip_handles }]
+    load: bodyweight
+    unilateral: false
+    default: { sets: 3, reps: [5, 10], tempo: "2-0-1-0", rest_s: 120 }
+    cues:
+      - Lean your body forward a little.
+      - Lower until your shoulders are level with your elbows.
+      - Push up until your arms are straight.
+    flags_block: [shoulder:mild, elbow:acute, wrist:acute]
+    clip: dip-full
+
+  - id: dip-slow
+    rung: 5
+    names: { en: Slow-tempo dip }
+    pattern: dip
+    muscles: { chest: 1.0, triceps: 0.9, front-delts: 0.5 }
+    requires: [{ kind: pullup_station, feature: dip_handles }]
+    load: bodyweight
+    unilateral: false
+    default: { sets: 3, reps: [5, 8], tempo: "4-1-1-0", rest_s: 120 }
+    cues:
+      - Lower your body for 4 seconds.
+      - Stop for 1 second at the bottom.
+      - Push up until your arms are straight.
+    flags_block: [shoulder:mild, elbow:acute, wrist:acute]
+    clip: dip-slow
+
+  - id: dip-weighted
+    rung: 6
+    names: { en: Weighted dip }
+    pattern: dip
+    muscles: { chest: 1.0, triceps: 0.9, front-delts: 0.5 }
+    requires: [{ kind: pullup_station, feature: dip_handles }, { kind: dumbbell }]
+    load: dial
+    unilateral: false
+    default: { sets: 3, reps: [5, 8], tempo: "2-0-1-0", rest_s: 150 }
+    cues:
+      - Hold the dumbbell between your feet.
+      - Lower until your shoulders are level with your elbows.
+      - Push up until your arms are straight.
+    flags_block: [shoulder:mild, elbow:acute, wrist:acute]
+    clip: dip-weighted

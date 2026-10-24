@@ -1,0 +1,81 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+family: push-up
+names: { en: Push-up }
+kind: ladder
+exercises:
+  - id: pushup-incline-handles
+    rung: 1
+    names: { en: Incline push-up on handles }
+    pattern: horizontal-push
+    muscles: { chest: 1.0, triceps: 0.6, front-delts: 0.5, abs: 0.3 }
+    requires: [{ kind: pullup_station, feature: dip_handles }]
+    load: bodyweight
+    unilateral: false
+    default: { sets: 3, reps: [8, 15], tempo: "2-0-1-0", rest_s: 90 }
+    cues:
+      - Put your hands on the dip handles.
+      - Keep your body in a straight line from head to heels.
+      - Lower until your chest is near the handles.
+    flags_block: [shoulder:acute, wrist:acute]
+    clip: pushup-incline-handles
+
+  - id: pushup-incline-counter
+    rung: 1
+    names: { en: Incline push-up on a counter }
+    pattern: horizontal-push
+    muscles: { chest: 1.0, triceps: 0.6, front-delts: 0.5, abs: 0.3 }
+    load: bodyweight
+    unilateral: false
+    default: { sets: 3, reps: [8, 15], tempo: "2-0-1-0", rest_s: 90 }
+    cues:
+      - Put your hands on a stable counter or table edge.
+      - Keep your body in a straight line from head to heels.
+      - Lower until your chest is near the edge.
+    flags_block: [shoulder:acute, wrist:acute]
+    clip: pushup-incline-counter
+
+  - id: pushup-floor
+    rung: 2
+    names: { en: Push-up }
+    pattern: horizontal-push
+    muscles: { chest: 1.0, triceps: 0.6, front-delts: 0.5, abs: 0.4 }
+    load: bodyweight
+    unilateral: false
+    default: { sets: 3, reps: [5, 15], tempo: "2-0-1-0", rest_s: 90 }
+    cues:
+      - Put your hands a little wider than your shoulders.
+      - Keep your body in a straight line from head to heels.
+      - Lower until your chest is near the floor.
+    flags_block: [shoulder:acute, wrist:acute]
+    clip: pushup-floor
+
+  - id: pushup-deficit-handles
+    rung: 3
+    names: { en: Deficit push-up on handles }
+    pattern: horizontal-push
+    muscles: { chest: 1.0, triceps: 0.6, front-delts: 0.6, abs: 0.4 }
+    requires: [{ kind: pullup_station, feature: dip_handles }]
+    load: bodyweight
+    unilateral: false
+    default: { sets: 3, reps: [6, 12], tempo: "2-0-1-0", rest_s: 90 }
+    cues:
+      - Put the handles low and hold them.
+      - Lower until your chest is below your hands.
+      - Push up until your arms are straight.
+    flags_block: [shoulder:mild, wrist:acute]
+    clip: pushup-deficit-handles
+
+  - id: pushup-archer
+    rung: 4
+    names: { en: Archer push-up }
+    pattern: horizontal-push
+    muscles: { chest: 1.0, triceps: 0.7, front-delts: 0.6, abs: 0.4 }
+    load: bodyweight
+    unilateral: true
+    default: { sets: 3, reps: [3, 8], rest_s: 90 }
+    cues:
+      - Put your hands very wide.
+      - Lower toward one hand and keep the other arm straight.
+      - Push up and change sides.
+    flags_block: [shoulder:mild, wrist:acute]
+    clip: pushup-archer

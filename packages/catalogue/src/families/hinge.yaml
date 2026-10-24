@@ -1,0 +1,49 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+family: hinge
+names: { en: Hinge }
+kind: ladder
+exercises:
+  - id: glute-bridge
+    rung: 1
+    names: { en: Glute bridge }
+    pattern: hinge
+    muscles: { glutes: 1.0, hamstrings: 0.5, lower-back: 0.2 }
+    load: bodyweight
+    unilateral: false
+    default: { sets: 3, reps: [10, 20], tempo: "2-1-1-0", rest_s: 75 }
+    cues:
+      - Lie on your back with your knees bent and your feet flat.
+      - Push through your heels and lift your hips.
+      - Hold for 1 second at the top.
+    clip: glute-bridge
+
+  - id: glute-bridge-single-leg
+    rung: 2
+    names: { en: Single-leg glute bridge }
+    pattern: hinge
+    muscles: { glutes: 1.0, hamstrings: 0.6, lower-back: 0.2 }
+    load: bodyweight
+    unilateral: true
+    default: { sets: 3, reps: [8, 15], tempo: "2-1-1-0", rest_s: 75 }
+    cues:
+      - Lie on your back and lift one foot off the floor.
+      - Push through the other heel and lift your hips.
+      - Keep your hips level.
+    clip: glute-bridge-single-leg
+
+  - id: rdl-single-leg-db
+    rung: 3
+    names: { en: Single-leg dumbbell Romanian deadlift }
+    pattern: hinge
+    muscles: { hamstrings: 1.0, glutes: 0.8, lower-back: 0.3, grip: 0.3 }
+    requires: [{ kind: dumbbell }]
+    load: dial
+    unilateral: true
+    default: { sets: 3, reps: [6, 10], tempo: "3-0-1-0", rest_s: 90 }
+    cues:
+      - Hold the dumbbell in the hand opposite your standing leg.
+      - Push your hips back and keep your back flat.
+      - Lower until you feel a stretch in your hamstring.
+      - Stand up and squeeze your glute.
+    flags_block: [lower-back:mild]
+    clip: rdl-single-leg-db

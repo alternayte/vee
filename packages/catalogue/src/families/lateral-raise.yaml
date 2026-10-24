@@ -1,0 +1,52 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+family: lateral-raise
+names: { en: Lateral raise }
+kind: ladder
+exercises:
+  - id: lateral-raise-band
+    rung: 1
+    names: { en: Band lateral raise }
+    pattern: lateral-raise
+    muscles: { side-delts: 1.0, upper-back: 0.2 }
+    requires: [{ kind: band, use: resist }]
+    load: band-resist
+    unilateral: true
+    default: { sets: 3, reps: [12, 20], tempo: "2-0-1-1", rest_s: 60 }
+    cues:
+      - Stand on one end of the band and hold the other end.
+      - Lift your arm to the side until your hand is level with your shoulder.
+      - Lower slowly.
+    flags_block: [shoulder:acute]
+    clip: lateral-raise-band
+
+  - id: lateral-raise-db
+    rung: 2
+    names: { en: Dumbbell lateral raise }
+    pattern: lateral-raise
+    muscles: { side-delts: 1.0, upper-back: 0.2 }
+    requires: [{ kind: dumbbell }]
+    load: dial
+    unilateral: true
+    default: { sets: 3, reps: [10, 15], tempo: "2-0-1-1", rest_s: 60 }
+    cues:
+      - Hold the dumbbell at your side with a small bend in your elbow.
+      - Lift your arm to the side until your hand is level with your shoulder.
+      - Lower slowly.
+    flags_block: [shoulder:acute]
+    clip: lateral-raise-db
+
+  - id: lateral-raise-lean-away
+    rung: 3
+    names: { en: Lean-away lateral raise }
+    pattern: lateral-raise
+    muscles: { side-delts: 1.0, upper-back: 0.2, grip: 0.2 }
+    requires: [{ kind: dumbbell }]
+    load: dial
+    unilateral: true
+    default: { sets: 3, reps: [8, 12], tempo: "2-0-1-1", rest_s: 60 }
+    cues:
+      - Hold the station with one hand and lean away from it.
+      - Lift the dumbbell to the side until your hand is level with your shoulder.
+      - Lower slowly.
+    flags_block: [shoulder:acute]
+    clip: lateral-raise-lean-away

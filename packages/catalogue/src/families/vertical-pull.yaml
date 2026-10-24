@@ -1,0 +1,149 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+family: vertical-pull
+names: { en: Vertical pull }
+kind: ladder
+exercises:
+  - id: dead-hang
+    rung: 1
+    names: { en: Dead hang }
+    pattern: hang
+    muscles: { grip: 1.0, forearms: 0.6, lats: 0.4 }
+    requires: [{ kind: pullup_station }]
+    load: timed
+    unilateral: false
+    default: { sets: 3, seconds: [10, 60], rest_s: 90 }
+    cues:
+      - Hold the bar with your hands at shoulder width.
+      - Hang with straight arms and relax your legs.
+      - Keep your shoulders away from your ears.
+    flags_block: [shoulder:acute]
+    clip: dead-hang
+
+  - id: scapular-pull
+    rung: 2
+    names: { en: Scapular pull }
+    pattern: vertical-pull
+    muscles: { lats: 1.0, upper-back: 0.7, grip: 0.4 }
+    requires: [{ kind: pullup_station }]
+    load: bodyweight
+    unilateral: false
+    default: { sets: 3, reps: [5, 10], tempo: "2-1-1-1", rest_s: 90 }
+    cues:
+      - Hang from the bar with straight arms.
+      - Pull your shoulder blades down and keep your arms straight.
+      - Lower slowly to a full hang.
+    flags_block: [shoulder:acute]
+    clip: scapular-pull
+
+  - id: pullup-negative
+    rung: 3
+    names: { en: Jumping negative pull-up }
+    pattern: vertical-pull
+    muscles: { lats: 1.0, biceps: 0.5, upper-back: 0.5, grip: 0.4 }
+    requires: [{ kind: pullup_station }]
+    load: bodyweight
+    unilateral: false
+    default: { sets: 3, reps: [3, 5], tempo: "4-0-X-0", rest_s: 120 }
+    cues:
+      - Jump until your chin is above the bar.
+      - Lower your body for 3 to 5 seconds.
+      - Stop when your arms are straight.
+    flags_block: [shoulder:acute, elbow:acute]
+    clip: pullup-negative
+
+  - id: pullup-band-assisted
+    rung: 4
+    names: { en: Band-assisted pull-up }
+    pattern: vertical-pull
+    muscles: { lats: 1.0, biceps: 0.5, rear-delts: 0.3, grip: 0.3 }
+    requires: [{ kind: pullup_station }, { kind: band, use: assist }]
+    load: band-assist
+    unilateral: false
+    default: { sets: 3, reps: [5, 8], tempo: "2-0-1-1", rest_s: 120 }
+    cues:
+      - Put one knee or foot in the band.
+      - Hang with straight arms and pull your shoulder blades down first.
+      - Pull until your chin is above the bar.
+    flags_block: [shoulder:acute, elbow:acute]
+    clip: pullup-band-assisted
+
+  - id: pullup-strict
+    rung: 5
+    names: { en: Strict pull-up }
+    pattern: vertical-pull
+    muscles: { lats: 1.0, biceps: 0.5, upper-back: 0.5, rear-delts: 0.3, grip: 0.4 }
+    requires: [{ kind: pullup_station }]
+    load: bodyweight
+    unilateral: false
+    default: { sets: 3, reps: [3, 8], tempo: "2-0-1-1", rest_s: 120 }
+    cues:
+      - Hold the bar with your palms forward.
+      - Pull your shoulder blades down first.
+      - Pull until your chin is above the bar without a swing.
+      - Lower to straight arms.
+    flags_block: [shoulder:acute, elbow:acute]
+    clip: pullup-strict
+
+  - id: pullup-neutral-grip
+    rung: 5
+    names: { en: Neutral-grip pull-up }
+    pattern: vertical-pull
+    muscles: { lats: 1.0, biceps: 0.6, upper-back: 0.5, grip: 0.4 }
+    requires: [{ kind: pullup_station, feature: neutral_grips }]
+    load: bodyweight
+    unilateral: false
+    default: { sets: 3, reps: [3, 8], tempo: "2-0-1-1", rest_s: 120 }
+    cues:
+      - Hold the handles with your palms toward each other.
+      - Pull until your chin is above the handles.
+      - Lower to straight arms.
+    flags_block: [shoulder:acute, elbow:acute]
+    clip: pullup-neutral-grip
+
+  - id: pullup-pause
+    rung: 6
+    names: { en: Pause pull-up }
+    pattern: vertical-pull
+    muscles: { lats: 1.0, biceps: 0.5, upper-back: 0.6, grip: 0.4 }
+    requires: [{ kind: pullup_station }]
+    load: bodyweight
+    unilateral: false
+    default: { sets: 3, reps: [3, 6], tempo: "2-0-1-2", rest_s: 120 }
+    cues:
+      - Pull until your chin is above the bar.
+      - Hold the top position for 2 seconds.
+      - Lower to straight arms with control.
+    flags_block: [shoulder:acute, elbow:acute]
+    clip: pullup-pause
+
+  - id: pullup-weighted
+    rung: 7
+    names: { en: Weighted pull-up }
+    pattern: vertical-pull
+    muscles: { lats: 1.0, biceps: 0.5, upper-back: 0.5, grip: 0.5 }
+    requires: [{ kind: pullup_station }, { kind: dumbbell }]
+    load: dial
+    unilateral: false
+    default: { sets: 3, reps: [3, 6], tempo: "2-0-1-1", rest_s: 150 }
+    cues:
+      - Hold the dumbbell between your feet.
+      - Pull until your chin is above the bar.
+      - Lower to straight arms with control.
+    flags_block: [shoulder:mild, elbow:acute]
+    clip: pullup-weighted
+
+  - id: pullup-archer
+    rung: 7
+    names: { en: Archer pull-up }
+    pattern: vertical-pull
+    muscles: { lats: 1.0, biceps: 0.6, upper-back: 0.5, grip: 0.5 }
+    requires: [{ kind: pullup_station }]
+    load: bodyweight
+    unilateral: true
+    default: { sets: 3, reps: [2, 5], rest_s: 150 }
+    cues:
+      - Hold the bar with a wide grip.
+      - Pull toward one hand and keep the other arm straight.
+      - Lower with control and change sides.
+    flags_block: [shoulder:mild, elbow:acute]
+    clip: pullup-archer

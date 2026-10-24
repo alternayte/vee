@@ -1,0 +1,104 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+family: mobility
+names: { en: Mobility }
+kind: pool
+exercises:
+  - id: cat-cow
+    rung: 1
+    names: { en: Cat-cow }
+    pattern: mobility
+    muscles: { lower-back: 1.0, upper-back: 0.6 }
+    load: bodyweight
+    unilateral: false
+    default: { sets: 1, reps: [6, 10], rest_s: 0 }
+    cues:
+      - Kneel on your hands and knees.
+      - Round your back up, then let it sink down slowly.
+    clip: cat-cow
+
+  - id: thoracic-open-book
+    rung: 1
+    names: { en: Open book }
+    pattern: mobility
+    muscles: { upper-back: 1.0, chest: 0.4 }
+    load: bodyweight
+    unilateral: true
+    default: { sets: 1, reps: [6, 10], rest_s: 0 }
+    cues:
+      - Lie on your side with your knees bent and your arms in front.
+      - Open your top arm across your body to the floor behind you.
+      - Follow your hand with your eyes.
+    clip: thoracic-open-book
+
+  - id: deep-squat-hold
+    rung: 1
+    names: { en: Deep squat hold }
+    pattern: mobility
+    muscles: { adductors: 1.0, glutes: 0.5, quads: 0.3 }
+    load: timed
+    unilateral: false
+    default: { sets: 1, seconds: [20, 60], rest_s: 0 }
+    cues:
+      - Squat down as low as you can with your heels on the floor.
+      - Push your knees out with your elbows.
+      - Hold on to the station if you need balance.
+    flags_block: [knee:acute]
+    clip: deep-squat-hold
+
+  - id: couch-stretch
+    rung: 1
+    names: { en: Couch stretch }
+    pattern: mobility
+    muscles: { hip-flexors: 1.0, quads: 0.6 }
+    load: timed
+    unilateral: true
+    default: { sets: 1, seconds: [30, 60], rest_s: 0 }
+    cues:
+      - Kneel with your back foot up on a sofa.
+      - Squeeze your glute and move your hips forward.
+      - Hold, then change sides.
+    flags_block: [knee:acute]
+    clip: couch-stretch
+
+  - id: band-shoulder-dislocate
+    rung: 1
+    names: { en: Band shoulder pass-through }
+    pattern: mobility
+    muscles: { rear-delts: 1.0, front-delts: 0.5, chest: 0.3 }
+    requires: [{ kind: band, use: resist }]
+    load: band-resist
+    unilateral: false
+    default: { sets: 1, reps: [8, 12], rest_s: 0 }
+    cues:
+      - Hold the band wide with straight arms in front of you.
+      - Move the band over your head to behind your back.
+      - Move it back slowly.
+    flags_block: [shoulder:acute]
+    clip: band-shoulder-dislocate
+
+  - id: wrist-circles
+    rung: 1
+    names: { en: Wrist circles }
+    pattern: mobility
+    muscles: { forearms: 1.0 }
+    load: bodyweight
+    unilateral: false
+    default: { sets: 1, reps: [10, 15], rest_s: 0 }
+    cues:
+      - Join your hands in front of your chest.
+      - Turn your wrists in slow circles in both directions.
+    clip: wrist-circles
+
+  - id: hip-90-90
+    rung: 1
+    names: { en: 90/90 hip switch }
+    pattern: mobility
+    muscles: { glutes: 1.0, adductors: 0.5, hip-flexors: 0.4 }
+    load: bodyweight
+    unilateral: false
+    default: { sets: 1, reps: [6, 10], rest_s: 0 }
+    cues:
+      - Sit with both knees bent at 90 degrees to one side.
+      - Turn both knees to the other side without your hands.
+    flags_block: [knee:acute]
+    clip: hip-90-90

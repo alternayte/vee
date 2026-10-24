@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+family: row
+names: { en: Row }
+kind: ladder
+exercises:
+  - id: row-single-arm-db
+    rung: 1
+    names: { en: Single-arm dumbbell row }
+    pattern: horizontal-pull
+    muscles: { lats: 1.0, upper-back: 0.9, biceps: 0.5, rear-delts: 0.4, grip: 0.3 }
+    requires: [{ kind: dumbbell }]
+    load: dial
+    unilateral: true
+    default: { sets: 3, reps: [8, 12], tempo: "2-0-1-1", rest_s: 90 }
+    cues:
+      - Put one hand on the station or a chair and keep your back flat.
+      - Pull the dumbbell toward your hip.
+      - Lower until your arm is straight.
+    flags_block: [lower-back:acute, shoulder:acute]
+    clip: row-single-arm-db
+
+  - id: row-band
+    rung: 1
+    names: { en: Band row }
+    pattern: horizontal-pull
+    muscles: { lats: 1.0, upper-back: 0.9, biceps: 0.4, rear-delts: 0.4 }
+    requires: [{ kind: band, use: resist }]
+    load: band-resist
+    unilateral: false
+    default: { sets: 3, reps: [10, 15], tempo: "2-0-1-1", rest_s: 75 }
+    cues:
+      - Attach the band at chest height.
+      - Pull the handles toward your ribs.
+      - Squeeze your shoulder blades together.
+    flags_block: [shoulder:acute]
+    clip: row-band

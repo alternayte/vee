@@ -1,0 +1,52 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+family: rear-delt
+names: { en: Rear delt }
+kind: ladder
+exercises:
+  - id: band-pull-apart
+    rung: 1
+    names: { en: Band pull-apart }
+    pattern: rear-delt
+    muscles: { rear-delts: 1.0, upper-back: 0.8 }
+    requires: [{ kind: band, use: resist }]
+    load: band-resist
+    unilateral: false
+    default: { sets: 3, reps: [12, 20], tempo: "2-0-1-1", rest_s: 60 }
+    cues:
+      - Hold the band in front of your chest with straight arms.
+      - Pull the band apart until it touches your chest.
+      - Return slowly.
+    flags_block: [shoulder:acute]
+    clip: band-pull-apart
+
+  - id: face-pull-band
+    rung: 2
+    names: { en: Band face pull }
+    pattern: rear-delt
+    muscles: { rear-delts: 1.0, upper-back: 0.7, side-delts: 0.3 }
+    requires: [{ kind: band, use: resist }]
+    load: band-resist
+    unilateral: false
+    default: { sets: 3, reps: [12, 20], tempo: "2-0-1-1", rest_s: 60 }
+    cues:
+      - Attach the band at face height.
+      - Pull the band toward your forehead and move your hands apart.
+      - Return slowly.
+    flags_block: [shoulder:acute]
+    clip: face-pull-band
+
+  - id: rear-delt-raise-db
+    rung: 3
+    names: { en: Dumbbell rear delt raise }
+    pattern: rear-delt
+    muscles: { rear-delts: 1.0, upper-back: 0.5 }
+    requires: [{ kind: dumbbell }]
+    load: dial
+    unilateral: true
+    default: { sets: 3, reps: [10, 15], tempo: "2-0-1-1", rest_s: 60 }
+    cues:
+      - Put one hand on the station and bend forward with a flat back.
+      - Lift the dumbbell out to the side with a small bend in your elbow.
+      - Lower slowly.
+    flags_block: [shoulder:acute, lower-back:acute]
+    clip: rear-delt-raise-db

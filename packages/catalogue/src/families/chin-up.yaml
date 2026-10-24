@@ -1,0 +1,100 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+family: chin-up
+names: { en: Chin-up }
+kind: ladder
+exercises:
+  - id: flexed-arm-hang
+    rung: 1
+    names: { en: Flexed-arm hang }
+    pattern: hang
+    muscles: { biceps: 1.0, lats: 0.8, grip: 0.5 }
+    requires: [{ kind: pullup_station }]
+    load: timed
+    unilateral: false
+    default: { sets: 3, seconds: [5, 30], rest_s: 90 }
+    cues:
+      - Hold the bar with your palms toward you.
+      - Jump or step up until your chin is above the bar.
+      - Hold that position and keep your shoulders down.
+    flags_block: [shoulder:acute, elbow:acute]
+    clip: flexed-arm-hang
+
+  - id: chinup-negative
+    rung: 2
+    names: { en: Negative chin-up }
+    pattern: vertical-pull
+    muscles: { lats: 1.0, biceps: 0.7, upper-back: 0.4, grip: 0.4 }
+    requires: [{ kind: pullup_station }]
+    load: bodyweight
+    unilateral: false
+    default: { sets: 3, reps: [3, 5], tempo: "4-0-X-0", rest_s: 120 }
+    cues:
+      - Hold the bar with your palms toward you.
+      - Jump until your chin is above the bar.
+      - Lower your body for 3 to 5 seconds.
+    flags_block: [shoulder:acute, elbow:acute]
+    clip: chinup-negative
+
+  - id: chinup-band-assisted
+    rung: 3
+    names: { en: Band-assisted chin-up }
+    pattern: vertical-pull
+    muscles: { lats: 1.0, biceps: 0.7, upper-back: 0.4, grip: 0.3 }
+    requires: [{ kind: pullup_station }, { kind: band, use: assist }]
+    load: band-assist
+    unilateral: false
+    default: { sets: 3, reps: [5, 8], tempo: "2-0-1-1", rest_s: 120 }
+    cues:
+      - Put one knee or foot in the band.
+      - Hold the bar with your palms toward you.
+      - Pull until your chin is above the bar.
+    flags_block: [shoulder:acute, elbow:acute]
+    clip: chinup-band-assisted
+
+  - id: chinup-strict
+    rung: 4
+    names: { en: Strict chin-up }
+    pattern: vertical-pull
+    muscles: { lats: 1.0, biceps: 0.8, upper-back: 0.4, grip: 0.4 }
+    requires: [{ kind: pullup_station }]
+    load: bodyweight
+    unilateral: false
+    default: { sets: 3, reps: [3, 8], tempo: "2-0-1-1", rest_s: 120 }
+    cues:
+      - Hold the bar with your palms toward you.
+      - Pull until your chin is above the bar without a swing.
+      - Lower to straight arms.
+    flags_block: [shoulder:acute, elbow:acute]
+    clip: chinup-strict
+
+  - id: chinup-pause
+    rung: 5
+    names: { en: Pause chin-up }
+    pattern: vertical-pull
+    muscles: { lats: 1.0, biceps: 0.8, upper-back: 0.5, grip: 0.4 }
+    requires: [{ kind: pullup_station }]
+    load: bodyweight
+    unilateral: false
+    default: { sets: 3, reps: [3, 6], tempo: "2-0-1-2", rest_s: 120 }
+    cues:
+      - Pull until your chin is above the bar.
+      - Hold the top position for 2 seconds.
+      - Lower to straight arms with control.
+    flags_block: [shoulder:acute, elbow:acute]
+    clip: chinup-pause
+
+  - id: chinup-weighted
+    rung: 6
+    names: { en: Weighted chin-up }
+    pattern: vertical-pull
+    muscles: { lats: 1.0, biceps: 0.8, upper-back: 0.4, grip: 0.5 }
+    requires: [{ kind: pullup_station }, { kind: dumbbell }]
+    load: dial
+    unilateral: false
+    default: { sets: 3, reps: [3, 6], tempo: "2-0-1-1", rest_s: 150 }
+    cues:
+      - Hold the dumbbell between your feet.
+      - Pull until your chin is above the bar.
+      - Lower to straight arms with control.
+    flags_block: [shoulder:mild, elbow:acute]
+    clip: chinup-weighted

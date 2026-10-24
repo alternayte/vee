@@ -1,0 +1,52 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+family: curl
+names: { en: Curl }
+kind: ladder
+exercises:
+  - id: curl-band
+    rung: 1
+    names: { en: Band curl }
+    pattern: elbow-flexion
+    muscles: { biceps: 1.0, forearms: 0.3 }
+    requires: [{ kind: band, use: resist }]
+    load: band-resist
+    unilateral: false
+    default: { sets: 3, reps: [12, 20], tempo: "2-0-1-1", rest_s: 60 }
+    cues:
+      - Stand on the band and hold the ends.
+      - Keep your elbows at your sides.
+      - Curl your hands to your shoulders and lower slowly.
+    flags_block: [elbow:acute]
+    clip: curl-band
+
+  - id: curl-db
+    rung: 2
+    names: { en: Single-arm dumbbell curl }
+    pattern: elbow-flexion
+    muscles: { biceps: 1.0, forearms: 0.3 }
+    requires: [{ kind: dumbbell }]
+    load: dial
+    unilateral: true
+    default: { sets: 3, reps: [8, 12], tempo: "2-0-1-1", rest_s: 60 }
+    cues:
+      - Hold the dumbbell with your palm forward.
+      - Keep your elbow at your side.
+      - Curl the dumbbell to your shoulder and lower slowly.
+    flags_block: [elbow:acute]
+    clip: curl-db
+
+  - id: curl-hammer-db
+    rung: 2
+    names: { en: Hammer curl }
+    pattern: elbow-flexion
+    muscles: { biceps: 1.0, forearms: 0.6 }
+    requires: [{ kind: dumbbell }]
+    load: dial
+    unilateral: true
+    default: { sets: 3, reps: [8, 12], tempo: "2-0-1-1", rest_s: 60 }
+    cues:
+      - Hold the dumbbell with your palm toward your body.
+      - Keep your elbow at your side.
+      - Curl the dumbbell to your shoulder and lower slowly.
+    flags_block: [elbow:acute]
+    clip: curl-hammer-db
