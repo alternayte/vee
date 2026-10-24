@@ -35,6 +35,26 @@ catalogue:
 sim:
     bunx turbo run sim --filter=@vee/fixtures
 
+# Android release APK for arm64 (bundles the JavaScript, so no Metro server)
+apk:
+    cd apps/mobile && CI=1 bunx expo prebuild -p android --clean
+    cd apps/mobile/android && ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a --console=plain
+
+# V9: Maestro flows on a running emulator. `just e2e smoke` runs one flow.
+e2e flow="":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    adb install -r apps/mobile/android/app/build/outputs/apk/release/app-release.apk
+    # A sleeping screen has no window content, so Maestro sees nothing.
+    adb shell svc power stayon true
+    adb shell input keyevent KEYCODE_WAKEUP
+    adb shell wm dismiss-keyguard
+    if [ -z "{{flow}}" ]; then
+        maestro test apps/mobile/e2e
+    else
+        maestro test "apps/mobile/e2e/{{flow}}.yaml"
+    fi
+
 # V13: leak guard over all files (CI mode)
 leak:
     bun tools/leak-guard.ts

@@ -19,12 +19,17 @@ describe("needsHeader", () => {
     expect(needsHeader(path)).toBe(true);
   });
 
-  test.each(["package.json", "README.md", "LICENSE", "bun.lock", "a.png", ".gitignore"])(
-    "not a source file: %s",
-    (path) => {
-      expect(needsHeader(path)).toBe(false);
-    },
-  );
+  test.each([
+    "package.json",
+    "README.md",
+    "LICENSE",
+    "bun.lock",
+    "a.png",
+    ".gitignore",
+    "apps/mobile/uniwind-types.d.ts",
+  ])("not a source file: %s", (path) => {
+    expect(needsHeader(path)).toBe(false);
+  });
 });
 
 describe("hasHeader", () => {

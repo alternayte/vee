@@ -30,7 +30,11 @@ const SOURCE_EXT = new Set([
 
 const SOURCE_NAMES = new Set(["justfile", "Dockerfile"]);
 
+/** Files a tool writes. They cannot carry the header. */
+const GENERATED_NAMES = new Set(["uniwind-types.d.ts"]);
+
 export function needsHeader(path: string): boolean {
+  if (GENERATED_NAMES.has(basename(path))) return false;
   if (path.startsWith(".githooks/")) return true;
   return SOURCE_EXT.has(extname(path)) || SOURCE_NAMES.has(basename(path));
 }
