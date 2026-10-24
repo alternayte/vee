@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# PowerSync Service (Open Edition). Postgres is the source of truth and also
+# the bucket storage (a separate database), so no MongoDB is needed.
+replication:
+  connections:
+    - type: postgresql
+      uri: !env PS_DATA_SOURCE_URI
+      sslmode: disable
+
+storage:
+  type: postgresql
+  uri: !env PS_STORAGE_URI
+  sslmode: disable
+
+port: !env PS_PORT::number
+
+sync_config:
+  path: sync-config.yaml
+
+client_auth:
+  # The API publishes its signing keys here (Better Auth JWT plugin).
+  jwks_uri: !env PS_JWKS_URI
+  # The JWKS is on the internal network, not on a public address.
+  block_local_jwks: false
+  audience: ["powersync"]
+
+telemetry:
+  disable_telemetry_sharing: true

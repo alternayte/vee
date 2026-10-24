@@ -1,0 +1,45 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Generated from packages/schema by `bun run sync-config`. Do not edit.
+config:
+  edition: 3
+streams:
+  own:
+    auto_subscribe: true
+    queries:
+      - SELECT * FROM profiles WHERE user_id = auth.user_id()
+      - SELECT * FROM kit_items WHERE user_id = auth.user_id()
+      - SELECT * FROM flags WHERE user_id = auth.user_id()
+      - SELECT * FROM programmes WHERE user_id = auth.user_id()
+      - SELECT * FROM session_templates WHERE user_id = auth.user_id()
+      - SELECT * FROM template_items WHERE user_id = auth.user_id()
+      - SELECT * FROM progress_state WHERE user_id = auth.user_id()
+      - SELECT * FROM sessions WHERE user_id = auth.user_id()
+      - SELECT * FROM prescriptions WHERE user_id = auth.user_id()
+      - SELECT * FROM sets WHERE user_id = auth.user_id()
+      - SELECT * FROM checkins WHERE user_id = auth.user_id()
+      - SELECT * FROM tests WHERE user_id = auth.user_id()
+      - SELECT * FROM test_results WHERE user_id = auth.user_id()
+      - SELECT * FROM destinations WHERE user_id = auth.user_id()
+      - SELECT * FROM body_metrics WHERE user_id = auth.user_id()
+      - SELECT * FROM photos WHERE user_id = auth.user_id()
+      - SELECT * FROM food_targets WHERE user_id = auth.user_id()
+      - SELECT * FROM food_logs WHERE user_id = auth.user_id()
+      - SELECT * FROM saved_meals WHERE user_id = auth.user_id()
+      - SELECT * FROM meals WHERE user_id = auth.user_id()
+      - SELECT * FROM meal_ingredients WHERE user_id = auth.user_id()
+      - SELECT * FROM ingredients WHERE user_id = auth.user_id()
+      - SELECT * FROM exclusions WHERE user_id = auth.user_id()
+      - SELECT * FROM household_members WHERE user_id = auth.user_id()
+      - SELECT * FROM meal_plans WHERE user_id = auth.user_id()
+      - SELECT * FROM shopping_items WHERE user_id = auth.user_id()
+      - SELECT * FROM shops WHERE user_id = auth.user_id()
+      - SELECT * FROM reviews WHERE user_id = auth.user_id()
+      - SELECT * FROM ai_proposals WHERE user_id = auth.user_id()
+      - SELECT * FROM coach_links WHERE user_id = auth.user_id()
+      - SELECT * FROM comments WHERE user_id = auth.user_id()
+      - SELECT * FROM messages WHERE user_id = auth.user_id()
+      - SELECT * FROM custom_exercises WHERE user_id = auth.user_id()
+  entitlements:
+    auto_subscribe: true
+    queries:
+      - SELECT * FROM entitlements WHERE user_id = auth.user_id()

@@ -1,0 +1,95 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# The Coolify stack: api, postgres, powersync, glitchtip. Config is env only
+# (see .env.example). The coach web app joins in B21.
+name: vee
+
+services:
+  postgres:
+    image: postgres:17
+    command:
+      ["postgres", "-c", "wal_level=logical", "-c", "max_replication_slots=10", "-c", "max_wal_senders=10"]
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: vee
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "vee"]
+      interval: 5s
+      retries: 20
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    environment:
+      DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/vee
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET}
+      BASE_URL: ${API_BASE_URL:?set API_BASE_URL}
+      PORT: "3000"
+      OWNER_EMAIL: ${OWNER_EMAIL:-}
+      BILLING_ENABLED: ${BILLING_ENABLED:-false}
+      PASSKEY_RP_ID: ${PASSKEY_RP_ID:?set PASSKEY_RP_ID}
+      ANDROID_CERT_SHA256: ${ANDROID_CERT_SHA256:-}
+      MAIL_TRANSPORT: smtp
+      SMTP_URL: ${SMTP_URL:?set SMTP_URL}
+      MAIL_FROM: ${MAIL_FROM:-Vee <no-reply@localhost>}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "bun", "-e", "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1))"]
+      interval: 10s
+      retries: 10
+    restart: unless-stopped
+
+  powersync:
+    image: journeyapps/powersync-service:1.27.2
+    command: ["start", "-r", "unified"]
+    environment:
+      PS_DATA_SOURCE_URI: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/vee
+      PS_STORAGE_URI: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/powersync_storage
+      PS_JWKS_URI: http://api:3000/api/auth/jwks
+      PS_PORT: "8080"
+    volumes:
+      - ./powersync/powersync.yaml:/app/powersync.yaml:ro
+      - ./powersync/sync-config.yaml:/app/sync-config.yaml:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  glitchtip-valkey:
+    image: valkey/valkey:8.1
+    restart: unless-stopped
+
+  glitchtip-web:
+    image: glitchtip/glitchtip:v5.1
+    environment: &glitchtip-env
+      DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/glitchtip
+      REDIS_URL: redis://glitchtip-valkey:6379/0
+      SECRET_KEY: ${GLITCHTIP_SECRET_KEY:?set GLITCHTIP_SECRET_KEY}
+      GLITCHTIP_DOMAIN: ${GLITCHTIP_DOMAIN:?set GLITCHTIP_DOMAIN}
+      DEFAULT_FROM_EMAIL: ${MAIL_FROM:-Vee <no-reply@localhost>}
+      EMAIL_URL: ${SMTP_URL}
+      ENABLE_USER_REGISTRATION: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  glitchtip-worker:
+    image: glitchtip/glitchtip:v5.1
+    command: ./bin/run-celery-with-beat.sh
+    environment: *glitchtip-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:

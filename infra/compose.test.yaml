@@ -1,0 +1,37 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# V8: Postgres and the PowerSync service for the sync tests. The API runs on
+# the host (bun test), so PowerSync reads its JWKS through host.docker.internal.
+name: vee-sync-test
+
+services:
+  postgres:
+    image: postgres:17
+    command: ["postgres", "-c", "wal_level=logical"]
+    environment:
+      POSTGRES_PASSWORD: vee
+      POSTGRES_DB: vee
+    ports: ["54392:5432"]
+    volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "vee"]
+      interval: 2s
+      retries: 30
+    tmpfs: ["/var/lib/postgresql/data"]
+
+  powersync:
+    image: journeyapps/powersync-service:1.27.2
+    command: ["start", "-r", "unified"]
+    environment:
+      PS_DATA_SOURCE_URI: postgres://postgres:vee@postgres:5432/vee
+      PS_STORAGE_URI: postgres://postgres:vee@postgres:5432/powersync_storage
+      PS_JWKS_URI: http://host.docker.internal:3998/api/auth/jwks
+      PS_PORT: "8080"
+    ports: ["8089:8080"]
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    volumes:
+      - ./powersync/powersync.yaml:/app/powersync.yaml:ro
+      - ./powersync/sync-config.yaml:/app/sync-config.yaml:ro
+    depends_on:
+      postgres:
+        condition: service_healthy

@@ -5,11 +5,13 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./server": "./src/server.ts"
+    "./server": "./src/server.ts",
+    "./sync-config": "./src/sync-config.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "sync-config": "bun scripts/sync-config.ts"
   },
   "dependencies": {
     "drizzle-orm": "0.45.4"
