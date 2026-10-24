@@ -1,0 +1,106 @@
+# home-db-beginner
+Beginner with one 2–24 kg dial dumbbell, one band and a station with dip handles. 40 min, 4 days.
+progress: carry=goblet-carry@8, chin-up=flexed-arm-hang, core=dead-bug, dip=dip-support-hold, push-up=pushup-floor, squat=goblet-squat@8, vertical-pull=scapular-pull
+
+## Week 1
+A Pull and side delts — 36 min
+  1. scapular-pull [main] 3 × 5–10 reps
+  2. row-single-arm-db [main] 3 × 8–12 reps @ 2 kg
+  3. lateral-raise-band [accessory] 3 × 12–20 reps
+  4. band-pull-apart [accessory] 2 × 12–20 reps
+  5. dead-bug [accessory] 2 × 6–12 reps
+B Legs and core — 40 min
+  1. goblet-squat [main] 3 × 8–12 reps @ 8 kg
+  2. glute-bridge [main] 3 × 10–20 reps
+  3. lateral-raise-band [accessory] 3 × 12–20 reps
+  4. hollow-hold [accessory] 2 × 10–40 seconds
+  5. floor-press-db [accessory] 3 × 8–12 reps @ 2 kg
+  reasons: TIME_CUT_DROP(goblet-carry)
+C Push and delts — 40 min
+  1. dip-support-hold [main] 3 × 10–45 seconds
+  2. pushup-floor [main] 3 × 5–15 reps
+  3. lateral-raise-band [accessory] 3 × 12–20 reps
+  4. press-half-kneeling-db [accessory] 2 × 8–12 reps @ 2 kg
+  5. goblet-squat [accessory] 3 × 8–12 reps @ 8 kg
+  reasons: TIME_CUT_DROP(triceps-pushdown-band)
+D Pull and arms — 35 min
+  1. flexed-arm-hang [main] 3 × 5–30 seconds
+  2. row-single-arm-db [main] 3 × 8–12 reps @ 2 kg
+  3. band-pull-apart [accessory] 2 × 12–20 reps
+  4. glute-bridge [accessory] 2 × 10–20 reps
+  5. curl-band [accessory] 2 × 12–20 reps
+  6. dead-bug [accessory] 2 × 6–12 reps
+volume: lats-upper-back 14.6, side-delts 10, rear-delts 4, chest 6, triceps 7.8, biceps 8, quads 6, hamstrings-glutes 9.2, core 6
+
+## Week 4
+A Pull and side delts — 40 min
+  1. scapular-pull [main] 3 × 5–10 reps
+  2. row-single-arm-db [main] 3 × 8–12 reps @ 2 kg
+  3. lateral-raise-band [accessory] 3 × 12–20 reps
+  4. band-pull-apart [accessory] 4 × 12–20 reps
+  5. dead-bug [accessory] 2 × 6–12 reps
+B Legs and core — 40 min
+  1. goblet-squat [main] 3 × 8–12 reps @ 8 kg
+  2. glute-bridge [main] 3 × 10–20 reps
+  3. lateral-raise-band [accessory] 3 × 12–20 reps
+  4. hollow-hold [accessory] 2 × 10–40 seconds
+  5. floor-press-db [accessory] 3 × 8–12 reps @ 2 kg
+  reasons: TIME_CUT_DROP(goblet-carry)
+C Push and delts — 40 min
+  1. dip-support-hold [main] 3 × 10–45 seconds
+  2. pushup-floor [main] 3 × 5–15 reps
+  3. lateral-raise-band [accessory] 3 × 12–20 reps
+  4. press-half-kneeling-db [accessory] 2 × 8–12 reps @ 2 kg
+  5. goblet-squat [accessory] 3 × 8–12 reps @ 8 kg
+  reasons: TIME_CUT_DROP(triceps-pushdown-band)
+D Pull and arms — 39 min
+  1. flexed-arm-hang [main] 3 × 5–30 seconds
+  2. row-single-arm-db [main] 3 × 8–12 reps @ 2 kg
+  3. band-pull-apart [accessory] 4 × 12–20 reps
+  4. glute-bridge [accessory] 2 × 10–20 reps
+  5. curl-band [accessory] 2 × 12–20 reps
+  6. dead-bug [accessory] 2 × 6–12 reps
+volume: lats-upper-back 17.8, side-delts 10, rear-delts 8, chest 6, triceps 7.8, biceps 8, quads 6, hamstrings-glutes 9.2, core 6
+
+## Day A, full readiness
+main A readiness=full deload=false — 36 min
+  warm-up:
+  1. scapular-pull [main] 1 × 3 reps tempo 2-1-1-1
+  2. row-single-arm-db [main] 1 × 4 reps @ 2 kg tempo 2-0-1-1
+  1. scapular-pull [main] 3 × 5–10 reps tempo 2-1-1-1
+  2. row-single-arm-db [main] 3 × 8–12 reps @ 2 kg tempo 2-0-1-1
+  3. lateral-raise-band [accessory] 3 × 12–20 reps band band/single tempo 2-0-1-1
+  4. band-pull-apart [accessory] 2 × 12–20 reps band band/single tempo 2-0-1-1
+  5. dead-bug [accessory] 2 × 6–12 reps tempo 2-1-2-0
+
+## Day C, trimmed
+main C readiness=trimmed deload=false — 28 min
+  warm-up:
+  1. dip-support-hold [main] 1 × 5 seconds
+  2. pushup-floor [main] 1 × 3 reps tempo 2-0-1-0
+  1. dip-support-hold [main] 2 × 10 seconds
+  2. pushup-floor [main] 2 × 5–15 reps tempo 2-0-1-0
+  3. lateral-raise-band [accessory] 2 × 12–20 reps band band/single tempo 2-0-1-1
+  4. press-half-kneeling-db [accessory] 1 × 8–12 reps @ 2 kg tempo 2-0-1-0
+  5. goblet-squat [accessory] 2 × 8–12 reps @ 8 kg tempo 3-0-1-0
+  reasons: TIME_CUT_DROP(triceps-pushdown-band), READINESS_TRIMMED
+
+## Day A, recovery
+recovery A readiness=recovery deload=false — 15 min
+  1. scapular-pull [main] 2 × 5 reps tempo 2-1-1-1
+  2. row-single-arm-db [main] 2 × 8 reps @ 2 kg tempo 2-0-1-1
+  3. band-shoulder-dislocate [accessory] 1 × 8–12 reps
+  4. cat-cow [accessory] 1 × 6–10 reps
+  reasons: READINESS_RECOVERY
+
+## Day A, deload week
+main A readiness=full deload=true — 25 min
+  warm-up:
+  1. scapular-pull [main] 1 × 3 reps tempo 2-1-1-1
+  2. row-single-arm-db [main] 1 × 4 reps @ 2 kg tempo 2-0-1-1
+  1. scapular-pull [main] 2 × 5–10 reps tempo 2-1-1-1
+  2. row-single-arm-db [main] 2 × 8–12 reps @ 2 kg tempo 2-0-1-1
+  3. lateral-raise-band [accessory] 2 × 12–20 reps band band/single tempo 2-0-1-1
+  4. band-pull-apart [accessory] 1 × 12–20 reps band band/single tempo 2-0-1-1
+  5. dead-bug [accessory] 1 × 6–12 reps tempo 2-1-2-0
+  reasons: DELOAD_WEEK

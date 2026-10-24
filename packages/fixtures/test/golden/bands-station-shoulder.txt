@@ -1,0 +1,100 @@
+# bands-station-shoulder
+Two bands and a station with neutral grips and no dip handles. Mild shoulder flag. 35 min, 4 days.
+progress: chin-up=chinup-strict, core=hanging-knee-raise, push-up=pushup-floor, vertical-pull=pullup-neutral-grip
+
+## Week 1
+A Pull and side delts — 35 min
+  1. pullup-neutral-grip [main] 3 × 3–8 reps
+  2. row-band [main] 3 × 10–15 reps
+  3. lateral-raise-band [accessory] 3 × 12–20 reps
+  4. band-pull-apart [accessory] 2 × 12–20 reps
+  5. hanging-knee-raise [accessory] 2 × 6–12 reps
+B Legs and core — 33 min
+  1. squat-bodyweight [main] 4 × 10–20 reps
+  2. glute-bridge [main] 3 × 10–20 reps
+  3. lateral-raise-band [accessory] 3 × 12–20 reps
+  4. hollow-hold [accessory] 2 × 10–40 seconds
+  reasons: PLAN_NO_OPTION, PLAN_NO_OPTION
+C Push and delts — 34 min
+  1. pushup-floor [main] 5 × 5–15 reps
+  2. lateral-raise-band [accessory] 3 × 12–20 reps
+  3. squat-bodyweight [accessory] 2 × 10–20 reps
+  4. triceps-pushdown-band [accessory] 2 × 12–20 reps
+  reasons: PLAN_NO_OPTION, PLAN_NO_OPTION
+D Pull and arms — 35 min
+  1. chinup-strict [main] 3 × 3–8 reps
+  2. row-band [main] 3 × 10–15 reps
+  3. band-pull-apart [accessory] 2 × 12–20 reps
+  4. glute-bridge [accessory] 2 × 10–20 reps
+  5. curl-band [accessory] 2 × 12–20 reps
+  6. hanging-knee-raise [accessory] 2 × 6–12 reps
+volume: lats-upper-back 15.2, side-delts 9, rear-delts 4, chest 5, triceps 5, biceps 6.2, quads 6, hamstrings-glutes 9.2, core 6
+
+## Week 4
+A Pull and side delts — 35 min
+  1. pullup-neutral-grip [main] 3 × 3–8 reps
+  2. row-band [main] 3 × 10–15 reps
+  3. lateral-raise-band [accessory] 3 × 12–20 reps
+  4. band-pull-apart [accessory] 2 × 12–20 reps
+  5. hanging-knee-raise [accessory] 2 × 6–12 reps
+B Legs and core — 33 min
+  1. squat-bodyweight [main] 4 × 10–20 reps
+  2. glute-bridge [main] 3 × 10–20 reps
+  3. lateral-raise-band [accessory] 3 × 12–20 reps
+  4. hollow-hold [accessory] 2 × 10–40 seconds
+  reasons: PLAN_NO_OPTION, PLAN_NO_OPTION
+C Push and delts — 34 min
+  1. pushup-floor [main] 5 × 5–15 reps
+  2. lateral-raise-band [accessory] 3 × 12–20 reps
+  3. squat-bodyweight [accessory] 2 × 10–20 reps
+  4. triceps-pushdown-band [accessory] 2 × 12–20 reps
+  reasons: PLAN_NO_OPTION, PLAN_NO_OPTION
+D Pull and arms — 35 min
+  1. chinup-strict [main] 3 × 3–8 reps
+  2. row-band [main] 3 × 10–15 reps
+  3. band-pull-apart [accessory] 2 × 12–20 reps
+  4. glute-bridge [accessory] 2 × 10–20 reps
+  5. curl-band [accessory] 2 × 12–20 reps
+  6. hanging-knee-raise [accessory] 2 × 6–12 reps
+volume: lats-upper-back 15.2, side-delts 9, rear-delts 4, chest 5, triceps 5, biceps 6.2, quads 6, hamstrings-glutes 9.2, core 6
+
+## Day A, full readiness
+main A readiness=full deload=false — 35 min
+  warm-up:
+  1. pullup-neutral-grip [main] 1 × 1 reps tempo 2-0-1-1
+  2. row-band [main] 1 × 5 reps band light/single tempo 2-0-1-1
+  1. pullup-neutral-grip [main] 3 × 1–3 reps tempo 2-0-1-1
+  2. row-band [main] 3 × 10–15 reps band light/single tempo 2-0-1-1
+  3. lateral-raise-band [accessory] 3 × 12–20 reps band light/single tempo 2-0-1-1
+  4. band-pull-apart [accessory] 2 × 12–20 reps band light/single tempo 2-0-1-1
+  5. hanging-knee-raise [accessory] 2 × 6–12 reps tempo 2-0-1-1
+
+## Day C, trimmed
+main C readiness=trimmed deload=false — 24 min
+  warm-up:
+  1. pushup-floor [main] 1 × 3 reps tempo 2-0-1-0
+  1. pushup-floor [main] 4 × 5–15 reps tempo 2-0-1-0
+  2. lateral-raise-band [accessory] 2 × 12–20 reps band light/single tempo 2-0-1-1
+  3. squat-bodyweight [accessory] 1 × 10–20 reps tempo 3-0-1-0
+  4. triceps-pushdown-band [accessory] 1 × 12–20 reps band light/single tempo 2-0-1-1
+  reasons: PLAN_NO_OPTION, PLAN_NO_OPTION, READINESS_TRIMMED
+
+## Day A, recovery
+recovery A readiness=recovery deload=false — 15 min
+  1. pullup-neutral-grip [main] 2 × 1 reps tempo 2-0-1-1
+  2. row-band [main] 2 × 10 reps band light/single tempo 2-0-1-1
+  3. band-shoulder-dislocate [accessory] 1 × 8–12 reps
+  4. cat-cow [accessory] 1 × 6–10 reps
+  reasons: READINESS_RECOVERY
+
+## Day A, deload week
+main A readiness=full deload=true — 24 min
+  warm-up:
+  1. pullup-neutral-grip [main] 1 × 1 reps tempo 2-0-1-1
+  2. row-band [main] 1 × 5 reps band light/single tempo 2-0-1-1
+  1. pullup-neutral-grip [main] 2 × 1–3 reps tempo 2-0-1-1
+  2. row-band [main] 2 × 10–15 reps band light/single tempo 2-0-1-1
+  3. lateral-raise-band [accessory] 2 × 12–20 reps band light/single tempo 2-0-1-1
+  4. band-pull-apart [accessory] 1 × 12–20 reps band light/single tempo 2-0-1-1
+  5. hanging-knee-raise [accessory] 1 × 6–12 reps tempo 2-0-1-1
+  reasons: DELOAD_WEEK

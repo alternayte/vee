@@ -1,0 +1,65 @@
+# bodyweight-only
+No kit at all. 25 min, 3 days.
+progress: core=dead-bug, push-up=pushup-incline-counter
+
+## Week 1
+A Pull and side delts — 8 min
+  1. dead-bug [accessory] 2 × 6–12 reps
+  reasons: PLAN_NO_OPTION, PLAN_NO_OPTION, PLAN_NO_OPTION, PLAN_NO_OPTION
+B Legs and core — 22 min
+  1. squat-bodyweight [main] 3 × 10–20 reps
+  2. glute-bridge [main] 3 × 10–20 reps
+  3. hollow-hold [accessory] 2 × 10–40 seconds
+  reasons: PLAN_NO_OPTION, PLAN_NO_OPTION, PLAN_NO_OPTION
+C Push and delts — 23 min
+  1. pushup-incline-counter [main] 5 × 8–15 reps
+  2. squat-bodyweight [accessory] 3 × 10–20 reps
+  reasons: PLAN_NO_OPTION, PLAN_NO_OPTION, PLAN_NO_OPTION, PLAN_NO_OPTION
+D Pull and arms — 12 min
+  1. glute-bridge [accessory] 2 × 10–20 reps
+  2. dead-bug [accessory] 2 × 6–12 reps
+  reasons: PLAN_NO_OPTION, PLAN_NO_OPTION, PLAN_NO_OPTION, PLAN_NO_OPTION
+volume: lats-upper-back 0, side-delts 0, rear-delts 0, chest 5, triceps 3, biceps 0, quads 6, hamstrings-glutes 9.2, core 6
+
+## Week 4
+A Pull and side delts — 8 min
+  1. dead-bug [accessory] 2 × 6–12 reps
+  reasons: PLAN_NO_OPTION, PLAN_NO_OPTION, PLAN_NO_OPTION, PLAN_NO_OPTION
+B Legs and core — 24 min
+  1. squat-bodyweight [main] 4 × 10–20 reps
+  2. glute-bridge [main] 3 × 10–20 reps
+  3. hollow-hold [accessory] 2 × 10–40 seconds
+  reasons: PLAN_NO_OPTION, PLAN_NO_OPTION, PLAN_NO_OPTION
+C Push and delts — 25 min
+  1. pushup-incline-counter [main] 5 × 8–15 reps
+  2. squat-bodyweight [accessory] 4 × 10–20 reps
+  reasons: PLAN_NO_OPTION, PLAN_NO_OPTION, PLAN_NO_OPTION, PLAN_NO_OPTION
+D Pull and arms — 12 min
+  1. glute-bridge [accessory] 2 × 10–20 reps
+  2. dead-bug [accessory] 2 × 6–12 reps
+  reasons: PLAN_NO_OPTION, PLAN_NO_OPTION, PLAN_NO_OPTION, PLAN_NO_OPTION
+volume: lats-upper-back 0, side-delts 0, rear-delts 0, chest 5, triceps 3, biceps 0, quads 8, hamstrings-glutes 10.6, core 6
+
+## Day A, full readiness
+main A readiness=full deload=false — 8 min
+  1. dead-bug [accessory] 2 × 6–12 reps tempo 2-1-2-0
+  reasons: PLAN_NO_OPTION, PLAN_NO_OPTION, PLAN_NO_OPTION, PLAN_NO_OPTION
+
+## Day C, trimmed
+main C readiness=trimmed deload=false — 18 min
+  warm-up:
+  1. pushup-incline-counter [main] 1 × 4 reps tempo 2-0-1-0
+  1. pushup-incline-counter [main] 4 × 8–15 reps tempo 2-0-1-0
+  2. squat-bodyweight [accessory] 2 × 10–20 reps tempo 3-0-1-0
+  reasons: PLAN_NO_OPTION, PLAN_NO_OPTION, PLAN_NO_OPTION, PLAN_NO_OPTION, READINESS_TRIMMED
+
+## Day A, recovery
+recovery A readiness=recovery deload=false — 7 min
+  1. cat-cow [accessory] 1 × 6–10 reps
+  2. couch-stretch [accessory] 1 × 30–60 seconds
+  reasons: READINESS_RECOVERY
+
+## Day A, deload week
+main A readiness=full deload=true — 6 min
+  1. dead-bug [accessory] 1 × 6–12 reps tempo 2-1-2-0
+  reasons: PLAN_NO_OPTION, PLAN_NO_OPTION, PLAN_NO_OPTION, PLAN_NO_OPTION, DELOAD_WEEK

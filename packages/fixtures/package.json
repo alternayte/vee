@@ -1,0 +1,23 @@
+{
+  "name": "@vee/fixtures",
+  "private": true,
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/personas.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test:golden": "vitest run test/golden.test.ts",
+    "sim": "vitest run test/sim.test.ts"
+  },
+  "dependencies": {
+    "@vee/catalogue": "workspace:*",
+    "@vee/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "1.4.4",
+    "typescript": "7.0.2",
+    "vitest": "5.0.5"
+  }
+}

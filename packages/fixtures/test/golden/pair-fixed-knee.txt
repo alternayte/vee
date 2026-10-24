@@ -1,0 +1,105 @@
+# pair-fixed-knee
+A pair of fixed dumbbells and a station with dip handles. Acute knee flag. 45 min, 4 days.
+progress: carry=suitcase-carry@15, chin-up=chinup-pause, dip=dip-negative, push-up=pushup-archer, vertical-pull=pullup-pause
+
+## Week 1
+A Pull and side delts — 37 min
+  1. pullup-pause [main] 3 × 3–6 reps
+  2. row-single-arm-db [main] 3 × 8–12 reps @ 4 kg
+  3. dead-bug [accessory] 2 × 6–12 reps
+  4. lateral-raise-db [accessory] 3 × 10–15 reps @ 4 kg
+  5. rear-delt-raise-db [accessory] 2 × 10–15 reps @ 4 kg
+B Legs and core — 33 min
+  1. glute-bridge [main] 3 × 10–20 reps
+  2. hollow-hold [accessory] 2 × 10–40 seconds
+  3. lateral-raise-db [accessory] 3 × 10–15 reps @ 4 kg
+  4. floor-press-db [accessory] 2 × 8–12 reps @ 4 kg
+  5. suitcase-carry [accessory] 2 × 20–60 seconds @ 15 kg
+  reasons: PLAN_NO_OPTION
+C Push and delts — 37 min
+  1. dip-negative [main] 3 × 3–5 reps
+  2. pushup-archer [main] 3 × 3–8 reps
+  3. lateral-raise-db [accessory] 3 × 10–15 reps @ 4 kg
+  4. press-half-kneeling-db [accessory] 2 × 8–12 reps @ 4 kg
+  5. triceps-overhead-db [accessory] 2 × 10–15 reps @ 4 kg
+  reasons: PLAN_NO_OPTION
+D Pull and arms — 38 min
+  1. chinup-pause [main] 3 × 3–6 reps
+  2. row-single-arm-db [main] 3 × 8–12 reps @ 4 kg
+  3. glute-bridge [accessory] 2 × 10–20 reps
+  4. dead-bug [accessory] 2 × 6–12 reps
+  5. rear-delt-raise-db [accessory] 2 × 10–15 reps @ 4 kg
+  6. curl-db [accessory] 2 × 8–12 reps @ 4 kg
+volume: lats-upper-back 14, side-delts 10, rear-delts 4, chest 8, triceps 9.2, biceps 8.9, quads 0, hamstrings-glutes 5, core 8
+
+## Week 4
+A Pull and side delts — 44 min
+  1. pullup-pause [main] 3 × 3–6 reps
+  2. row-single-arm-db [main] 3 × 8–12 reps @ 4 kg
+  3. dead-bug [accessory] 2 × 6–12 reps
+  4. lateral-raise-db [accessory] 4 × 10–15 reps @ 4 kg
+  5. rear-delt-raise-db [accessory] 4 × 10–15 reps @ 4 kg
+B Legs and core — 45 min
+  1. glute-bridge [main] 5 × 10–20 reps
+  2. hollow-hold [accessory] 2 × 10–40 seconds
+  3. lateral-raise-db [accessory] 5 × 10–15 reps @ 4 kg
+  4. floor-press-db [accessory] 3 × 8–12 reps @ 4 kg
+  5. suitcase-carry [accessory] 2 × 20–60 seconds @ 15 kg
+  reasons: PLAN_NO_OPTION
+C Push and delts — 44 min
+  1. dip-negative [main] 4 × 3–5 reps
+  2. pushup-archer [main] 3 × 3–8 reps
+  3. lateral-raise-db [accessory] 5 × 10–15 reps @ 4 kg
+  4. press-half-kneeling-db [accessory] 2 × 8–12 reps @ 4 kg
+  5. triceps-overhead-db [accessory] 2 × 10–15 reps @ 4 kg
+  reasons: PLAN_NO_OPTION
+D Pull and arms — 45 min
+  1. chinup-pause [main] 4 × 3–6 reps
+  2. row-single-arm-db [main] 3 × 8–12 reps @ 4 kg
+  3. glute-bridge [accessory] 3 × 10–20 reps
+  4. dead-bug [accessory] 2 × 6–12 reps
+  5. rear-delt-raise-db [accessory] 3 × 10–15 reps @ 4 kg
+  6. curl-db [accessory] 2 × 8–12 reps @ 4 kg
+volume: lats-upper-back 16.5, side-delts 15, rear-delts 7, chest 10, triceps 10.7, biceps 9.7, quads 0, hamstrings-glutes 8, core 8
+
+## Day A, full readiness
+main A readiness=full deload=false — 37 min
+  warm-up:
+  1. pullup-pause [main] 1 × 2 reps tempo 2-0-1-2
+  2. row-single-arm-db [main] 1 × 4 reps @ 4 kg tempo 2-0-1-1
+  1. pullup-pause [main] 3 × 3–6 reps tempo 2-0-1-2
+  2. row-single-arm-db [main] 3 × 8–12 reps @ 4 kg tempo 2-0-1-1
+  3. dead-bug [accessory] 2 × 6–12 reps tempo 2-1-2-0
+  4. lateral-raise-db [accessory] 3 × 10–15 reps @ 4 kg tempo 2-0-1-1
+  5. rear-delt-raise-db [accessory] 2 × 10–15 reps @ 4 kg tempo 2-0-1-1
+
+## Day C, trimmed
+main C readiness=trimmed deload=false — 25 min
+  warm-up:
+  1. dip-negative [main] 1 × 2 reps tempo 4-0-X-0
+  2. pushup-archer [main] 1 × 2 reps
+  1. dip-negative [main] 2 × 3–5 reps tempo 4-0-X-0
+  2. pushup-archer [main] 2 × 3–8 reps
+  3. lateral-raise-db [accessory] 2 × 10–15 reps @ 4 kg tempo 2-0-1-1
+  4. press-half-kneeling-db [accessory] 1 × 8–12 reps @ 4 kg tempo 2-0-1-0
+  5. triceps-overhead-db [accessory] 1 × 10–15 reps @ 4 kg tempo 2-0-1-0
+  reasons: PLAN_NO_OPTION, READINESS_TRIMMED
+
+## Day A, recovery
+recovery A readiness=recovery deload=false — 15 min
+  1. pullup-pause [main] 2 × 3 reps tempo 2-0-1-2
+  2. row-single-arm-db [main] 2 × 8 reps @ 4 kg tempo 2-0-1-1
+  3. cat-cow [accessory] 1 × 6–10 reps
+  reasons: READINESS_RECOVERY, TIME_CUT_DROP(thoracic-open-book)
+
+## Day A, deload week
+main A readiness=full deload=true — 25 min
+  warm-up:
+  1. pullup-pause [main] 1 × 2 reps tempo 2-0-1-2
+  2. row-single-arm-db [main] 1 × 4 reps @ 4 kg tempo 2-0-1-1
+  1. pullup-pause [main] 2 × 3–6 reps tempo 2-0-1-2
+  2. row-single-arm-db [main] 2 × 8–12 reps @ 4 kg tempo 2-0-1-1
+  3. dead-bug [accessory] 1 × 6–12 reps tempo 2-1-2-0
+  4. lateral-raise-db [accessory] 2 × 10–15 reps @ 4 kg tempo 2-0-1-1
+  5. rear-delt-raise-db [accessory] 1 × 10–15 reps @ 4 kg tempo 2-0-1-1
+  reasons: DELOAD_WEEK

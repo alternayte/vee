@@ -1,0 +1,85 @@
+# kettlebell-short
+Kettlebells of 8, 12 and 16 kg and one band. Mild lower-back flag. 20 min, 4 days.
+progress: core=dead-bug, push-up=pushup-floor
+
+## Week 1
+A Pull and side delts — 20 min
+  1. row-band [main] 3 × 10–15 reps
+  2. lateral-raise-band [accessory] 2 × 12–20 reps pair 1
+  3. band-pull-apart [accessory] 2 × 12–20 reps pair 1
+  reasons: PLAN_NO_OPTION, TIME_CUT_DROP(dead-bug), TIME_CUT_PAIR, TIME_CUT_ACCESSORY_SETS
+B Legs and core — 20 min
+  1. squat-bodyweight [main] 2 × 10–20 reps
+  2. glute-bridge [main] 2 × 10–20 reps
+  3. lateral-raise-band [accessory] 2 × 12–20 reps
+  reasons: PLAN_NO_OPTION, PLAN_NO_OPTION, TIME_CUT_DROP(hollow-hold), TIME_CUT_ACCESSORY_SETS, TIME_CUT_MAIN_SETS
+C Push and delts — 20 min
+  1. pushup-floor [main] 3 × 5–15 reps
+  2. lateral-raise-band [accessory] 2 × 12–20 reps pair 1
+  3. squat-bodyweight [accessory] 2 × 10–20 reps pair 1
+  reasons: PLAN_NO_OPTION, PLAN_NO_OPTION, TIME_CUT_DROP(triceps-pushdown-band), TIME_CUT_PAIR, TIME_CUT_ACCESSORY_SETS
+D Pull and arms — 20 min
+  1. row-band [main] 2 × 10–15 reps
+  2. band-pull-apart [accessory] 2 × 12–20 reps pair 1
+  3. glute-bridge [accessory] 2 × 10–20 reps pair 1
+  4. curl-band [accessory] 2 × 12–20 reps
+  reasons: PLAN_NO_OPTION, TIME_CUT_DROP(dead-bug), TIME_CUT_PAIR, TIME_CUT_MAIN_SETS
+volume: lats-upper-back 8.2, side-delts 6, rear-delts 4, chest 3, triceps 1.8, biceps 2, quads 4, hamstrings-glutes 6.8, core 0
+
+## Week 4
+A Pull and side delts — 20 min
+  1. row-band [main] 3 × 10–15 reps
+  2. lateral-raise-band [accessory] 2 × 12–20 reps pair 1
+  3. band-pull-apart [accessory] 2 × 12–20 reps pair 1
+  reasons: PLAN_NO_OPTION, TIME_CUT_DROP(dead-bug), TIME_CUT_PAIR, TIME_CUT_ACCESSORY_SETS
+B Legs and core — 20 min
+  1. squat-bodyweight [main] 2 × 10–20 reps
+  2. glute-bridge [main] 2 × 10–20 reps
+  3. lateral-raise-band [accessory] 2 × 12–20 reps
+  reasons: PLAN_NO_OPTION, PLAN_NO_OPTION, TIME_CUT_DROP(hollow-hold), TIME_CUT_ACCESSORY_SETS, TIME_CUT_MAIN_SETS
+C Push and delts — 20 min
+  1. pushup-floor [main] 3 × 5–15 reps
+  2. lateral-raise-band [accessory] 2 × 12–20 reps pair 1
+  3. squat-bodyweight [accessory] 2 × 10–20 reps pair 1
+  reasons: PLAN_NO_OPTION, PLAN_NO_OPTION, TIME_CUT_DROP(triceps-pushdown-band), TIME_CUT_PAIR, TIME_CUT_ACCESSORY_SETS
+D Pull and arms — 20 min
+  1. row-band [main] 2 × 10–15 reps
+  2. band-pull-apart [accessory] 2 × 12–20 reps pair 1
+  3. glute-bridge [accessory] 2 × 10–20 reps pair 1
+  4. curl-band [accessory] 2 × 12–20 reps
+  reasons: PLAN_NO_OPTION, TIME_CUT_DROP(dead-bug), TIME_CUT_PAIR, TIME_CUT_MAIN_SETS
+volume: lats-upper-back 8.2, side-delts 6, rear-delts 4, chest 3, triceps 1.8, biceps 2, quads 4, hamstrings-glutes 6.8, core 0
+
+## Day A, full readiness
+main A readiness=full deload=false — 20 min
+  warm-up:
+  1. row-band [main] 1 × 5 reps band band/single tempo 2-0-1-1
+  1. row-band [main] 3 × 10–15 reps band band/single tempo 2-0-1-1
+  2. lateral-raise-band [accessory] 2 × 12–20 reps band band/single tempo 2-0-1-1 pair 1
+  3. band-pull-apart [accessory] 2 × 12–20 reps band band/single tempo 2-0-1-1 pair 1
+  reasons: PLAN_NO_OPTION, TIME_CUT_DROP(dead-bug), TIME_CUT_PAIR, TIME_CUT_ACCESSORY_SETS
+
+## Day C, trimmed
+main C readiness=trimmed deload=false — 14 min
+  warm-up:
+  1. pushup-floor [main] 1 × 3 reps tempo 2-0-1-0
+  1. pushup-floor [main] 2 × 5–15 reps tempo 2-0-1-0
+  2. lateral-raise-band [accessory] 1 × 12–20 reps band band/single tempo 2-0-1-1 pair 1
+  3. squat-bodyweight [accessory] 1 × 10–20 reps tempo 3-0-1-0 pair 1
+  reasons: PLAN_NO_OPTION, PLAN_NO_OPTION, TIME_CUT_DROP(triceps-pushdown-band), TIME_CUT_PAIR, TIME_CUT_ACCESSORY_SETS, READINESS_TRIMMED
+
+## Day A, recovery
+recovery A readiness=recovery deload=false — 10 min
+  1. row-band [main] 2 × 10 reps band band/single tempo 2-0-1-1
+  2. band-shoulder-dislocate [accessory] 1 × 8–12 reps
+  3. cat-cow [accessory] 1 × 6–10 reps
+  reasons: READINESS_RECOVERY
+
+## Day A, deload week
+main A readiness=full deload=true — 14 min
+  warm-up:
+  1. row-band [main] 1 × 5 reps band band/single tempo 2-0-1-1
+  1. row-band [main] 2 × 10–15 reps band band/single tempo 2-0-1-1
+  2. lateral-raise-band [accessory] 1 × 12–20 reps band band/single tempo 2-0-1-1 pair 1
+  3. band-pull-apart [accessory] 1 × 12–20 reps band band/single tempo 2-0-1-1 pair 1
+  reasons: PLAN_NO_OPTION, TIME_CUT_DROP(dead-bug), TIME_CUT_PAIR, TIME_CUT_ACCESSORY_SETS, DELOAD_WEEK

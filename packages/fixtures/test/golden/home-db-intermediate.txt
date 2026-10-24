@@ -1,0 +1,104 @@
+# home-db-intermediate
+Trained user with the same home kit. 30 min, 4 days.
+progress: carry=suitcase-carry@16, chin-up=chinup-strict, core=hanging-knee-raise, dip=dip-band-assisted, push-up=pushup-deficit-handles, squat=split-squat@8, vertical-pull=pullup-strict
+
+## Week 1
+A Pull and side delts — 30 min
+  1. pullup-strict [main] 3 × 3–8 reps
+  2. row-single-arm-db [main] 3 × 8–12 reps @ 2 kg
+  3. lateral-raise-band [accessory] 2 × 12–20 reps pair 1
+  4. band-pull-apart [accessory] 2 × 12–20 reps pair 1
+  reasons: TIME_CUT_DROP(hanging-knee-raise), TIME_CUT_PAIR, TIME_CUT_ACCESSORY_SETS
+B Legs and core — 29 min
+  1. split-squat [main] 2 × 8–12 reps @ 8 kg
+  2. glute-bridge [main] 2 × 10–20 reps
+  3. lateral-raise-band [accessory] 2 × 12–20 reps pair 1
+  4. floor-press-db [accessory] 2 × 8–12 reps @ 2 kg pair 1
+  5. hollow-hold [accessory] 2 × 10–40 seconds
+  reasons: TIME_CUT_DROP(suitcase-carry), TIME_CUT_PAIR, TIME_CUT_ACCESSORY_SETS, TIME_CUT_MAIN_SETS
+C Push and delts — 30 min
+  1. dip-band-assisted [main] 2 × 5–8 reps
+  2. pushup-deficit-handles [main] 2 × 6–12 reps
+  3. lateral-raise-band [accessory] 2 × 12–20 reps pair 1
+  4. split-squat [accessory] 2 × 8–12 reps @ 8 kg pair 1
+  5. press-half-kneeling-db [accessory] 2 × 8–12 reps @ 2 kg
+  reasons: TIME_CUT_DROP(triceps-pushdown-band), TIME_CUT_PAIR, TIME_CUT_ACCESSORY_SETS, TIME_CUT_MAIN_SETS
+D Pull and arms — 27 min
+  1. chinup-strict [main] 2 × 3–8 reps
+  2. row-single-arm-db [main] 2 × 8–12 reps @ 2 kg
+  3. band-pull-apart [accessory] 2 × 12–20 reps pair 1
+  4. glute-bridge [accessory] 2 × 10–20 reps pair 1
+  5. curl-band [accessory] 2 × 12–20 reps
+  reasons: TIME_CUT_DROP(hanging-knee-raise), TIME_CUT_PAIR, TIME_CUT_MAIN_SETS
+volume: lats-upper-back 13.2, side-delts 7, rear-delts 4, chest 6, triceps 5.4, biceps 7.6, quads 4, hamstrings-glutes 7.2, core 2
+
+## Week 4
+A Pull and side delts — 30 min
+  1. pullup-strict [main] 3 × 3–8 reps
+  2. row-single-arm-db [main] 3 × 8–12 reps @ 2 kg
+  3. lateral-raise-band [accessory] 2 × 12–20 reps pair 1
+  4. band-pull-apart [accessory] 2 × 12–20 reps pair 1
+  reasons: TIME_CUT_DROP(hanging-knee-raise), TIME_CUT_PAIR, TIME_CUT_ACCESSORY_SETS
+B Legs and core — 29 min
+  1. split-squat [main] 2 × 8–12 reps @ 8 kg
+  2. glute-bridge [main] 2 × 10–20 reps
+  3. lateral-raise-band [accessory] 2 × 12–20 reps pair 1
+  4. floor-press-db [accessory] 2 × 8–12 reps @ 2 kg pair 1
+  5. hollow-hold [accessory] 2 × 10–40 seconds
+  reasons: TIME_CUT_DROP(suitcase-carry), TIME_CUT_PAIR, TIME_CUT_ACCESSORY_SETS, TIME_CUT_MAIN_SETS
+C Push and delts — 30 min
+  1. dip-band-assisted [main] 2 × 5–8 reps
+  2. pushup-deficit-handles [main] 2 × 6–12 reps
+  3. lateral-raise-band [accessory] 2 × 12–20 reps pair 1
+  4. split-squat [accessory] 2 × 8–12 reps @ 8 kg pair 1
+  5. press-half-kneeling-db [accessory] 2 × 8–12 reps @ 2 kg
+  reasons: TIME_CUT_DROP(triceps-pushdown-band), TIME_CUT_PAIR, TIME_CUT_ACCESSORY_SETS, TIME_CUT_MAIN_SETS
+D Pull and arms — 30 min
+  1. chinup-strict [main] 2 × 3–8 reps
+  2. row-single-arm-db [main] 2 × 8–12 reps @ 2 kg
+  3. band-pull-apart [accessory] 4 × 12–20 reps pair 1
+  4. glute-bridge [accessory] 2 × 10–20 reps pair 1
+  5. curl-band [accessory] 2 × 12–20 reps
+  reasons: TIME_CUT_DROP(hanging-knee-raise), TIME_CUT_PAIR, TIME_CUT_MAIN_SETS
+volume: lats-upper-back 14.8, side-delts 7, rear-delts 6, chest 6, triceps 5.4, biceps 7.6, quads 4, hamstrings-glutes 7.2, core 2
+
+## Day A, full readiness
+main A readiness=full deload=false — 30 min
+  warm-up:
+  1. pullup-strict [main] 1 × 2 reps tempo 2-0-1-1
+  2. row-single-arm-db [main] 1 × 4 reps @ 2 kg tempo 2-0-1-1
+  1. pullup-strict [main] 3 × 3–8 reps tempo 2-0-1-1
+  2. row-single-arm-db [main] 3 × 8–12 reps @ 2 kg tempo 2-0-1-1
+  3. lateral-raise-band [accessory] 2 × 12–20 reps band band/single tempo 2-0-1-1 pair 1
+  4. band-pull-apart [accessory] 2 × 12–20 reps band band/single tempo 2-0-1-1 pair 1
+  reasons: TIME_CUT_DROP(hanging-knee-raise), TIME_CUT_PAIR, TIME_CUT_ACCESSORY_SETS
+
+## Day C, trimmed
+main C readiness=trimmed deload=false — 18 min
+  warm-up:
+  1. dip-band-assisted [main] 1 × 3 reps band band/double tempo 2-0-1-0
+  2. pushup-deficit-handles [main] 1 × 3 reps tempo 2-0-1-0
+  1. dip-band-assisted [main] 1 × 5–8 reps band band/double tempo 2-0-1-0
+  2. pushup-deficit-handles [main] 1 × 6–12 reps tempo 2-0-1-0
+  3. lateral-raise-band [accessory] 1 × 12–20 reps band band/single tempo 2-0-1-1 pair 1
+  4. split-squat [accessory] 1 × 8–12 reps @ 8 kg tempo 3-0-1-0 pair 1
+  5. press-half-kneeling-db [accessory] 1 × 8–12 reps @ 2 kg tempo 2-0-1-0
+  reasons: TIME_CUT_DROP(triceps-pushdown-band), TIME_CUT_PAIR, TIME_CUT_ACCESSORY_SETS, TIME_CUT_MAIN_SETS, READINESS_TRIMMED
+
+## Day A, recovery
+recovery A readiness=recovery deload=false — 15 min
+  1. pullup-strict [main] 2 × 3 reps tempo 2-0-1-1
+  2. row-single-arm-db [main] 2 × 8 reps @ 2 kg tempo 2-0-1-1
+  3. band-shoulder-dislocate [accessory] 1 × 8–12 reps
+  reasons: READINESS_RECOVERY, TIME_CUT_DROP(cat-cow)
+
+## Day A, deload week
+main A readiness=full deload=true — 20 min
+  warm-up:
+  1. pullup-strict [main] 1 × 2 reps tempo 2-0-1-1
+  2. row-single-arm-db [main] 1 × 4 reps @ 2 kg tempo 2-0-1-1
+  1. pullup-strict [main] 2 × 3–8 reps tempo 2-0-1-1
+  2. row-single-arm-db [main] 2 × 8–12 reps @ 2 kg tempo 2-0-1-1
+  3. lateral-raise-band [accessory] 1 × 12–20 reps band band/single tempo 2-0-1-1 pair 1
+  4. band-pull-apart [accessory] 1 × 12–20 reps band band/single tempo 2-0-1-1 pair 1
+  reasons: TIME_CUT_DROP(hanging-knee-raise), TIME_CUT_PAIR, TIME_CUT_ACCESSORY_SETS, DELOAD_WEEK
