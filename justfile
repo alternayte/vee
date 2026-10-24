@@ -35,6 +35,17 @@ catalogue:
 sim:
     bunx turbo run sim --filter=@vee/fixtures
 
+# V7: API tests against a throwaway Postgres 17 container
+test-api:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    docker rm -f vee-test-pg >/dev/null 2>&1 || true
+    docker run -d --rm --name vee-test-pg -e POSTGRES_PASSWORD=vee -p 54391:5432 postgres:17 \
+        -c wal_level=logical >/dev/null
+    trap 'docker rm -f vee-test-pg >/dev/null 2>&1 || true' EXIT
+    until docker exec vee-test-pg pg_isready -U postgres -h 127.0.0.1 >/dev/null 2>&1; do sleep 0.5; done
+    TEST_DATABASE_URL=postgres://postgres:vee@localhost:54391/postgres bun test apps/api/test
+
 # Android release APK for arm64 (bundles the JavaScript, so no Metro server)
 apk:
     cd apps/mobile && CI=1 bunx expo prebuild -p android --clean
