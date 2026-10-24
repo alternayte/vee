@@ -62,6 +62,22 @@ apk:
     cd apps/mobile && CI=1 bunx expo prebuild -p android --clean
     cd apps/mobile/android && ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a --console=plain
 
+# V9 account flow backend: Postgres, PowerSync and the API with test mail.
+# The emulator reaches the host at 10.0.2.2. Build the APK for it with
+# EXPO_PUBLIC_API_URL=http://10.0.2.2:3998 EXPO_PUBLIC_POWERSYNC_URL=http://10.0.2.2:8089 just apk
+e2e-server:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    compose="docker compose -f infra/compose.test.yaml"
+    $compose down -v >/dev/null 2>&1 || true
+    $compose up -d --wait postgres >/dev/null
+    $compose up -d powersync >/dev/null
+    trap '$compose down -v >/dev/null 2>&1 || true' EXIT
+    DATABASE_URL=postgres://postgres:vee@localhost:54392/vee \
+    BETTER_AUTH_SECRET=e2e-secret-e2e-secret-e2e-secret-e2e \
+    BASE_URL=http://10.0.2.2:3998 PORT=3998 PASSKEY_RP_ID=10.0.2.2 MAIL_TRANSPORT=memory \
+        bun apps/api/src/main.ts
+
 # V9: Maestro flows on a running emulator. `just e2e smoke` runs one flow.
 e2e flow="":
     #!/usr/bin/env bash

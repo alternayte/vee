@@ -2,7 +2,7 @@
 
 import { loadCatalogue } from "@vee/catalogue/load";
 import { describe, expect, test } from "vitest";
-import { aliasTargets, detectFormat, matchExercise, parseCsv, parseImport } from "../src";
+import { aliasTargets, detectFormat, importRows, matchExercise, parseCsv, parseImport } from "../src";
 
 describe("alias table", () => {
   test("every alias points at a catalogue exercise", () => {
@@ -132,5 +132,26 @@ describe("parseImport", () => {
 
   test("an unknown file is an error with a reason", () => {
     expect(() => parseImport("a,b\n1,2\n")).toThrow(/Hevy, Strong or FitNotes/);
+  });
+});
+
+describe("importRows", () => {
+  test("every set points at a session of the same import, with the owner and custom ids", () => {
+    let n = 0;
+    const rows = importRows(parseImport(HEVY), {
+      userId: null,
+      now: "2026-10-25T10:00:00.000Z",
+      newId: () => `id-${n++}`,
+      customId: (slug) => `c:${slug}`,
+    });
+    const sessionIds = new Set(rows.sessions.map((s) => s.id));
+    expect(rows.sessions).toHaveLength(2);
+    expect(rows.sets.filter((x) => !sessionIds.has(x.session_id))).toEqual([]);
+    expect(rows.sets.map((x) => x.user_id)).toEqual(rows.sets.map(() => null));
+    expect(rows.custom_exercises.map((c) => c.id)).toEqual(["c:custom-zercher-squat"]);
+    expect(rows.sets.find((x) => x.exercise_id === "custom-zercher-squat")?.load_kg).toBe(40);
+    expect(new Set([...rows.sessions, ...rows.sets].map((r) => r.id)).size).toBe(
+      rows.sessions.length + rows.sets.length,
+    );
   });
 });

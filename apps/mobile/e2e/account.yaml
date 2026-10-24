@@ -1,0 +1,72 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# V9 account: history logged with no account uploads after a magic-link
+# sign-in, Settings → Sync shows the state, and the account deletes.
+# Needs `just e2e-server` and an APK built with the test server addresses.
+appId: app.vee.mobile
+env:
+  EMAIL: e2e@example.test
+---
+- clearState
+- launchApp
+- extendedWaitUntil:
+    visible: "You have no plan yet.*"
+    timeout: 20000
+# History with no account (I10).
+- tapOn: "Food"
+- extendedWaitUntil:
+    visible: "Protein: 0 of 7 palms"
+    timeout: 10000
+- tapOn: "Add 1 palm of protein"
+- assertVisible: "Protein: 1 of 7 palms"
+- tapOn: "Settings"
+- tapOn: "Sync"
+- assertVisible:
+    id: "sync-state"
+    text: "No account"
+- back
+# Sign in with the link from the test mailbox.
+- tapOn:
+    id: "email-input"
+- inputText: ${EMAIL}
+- hideKeyboard
+- tapOn: "Send sign-in link"
+- extendedWaitUntil:
+    visible: "We sent a link to ${EMAIL}.*"
+    timeout: 10000
+- runScript:
+    file: scripts/magic-token.js
+    env:
+      EMAIL: ${EMAIL}
+- openLink: "app.vee.mobile://auth/magic?token=${output.token}"
+- extendedWaitUntil:
+    visible: "Signed in as ${EMAIL}"
+    timeout: 15000
+# The local history uploads.
+- tapOn: "Sync"
+- extendedWaitUntil:
+    visible:
+      id: "sync-state"
+      text: "Connected"
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: "sync-pending"
+      text: "0"
+    timeout: 30000
+- assertVisible: "The server accepted every change."
+- back
+# A used link does not sign in again.
+- openLink: "app.vee.mobile://auth/magic?token=${output.token}"
+- extendedWaitUntil:
+    visible: "This link is used or expired.*"
+    timeout: 10000
+- tapOn: "Go to Settings"
+# Delete the account (the sign-in is fresh).
+- scrollUntilVisible:
+    element: "Delete account"
+- tapOn: "Delete account"
+- tapOn: "(?i)delete"
+- extendedWaitUntil:
+    visible: "Your account and all your data are deleted from the server."
+    timeout: 15000
+- assertVisible: "Send sign-in link"

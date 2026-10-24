@@ -11,7 +11,7 @@ import { PowerSyncDatabase } from "@powersync/node";
 import {
   clientSchema,
   kit_items,
-  runner_state,
+  localTables,
   sessions as sessionsTable,
   sets,
   syncedTables,
@@ -32,8 +32,12 @@ const DATABASE_URL = "postgres://postgres:vee@localhost:54392/vee";
 
 const appSchema = new DrizzleAppSchema({
   ...syncedTables,
-  runner_state: { tableDefinition: runner_state, options: { localOnly: true } },
-  ui_prefs: { tableDefinition: ui_prefs, options: { localOnly: true } },
+  ...Object.fromEntries(
+    Object.entries(localTables).map(([name, t]) => [
+      name,
+      { tableDefinition: t, options: { localOnly: true } },
+    ]),
+  ),
 });
 
 let app: App;
@@ -326,7 +330,7 @@ describe("V8 sync", () => {
     await a1.db.insert(ui_prefs).values({ id: uuidv7(), key: "theme", value: "dark" });
     await sleep(1000);
     const tables = await pgQuery<{ table_name: string }>(
-      "SELECT table_name FROM information_schema.tables WHERE table_name IN ('ui_prefs', 'runner_state')",
+      "SELECT table_name FROM information_schema.tables WHERE table_name IN ('ui_prefs', 'runner_state', 'sync_errors')",
     );
     expect(tables).toEqual([]);
     expect(a1.rejected).toEqual([]);

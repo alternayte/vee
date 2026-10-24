@@ -10,10 +10,12 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { loadAccount } from "@/features/account/account";
 import { powersync } from "@/features/db/database";
 import { useTokens } from "@/features/theme/use-tokens";
 
 void SplashScreen.preventAutoHideAsync();
+void loadAccount();
 
 export default function RootLayout() {
   const [loaded] = useFonts({ Inter_400Regular, Inter_500Medium, Inter_600SemiBold });

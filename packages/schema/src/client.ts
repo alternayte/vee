@@ -353,6 +353,18 @@ export const ui_prefs = sqliteTable("ui_prefs", {
   value: text("value"),
 });
 
+/** Local only: operations the server refused (I5). The local row stays; Settings → Sync lists these. */
+export const sync_errors = sqliteTable("sync_errors", {
+  id: text("id").primaryKey(),
+  table_name: text("table_name").notNull(),
+  row_id: text("row_id").notNull(),
+  op: text("op").notNull(),
+  code: text("code").notNull(),
+  message: text("message").notNull(),
+  data: json("data"),
+  created_at: text("created_at").notNull(),
+});
+
 export const syncedTables = {
   profiles,
   kit_items,
@@ -390,6 +402,6 @@ export const syncedTables = {
   custom_exercises,
 };
 
-export const localTables = { runner_state, ui_prefs };
+export const localTables = { runner_state, ui_prefs, sync_errors };
 
 export const clientSchema = { ...syncedTables, ...localTables };

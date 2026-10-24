@@ -274,3 +274,69 @@ export function parseImport(text: string): ImportResult {
     customExercises: [...custom].map(([id, name]) => ({ id, name })),
   };
 }
+
+export type ImportRows = {
+  sessions: {
+    id: string;
+    user_id: string | null;
+    kind: "main";
+    status: "done";
+    date: string;
+    created_at: string;
+    updated_at: string;
+  }[];
+  sets: {
+    id: string;
+    user_id: string | null;
+    session_id: string;
+    exercise_id: string;
+    reps: number | null;
+    seconds: number | null;
+    load_kg: number | null;
+    effort: Effort;
+    logged_at: string;
+    created_at: string;
+    updated_at: string;
+  }[];
+  custom_exercises: {
+    id: string;
+    user_id: string | null;
+    exercise: string;
+    created_at: string;
+    updated_at: string;
+  }[];
+};
+
+/**
+ * The rows an import writes. The server and the app (no account) both use it.
+ * `customId` names the custom_exercises row for an exercise slug.
+ */
+export function importRows(
+  parsed: ImportResult,
+  o: { userId: string | null; now: string; newId: () => string; customId: (slug: string) => string },
+): ImportRows {
+  const rows: ImportRows = { sessions: [], sets: [], custom_exercises: [] };
+  const stamp = { user_id: o.userId, created_at: o.now, updated_at: o.now };
+  for (const c of parsed.customExercises) {
+    const exercise = JSON.stringify({ id: c.id, names: { en: c.name }, custom: true });
+    rows.custom_exercises.push({ id: o.customId(c.id), exercise, ...stamp });
+  }
+  for (const s of parsed.sessions) {
+    const sessionId = o.newId();
+    rows.sessions.push({ id: sessionId, kind: "main", status: "done", date: s.date, ...stamp });
+    for (const x of s.sets) {
+      rows.sets.push({
+        id: o.newId(),
+        session_id: sessionId,
+        exercise_id: x.exerciseId,
+        reps: x.reps ?? null,
+        seconds: x.seconds ?? null,
+        load_kg: x.loadKg ?? null,
+        effort: x.effort,
+        logged_at: `${s.date}T12:00:00.000Z`,
+        ...stamp,
+      });
+    }
+  }
+  return rows;
+}

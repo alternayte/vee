@@ -3,12 +3,16 @@
 // server connection, so every feature works offline and without an account (I10).
 import { DrizzleAppSchema, wrapPowerSyncWithDrizzle } from "@powersync/drizzle-driver";
 import { PowerSyncDatabase } from "@powersync/react-native";
-import { clientSchema, runner_state, syncedTables, ui_prefs } from "@vee/schema";
+import { clientSchema, localTables, syncedTables } from "@vee/schema";
 
 export const appSchema = new DrizzleAppSchema({
   ...syncedTables,
-  runner_state: { tableDefinition: runner_state, options: { localOnly: true } },
-  ui_prefs: { tableDefinition: ui_prefs, options: { localOnly: true } },
+  ...Object.fromEntries(
+    Object.entries(localTables).map(([name, t]) => [
+      name,
+      { tableDefinition: t, options: { localOnly: true } },
+    ]),
+  ),
 });
 
 export const powersync = new PowerSyncDatabase({
