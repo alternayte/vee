@@ -14,7 +14,7 @@ appId: app.vee.mobile
 - tapOn: "Body"
 - assertVisible: "Your tests, measurements and charts show here."
 - tapOn: "Food"
-- assertVisible: "Your portions, meals and shopping list show here."
+- assertVisible: "Saved meals"
 - tapOn: "Coach"
 - assertVisible: "AI and coach messages need an account and a connection."
 - tapOn: "Today"

@@ -27,14 +27,6 @@ export function BodyScreen() {
   );
 }
 
-export function FoodScreen() {
-  return (
-    <Screen title="Food">
-      <EmptyState text="Your portions, meals and shopping list show here." />
-    </Screen>
-  );
-}
-
 export function CoachScreen() {
   return (
     <Screen title="Coach">

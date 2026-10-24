@@ -1,0 +1,68 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# V9 Food: offline logging, saved meals, persistence, library, week plan and
+# shopping list.
+appId: app.vee.mobile
+---
+- clearState
+- setAirplaneMode: enabled
+- launchApp
+- extendedWaitUntil:
+    visible: "You have no plan yet.*"
+    timeout: 20000
+- tapOn: "Food"
+- extendedWaitUntil:
+    visible: "Protein: 0 of 7 palms"
+    timeout: 10000
+- tapOn: "Add 1 palm of protein"
+- assertVisible: "Protein: 1 of 7 palms"
+- longPressOn: "Add 1 fist of vegetables"
+- assertVisible: "Vegetables: 0.5 of 7 fists"
+- scrollUntilVisible:
+    element: "Scrambled eggs on sourdough"
+- tapOn: "Scrambled eggs on sourdough"
+- scrollUntilVisible:
+    element: "Protein: 2 of 7 palms"
+    direction: UP
+# A restart keeps the logs: they are in SQLite.
+- stopApp
+- launchApp
+- tapOn: "Food"
+- extendedWaitUntil:
+    visible: "Protein: 2 of 7 palms"
+    timeout: 10000
+- scrollUntilVisible:
+    element: "Undo the last log"
+- tapOn: "Undo the last log"
+- scrollUntilVisible:
+    element: "Protein: 1 of 7 palms"
+    direction: UP
+# Library and rating.
+- scrollUntilVisible:
+    element: "Meals"
+- tapOn: "Meals"
+- tapOn: "Chicken, rice and broccoli bowl"
+- scrollUntilVisible:
+    element: "4 of 5"
+- tapOn: "4 of 5"
+- back
+- back
+# Week plan to shopping list.
+- scrollUntilVisible:
+    element: "Week plan"
+- tapOn: "Week plan"
+- tapOn: "Chicken, rice and broccoli bowl"
+- tapOn: "Salmon with couscous and spinach"
+- tapOn: "Beef and pepper stir-fry with rice noodles"
+- tapOn: "Quick turkey chili with rice"
+- tapOn: "Chicken and chickpea coconut curry"
+- assertVisible: "5 of 5 to 7 dinners picked.*"
+- tapOn: "Build the shopping list"
+- extendedWaitUntil:
+    visible: "Meat and fish"
+    timeout: 10000
+- assertVisible: ".* items left to buy."
+- scrollUntilVisible:
+    element: "Chicken breast"
+- tapOn: "Chicken breast"
+- assertVisible: "✓ Chicken breast: 320 g"
+- setAirplaneMode: disabled
