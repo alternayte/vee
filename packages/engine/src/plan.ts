@@ -29,27 +29,21 @@ const LOAD_RANK: Record<Exercise["load"], number> = {
   bodyweight: 0,
 };
 
-type Pick = { exercise: Exercise; reason: Reason };
+export type Picked = { exercise: Exercise; reason: Reason };
 
 /**
  * The highest rung the user owns that kit and flags allow. On a rung with
  * alternatives: the exercise in progress state first, then loaded work, then
  * the exercise that uses more of the kit.
  */
-export function pickExercise(input: EngineInput, family: string): Pick | undefined {
-  const state = input.history.progress.find((p) => p.family === family);
-  const owned = state?.rung ?? 1;
-  const name = input.catalogue.families.find((f) => f.id === family)?.names.en.toLowerCase() ?? family;
-  const candidates = input.catalogue.exercises.filter(
-    (e) => e.family === family && e.rung <= owned && checkAllowed(e, input.kit, input.flags, input.today).ok,
-  );
-  const score = (e: Exercise) => [
-    e.rung,
-    e.id === state?.exerciseId ? 1 : 0,
-    LOAD_RANK[e.load],
-    e.requires.length,
-  ];
-  candidates.sort((a, b) => {
+/**
+ * Orders exercises on the same ladder: highest rung first; on one rung, the
+ * exercise in progress state, then loaded work, then the exercise that uses
+ * more of the kit, then id.
+ */
+export function rankCandidates(candidates: Exercise[], preferId?: string): Exercise[] {
+  const score = (e: Exercise) => [e.rung, e.id === preferId ? 1 : 0, LOAD_RANK[e.load], e.requires.length];
+  return [...candidates].sort((a, b) => {
     const sa = score(a);
     const sb = score(b);
     for (let k = 0; k < sa.length; k++) {
@@ -58,13 +52,29 @@ export function pickExercise(input: EngineInput, family: string): Pick | undefin
     }
     return a.id.localeCompare(b.id);
   });
-  const best = candidates[0];
-  if (!best) return undefined;
-  const ruleId = best.rung === owned ? "PLAN_PICK" : "PLAN_PICK_LOWER";
-  return { exercise: best, reason: reason(ruleId, { family, familyName: name, rung: best.rung, owned }) };
 }
 
-function chooseLoad(input: EngineInput, e: Exercise): { loadKg: number; reason: Reason } | undefined {
+export function familyName(input: Pick<EngineInput, "catalogue">, family: string): string {
+  return input.catalogue.families.find((f) => f.id === family)?.names.en.toLowerCase() ?? family;
+}
+
+/** The highest rung the user owns that kit and flags allow. */
+export function pickExercise(input: EngineInput, family: string): Picked | undefined {
+  const state = input.history.progress.find((p) => p.family === family);
+  const owned = state?.rung ?? 1;
+  const candidates = input.catalogue.exercises.filter(
+    (e) => e.family === family && e.rung <= owned && checkAllowed(e, input.kit, input.flags, input.today).ok,
+  );
+  const best = rankCandidates(candidates, state?.exerciseId)[0];
+  if (!best) return undefined;
+  const ruleId = best.rung === owned ? "PLAN_PICK" : "PLAN_PICK_LOWER";
+  return {
+    exercise: best,
+    reason: reason(ruleId, { family, familyName: familyName(input, family), rung: best.rung, owned }),
+  };
+}
+
+export function chooseLoad(input: EngineInput, e: Exercise): { loadKg: number; reason: Reason } | undefined {
   const options = loadOptions(e, input.kit);
   if (options.length === 0) return undefined;
   const state = input.history.progress.find((p) => p.family === e.family && p.exerciseId === e.id);
@@ -78,7 +88,7 @@ function chooseLoad(input: EngineInput, e: Exercise): { loadKg: number; reason: 
   return { loadKg: load, reason: reason("LOAD_SNAP", { was: state.loadKg, load }) };
 }
 
-function buildItem(input: EngineInput, slot: Slot, pick: Pick): TemplateItem {
+function buildItem(input: EngineInput, slot: Slot, pick: Picked): TemplateItem {
   const e = pick.exercise;
   const sets = slot.sets ?? BASE_SETS[slot.role];
   const range = e.default.reps ?? e.default.seconds;

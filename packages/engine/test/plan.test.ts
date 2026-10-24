@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { describe, expect, test } from "vitest";
 import {
+  emptyHistory,
   exposures,
   generatePlan,
   type KitItem,
@@ -67,7 +68,7 @@ describe("generatePlan", () => {
 
   test("picks the owned rung", () => {
     const p = generatePlan(
-      input({ history: { progress: [{ family: "vertical-pull", rung: 4 }] } }),
+      input({ history: { ...emptyHistory(), progress: [{ family: "vertical-pull", rung: 4 }] } }),
       V_TAPER_LEAN_GAIN,
     );
     const first = day(p, "A").items[0];
@@ -77,7 +78,7 @@ describe("generatePlan", () => {
 
   test("on a rung with alternatives, prefers loaded work the kit allows", () => {
     const p = generatePlan(
-      input({ history: { progress: [{ family: "vertical-pull", rung: 7 }] } }),
+      input({ history: { ...emptyHistory(), progress: [{ family: "vertical-pull", rung: 7 }] } }),
       V_TAPER_LEAN_GAIN,
     );
     expect(day(p, "A").items[0]?.exerciseId).toBe("pullup-weighted");
@@ -87,7 +88,10 @@ describe("generatePlan", () => {
   test("drops to the nearest rung below when the kit rules out the owned rung", () => {
     const noBand = homeKit.filter((k) => k.kind !== "band");
     const p = generatePlan(
-      input({ kit: noBand, history: { progress: [{ family: "vertical-pull", rung: 4 }] } }),
+      input({
+        kit: noBand,
+        history: { ...emptyHistory(), progress: [{ family: "vertical-pull", rung: 4 }] },
+      }),
       V_TAPER_LEAN_GAIN,
     );
     const first = day(p, "A").items[0];
@@ -113,7 +117,10 @@ describe("generatePlan", () => {
 
     const kept = generatePlan(
       input({
-        history: { progress: [{ family: "squat", rung: 1, exerciseId: "goblet-squat", loadKg: 10 }] },
+        history: {
+          ...emptyHistory(),
+          progress: [{ family: "squat", rung: 1, exerciseId: "goblet-squat", loadKg: 10 }],
+        },
       }),
       V_TAPER_LEAN_GAIN,
     );
@@ -122,7 +129,10 @@ describe("generatePlan", () => {
 
     const snapped = generatePlan(
       input({
-        history: { progress: [{ family: "squat", rung: 1, exerciseId: "goblet-squat", loadKg: 13 }] },
+        history: {
+          ...emptyHistory(),
+          progress: [{ family: "squat", rung: 1, exerciseId: "goblet-squat", loadKg: 13 }],
+        },
       }),
       V_TAPER_LEAN_GAIN,
     );
@@ -133,7 +143,10 @@ describe("generatePlan", () => {
   test("a load from another exercise is not reused", () => {
     const p = generatePlan(
       input({
-        history: { progress: [{ family: "squat", rung: 2, exerciseId: "goblet-squat", loadKg: 16 }] },
+        history: {
+          ...emptyHistory(),
+          progress: [{ family: "squat", rung: 2, exerciseId: "goblet-squat", loadKg: 16 }],
+        },
       }),
       V_TAPER_LEAN_GAIN,
     );

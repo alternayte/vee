@@ -66,9 +66,9 @@ export function estimateMinutes(items: TemplateItem[], cat: Cat): number {
  * Keeps main movements first, in order. Sorts accessory units (single items or
  * pairs) by load so that equal dial settings sit next to each other.
  */
-export function orderForDial(items: TemplateItem[], _cat: Cat): TemplateItem[] {
+export function orderForDial<T extends TemplateItem>(items: T[], _cat: Cat): T[] {
   const mains = items.filter((i) => i.role === "main");
-  const units: TemplateItem[][] = [];
+  const units: T[][] = [];
   const seen = new Set<number>();
   for (const i of items.filter((x) => x.role === "accessory")) {
     if (i.pairGroup === undefined) units.push([i]);
@@ -77,7 +77,7 @@ export function orderForDial(items: TemplateItem[], _cat: Cat): TemplateItem[] {
       units.push(items.filter((x) => x.pairGroup === i.pairGroup));
     }
   }
-  const key = (u: TemplateItem[]) => Math.min(...u.map((i) => i.loadKg ?? Number.NEGATIVE_INFINITY));
+  const key = (u: T[]) => Math.min(...u.map((i) => i.loadKg ?? Number.NEGATIVE_INFINITY));
   const sorted = units
     .map((u, idx) => ({ u, idx }))
     .sort((a, b) => key(a.u) - key(b.u) || a.idx - b.idx)
@@ -134,7 +134,7 @@ function pairAccessories(items: TemplateItem[], cat: Cat): boolean {
   return true;
 }
 
-export type CutResult = { items: TemplateItem[]; reasons: Reason[] };
+export type CutResult<T extends TemplateItem = TemplateItem> = { items: T[]; reasons: Reason[] };
 
 /**
  * Cuts a session to fit `minutes`, in the SDD order: drop the last accessory,
@@ -143,7 +143,7 @@ export type CutResult = { items: TemplateItem[]; reasons: Reason[] };
  * movements, then sets on the first main movement. The first main movement
  * stays. Items are in priority order; the result keeps that order.
  */
-export function timeCut(input: TemplateItem[], minutes: number, cat: Cat): CutResult {
+export function timeCut<T extends TemplateItem>(input: T[], minutes: number, cat: Cat): CutResult<T> {
   const items = input.map((i) => ({ ...i, reasons: { ...i.reasons, sets: [...i.reasons.sets] } }));
   const reasons: Reason[] = [];
   const limit = minutes * 60;

@@ -3,7 +3,7 @@
 
 import type { Exercise } from "@vee/catalogue";
 import { loadCatalogue } from "@vee/catalogue/load";
-import { ENGINE_VERSION, type EngineInput, type KitItem } from "../src";
+import { ENGINE_VERSION, type EngineInput, emptyHistory, type KitItem } from "../src";
 
 const loaded = loadCatalogue();
 if (!loaded.ok) throw new Error("catalogue does not build");
@@ -34,7 +34,7 @@ export function input(over: Partial<EngineInput> = {}): EngineInput {
     kit: homeKit,
     flags: [],
     catalogue,
-    history: { progress: [] },
+    history: emptyHistory(),
     today: "2026-11-02",
     engineVersion: ENGINE_VERSION,
     ...over,
