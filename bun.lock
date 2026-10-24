@@ -58,7 +58,7 @@
       "devDependencies": {
         "@babel/plugin-transform-async-generator-functions": "7.29.7",
         "@types/react": "19.3.0",
-        "babel-preset-expo": "~58.0.0",
+        "babel-preset-expo": "58.0.20",
         "typescript": "6.0.3",
       },
     },
@@ -92,6 +92,14 @@
         "@vee/catalogue": "workspace:*",
         "@vee/engine": "workspace:*",
       },
+      "devDependencies": {
+        "@types/bun": "1.4.4",
+        "typescript": "7.0.2",
+        "vitest": "5.0.5",
+      },
+    },
+    "packages/nutrition": {
+      "name": "@vee/nutrition",
       "devDependencies": {
         "@types/bun": "1.4.4",
         "typescript": "7.0.2",
@@ -626,6 +634,8 @@
     "@vee/fixtures": ["@vee/fixtures@workspace:packages/fixtures"],
 
     "@vee/mobile": ["@vee/mobile@workspace:apps/mobile"],
+
+    "@vee/nutrition": ["@vee/nutrition@workspace:packages/nutrition"],
 
     "@vee/schema": ["@vee/schema@workspace:packages/schema"],
 
