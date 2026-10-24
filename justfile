@@ -9,15 +9,19 @@ check:
     bun run typecheck
     bunx turbo run typecheck
 
-# V2 and later: tests. No target runs all; a target runs one package, e.g. `just test engine`
+# Tests. No target runs all unit tests and properties. `just test engine` runs
+# one package. `just test engine:props` runs its `test:props` script (V3).
 test target="":
     #!/usr/bin/env bash
     set -euo pipefail
-    if [ -z "{{target}}" ]; then
+    target="{{target}}"
+    if [ -z "$target" ]; then
         bun test tools
-        bunx turbo run test
+        bunx turbo run test test:props
+    elif [[ "$target" == *:* ]]; then
+        bunx turbo run "test:${target#*:}" --filter="@vee/${target%%:*}"
     else
-        bunx turbo run test --filter="@vee/{{target}}"
+        bunx turbo run test --filter="@vee/$target"
     fi
 
 # Catalogue validation: build the family YAML into dist/catalogue.v{N}.json
