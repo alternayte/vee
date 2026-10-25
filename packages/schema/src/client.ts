@@ -366,6 +366,19 @@ export const sync_errors = sqliteTable("sync_errors", {
   created_at: text("created_at").notNull(),
 });
 
+/**
+ * Local only: the coach chat. The phone sends the last turns with each
+ * message; the server keeps none of them. `note` marks an answer with a number
+ * no data confirms.
+ */
+export const chat_messages = sqliteTable("chat_messages", {
+  id: text("id").primaryKey(),
+  role: text("role").notNull(),
+  content: text("content").notNull(),
+  note: text("note"),
+  created_at: text("created_at").notNull(),
+});
+
 export const syncedTables = {
   profiles,
   kit_items,
@@ -403,6 +416,6 @@ export const syncedTables = {
   custom_exercises,
 };
 
-export const localTables = { runner_state, ui_prefs, sync_errors };
+export const localTables = { runner_state, ui_prefs, sync_errors, chat_messages };
 
 export const clientSchema = { ...syncedTables, ...localTables };

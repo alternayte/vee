@@ -35,8 +35,13 @@ describe("client schema", () => {
     for (const [key, t] of tables) expect(getTableConfig(t).name).toBe(key);
   });
 
-  test("local-only tables are runner_state, sync_errors and ui_prefs", () => {
-    expect(Object.keys(localTables).sort()).toEqual(["runner_state", "sync_errors", "ui_prefs"]);
+  test("local-only tables are chat_messages, runner_state, sync_errors and ui_prefs", () => {
+    expect(Object.keys(localTables).sort()).toEqual([
+      "chat_messages",
+      "runner_state",
+      "sync_errors",
+      "ui_prefs",
+    ]);
   });
 });
 
