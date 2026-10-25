@@ -1,0 +1,49 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# V9 Body, offline: the monthly test from its banner, a weigh-in and its
+# trend, a waist measurement, the muscle map, and the photos screen.
+appId: app.vee.mobile
+---
+- clearState
+- launchApp
+- setAirplaneMode: enabled
+- runFlow: subflows/onboard-quick.yaml
+- tapOn: "Body"
+- extendedWaitUntil:
+    visible: "The monthly test is due"
+    timeout: 10000
+- tapOn:
+    id: "test-due"
+- tapOn:
+    id: "test-hang"
+- inputText: "30"
+- tapOn:
+    id: "test-pullups"
+- inputText: "2"
+- hideKeyboard
+- tapOn:
+    id: "test-save"
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 10000
+- scrollUntilVisible:
+    element: "Latest 30 s.*"
+- back
+- assertNotVisible: "The monthly test is due"
+- tapOn:
+    id: "weight-input"
+- inputText: "75.4"
+- hideKeyboard
+- tapOn:
+    id: "weight-add"
+- extendedWaitUntil:
+    visible: "Trend 75.1 kg.*"
+    timeout: 10000
+- scrollUntilVisible:
+    element: "Muscles"
+- assertVisible: "This week"
+- scrollUntilVisible:
+    element: "Progress photos"
+- tapOn: "Progress photos"
+- assertVisible: "No front photos yet."
+- back
+- setAirplaneMode: disabled

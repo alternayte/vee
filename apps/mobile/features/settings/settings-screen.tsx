@@ -1,17 +1,24 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Settings: account, sync and your data. Everything except sign-in works
 // with no account and no connection.
+
+import { toCompilableQuery } from "@powersync/drizzle-driver";
+import { useQuery } from "@powersync/react";
+import { ui_prefs } from "@vee/schema";
+import { eq } from "drizzle-orm";
+import * as LocalAuthentication from "expo-local-authentication";
 import { Link } from "expo-router";
 import { ChevronRight } from "lucide-react-native";
 import { type ReactNode, useState } from "react";
-import { Alert, Pressable, View } from "react-native";
+import { Alert, Pressable, Switch, View } from "react-native";
 import { Screen } from "@/components/screen";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
 import { AccountError, deleteAccount, requestLink, signOut, useAccount } from "@/features/account/account";
 import { HAS_SERVER } from "@/features/account/config";
-import { powersync } from "@/features/db/database";
+import { LOCK_KEY, setBodyLock } from "@/features/body/screens";
+import { db, powersync } from "@/features/db/database";
 import { useTokens } from "@/features/theme/use-tokens";
 import { importCsvFile, shareExportJson, shareSetsCsv } from "./data";
 
@@ -172,6 +179,31 @@ function DataSection() {
   );
 }
 
+/** Locks the Body tab and photos behind a fingerprint or face check. */
+function BodyLock() {
+  const { data } = useQuery(toCompilableQuery(db.select().from(ui_prefs).where(eq(ui_prefs.key, LOCK_KEY))));
+  const [message, setMessage] = useState<string>();
+  return (
+    <>
+      <View className="flex-row items-center justify-between gap-3">
+        <Text className="flex-1">Lock Body and photos</Text>
+        <Switch
+          value={data.length > 0}
+          accessibilityLabel="Lock Body and photos"
+          onValueChange={async (on) => {
+            if (on && !(await LocalAuthentication.hasHardwareAsync())) {
+              setMessage("This phone has no fingerprint or face unlock.");
+              return;
+            }
+            await setBodyLock(on);
+          }}
+        />
+      </View>
+      {message && <Text variant="muted">{message}</Text>}
+    </>
+  );
+}
+
 export function SettingsScreen() {
   const { color } = useTokens();
   return (
@@ -199,6 +231,9 @@ export function SettingsScreen() {
           <ChevronRight color={color["text-muted"]} />
         </Pressable>
       </Link>
+      <Section title="Privacy">
+        <BodyLock />
+      </Section>
       <Section title="Your data">
         <DataSection />
       </Section>

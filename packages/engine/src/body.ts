@@ -79,7 +79,8 @@ export function rungHistory(input: EngineInput): Record<string, RungStep[]> {
       },
     });
     for (const s of state) {
-      const steps = (out[s.family] ??= []);
+      const steps = out[s.family] ?? [];
+      out[s.family] = steps;
       const last = steps.at(-1);
       if (!last || last.rung !== s.rung || last.exerciseId !== s.exerciseId)
         steps.push({ date, rung: s.rung, ...(s.exerciseId ? { exerciseId: s.exerciseId } : {}) });
@@ -90,11 +91,19 @@ export function rungHistory(input: EngineInput): Record<string, RungStep[]> {
 
 export type Consistency = { from: LocalDate; to: LocalDate; done: number; planned: number };
 
-/** Main sessions done against the rotation, per 4-week window, oldest first. */
+/**
+ * Main sessions done against the rotation, per 4-week window, oldest first.
+ * Windows start at the plan or the first session, whichever is earlier.
+ */
 export function consistency(input: EngineInput, windows = 6): Consistency[] {
   const perWeek = input.programme?.rotation.length ?? 0;
+  const firstSession = input.history.sessions.map((s) => s.date).sort()[0];
+  const start = [input.programme?.blockStart, firstSession]
+    .filter((d): d is string => d !== undefined)
+    .sort()[0];
+  const span = start ? Math.floor(daysBetween(start, input.today) / 28) + 1 : 1;
   const out: Consistency[] = [];
-  for (let n = windows - 1; n >= 0; n--) {
+  for (let n = Math.min(windows, span) - 1; n >= 0; n--) {
     const to = addDays(input.today, -28 * n);
     const from = addDays(to, -27);
     const done = input.history.sessions.filter(

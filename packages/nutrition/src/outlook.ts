@@ -5,6 +5,8 @@
 import { MIN_WEIGH_INS, type WeighIn } from "./targets";
 
 export const OUTLOOK_MONTHS = [3, 6, 12] as const;
+/** A horizon shows only when the weigh-ins span at least this share of it: a 3-week trend says nothing about a year. */
+export const MIN_SPAN_SHARE = 0.25;
 const DAYS_PER_MONTH = 30.44;
 const Z95 = 1.96;
 
@@ -28,7 +30,10 @@ export function weightOutlook(weighIns: WeighIn[], today: string): Outlook[] | u
     pts.reduce((s, p) => s + (p.y - (intercept + slope * p.x)) ** 2, 0) / Math.max(1, n - 2),
   );
   const t = dayNumber(today);
-  return OUTLOOK_MONTHS.map((months) => {
+  const span = Math.max(...pts.map((p) => p.x)) - Math.min(...pts.map((p) => p.x));
+  const months = OUTLOOK_MONTHS.filter((m) => span >= m * DAYS_PER_MONTH * MIN_SPAN_SHARE);
+  if (months.length === 0) return undefined;
+  return months.map((months) => {
     const x = t + months * DAYS_PER_MONTH;
     const centre = intercept + slope * x;
     // Prediction band of the line at x: it widens with distance from the data.

@@ -19,6 +19,7 @@ import {
 import { checkins, prescriptions, progress_state, runner_state, sessions, sets, uuidv7 } from "@vee/schema";
 import { progressRows } from "@vee/schema/engine";
 import { and, eq, isNull } from "drizzle-orm";
+import { lastNightSleepMin, writeSession } from "@/features/body/health";
 import { db } from "@/features/db/database";
 import { localDate } from "@/features/food/data";
 import { readEngineInput } from "@/features/training/data";
@@ -97,7 +98,14 @@ export async function startSession(answers: CheckinAnswers, adjust: TodayAdjustm
   if (!input?.programme) throw new Error("No plan yet. Finish onboarding first.");
   const today = localDate();
   const id = uuidv7();
-  const checkin: Checkin = { sessionId: id, date: today, ...answers };
+  // Health Connect sleep under 6 h counts as bad sleep (SDD "Readiness").
+  const hcSleepMin = await lastNightSleepMin();
+  const checkin: Checkin = {
+    sessionId: id,
+    date: today,
+    ...answers,
+    ...(hcSleepMin !== undefined ? { hcSleepMin } : {}),
+  };
   const mode = readinessMode(readinessScore(checkin));
   const { template } = nextSession(input);
   const rx = prescribe(input, template, {
@@ -120,7 +128,14 @@ export async function startSession(answers: CheckinAnswers, adjust: TodayAdjustm
       deload: rx.deload ? 1 : 0,
       ...stamp,
     });
-    await tx.insert(checkins).values({ id: uuidv7(), session_id: id, date: today, ...answers, ...stamp });
+    await tx.insert(checkins).values({
+      id: uuidv7(),
+      session_id: id,
+      date: today,
+      ...answers,
+      hc_sleep_min: hcSleepMin ?? null,
+      ...stamp,
+    });
     await writePrescription(tx, id, rx, stamp);
   });
   return id;
@@ -184,6 +199,9 @@ export async function finishSession(sessionId: string): Promise<Reason[]> {
   const input = await readEngineInput();
   if (!input) return [];
   const closed = closeSession(input, sessionId);
+  const row = (await db.select().from(sessions).where(eq(sessions.id, sessionId)))[0];
+  if (row?.started_at)
+    await writeSession(`Vee session ${row.day_type ?? ""}`.trim(), row.started_at, at).catch(() => undefined);
   await storeProgress(closed.progress);
   await db.delete(runner_state).where(eq(runner_state.session_id, sessionId));
   return Object.values(closed.reasons).flat();

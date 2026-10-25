@@ -10,7 +10,7 @@ appId: app.vee.mobile
 - tapOn: "Plan"
 - assertVisible: "Block week 1.*"
 - tapOn: "Body"
-- assertVisible: "Your tests, measurements and charts show here."
+- assertVisible: "Weight"
 - tapOn: "Food"
 - assertVisible: "Saved meals"
 - tapOn: "Coach"

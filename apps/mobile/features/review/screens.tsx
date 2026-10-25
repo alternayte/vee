@@ -26,7 +26,8 @@ type Numbers = ReviewNumbers & { focus?: string };
 const parse = <T,>(s: string | null): T | undefined => (s ? (JSON.parse(s) as T) : undefined);
 const PORTION_NAME = { palm: "Protein", fist: "Vegetables", cupped: "Carbs", thumb: "Fats" } as const;
 
-export function BodyScreen() {
+/** The weekly reviews, as a section of the Body screen. */
+export function ReviewsSection() {
   const signedIn = useAccount((s) => s.status === "signed-in");
   const [message, setMessage] = useState<string>();
   const [busy, setBusy] = useState(false);
@@ -36,7 +37,7 @@ export function BodyScreen() {
     ),
   );
   return (
-    <Screen title="Body">
+    <View className="gap-3">
       <Text variant="heading" accessibilityRole="header">
         Weekly reviews
       </Text>
@@ -78,8 +79,7 @@ export function BodyScreen() {
         />
       )}
       {message && <Text variant="muted">{message}</Text>}
-      <EmptyState text="Your tests, measurements and charts show here." />
-    </Screen>
+    </View>
   );
 }
 
