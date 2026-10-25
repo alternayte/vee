@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./engine": "./src/engine.ts",
     "./export": "./src/export.ts",
     "./server": "./src/server.ts",
     "./sync-config": "./src/sync-config.ts"
@@ -15,7 +16,9 @@
     "sync-config": "bun scripts/sync-config.ts"
   },
   "dependencies": {
-    "drizzle-orm": "0.45.4"
+    "drizzle-orm": "0.45.4",
+    "@vee/engine": "workspace:*",
+    "@vee/catalogue": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "1.4.4",

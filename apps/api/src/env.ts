@@ -27,6 +27,15 @@ export const EnvSchema = z.object({
   MAIL_TRANSPORT: z.enum(["smtp", "memory"]).default("smtp"),
   SMTP_URL: z.string().optional(),
   MAIL_FROM: z.string().default("Vee <no-reply@localhost>"),
+  /** AI is off when the key is empty. */
+  OPENROUTER_API_KEY: z.string().optional(),
+  OPENROUTER_BASE_URL: z.string().url().default("https://openrouter.ai/api/v1"),
+  AI_MODEL_STRUCTURED: z.string().default("deepseek/deepseek-v4.1-flash"),
+  AI_MODEL_WRITER: z.string().default("deepseek/deepseek-v4.1-flash"),
+  /** Monthly AI spend cap per user, in CHF. */
+  AI_MONTHLY_CAP_CHF: z.coerce.number().positive().default(5),
+  /** Converts the provider's USD cost to CHF for the cap. */
+  AI_CHF_PER_USD: z.coerce.number().positive().default(0.8),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

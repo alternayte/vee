@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import type { SessionTemplate } from "@vee/engine";
 import { Hono } from "hono";
 import { createLocalJWKSet, type JSONWebKeySet, jwtVerify } from "jose";
+import { z } from "zod";
 import {
   createExport,
   deleteAccount,
@@ -10,6 +12,7 @@ import {
   importCsv,
   readExport,
 } from "./account";
+import { createAi } from "./ai";
 import { createAuth } from "./auth";
 import { createDb, createPool } from "./db";
 import type { Env } from "./env";
@@ -19,11 +22,43 @@ import { applyBatch, BatchSchema } from "./sync/upload";
 
 type Vars = { userId: string };
 
-export function createApp(env: Env) {
+const ReasonSchema = z.object({
+  ruleId: z.string().max(64),
+  inputs: z.record(z.string(), z.union([z.string().max(200), z.number()])),
+  text: z.string().max(500),
+});
+const ExplainBody = z.object({ reasons: z.array(ReasonSchema).min(1).max(10) });
+const AdjustBody = z.object({
+  text: z.string().min(1).max(300),
+  template: z.object({
+    dayType: z.enum(["A", "B", "C", "D"]),
+    name: z.string().max(100),
+    estimatedMinutes: z.number(),
+    reasons: z.array(ReasonSchema).max(50),
+    items: z
+      .array(
+        z
+          .object({
+            order: z.number(),
+            family: z.string().max(64),
+            exerciseId: z.string().max(64),
+            role: z.enum(["main", "accessory"]),
+            sets: z.number(),
+            target: z.object({ unit: z.enum(["reps", "seconds"]), low: z.number(), high: z.number() }),
+          })
+          .passthrough(),
+      )
+      .max(20),
+  }),
+});
+const MealBody = z.object({ maxMinutes: z.number().int().min(5).max(180).optional() });
+
+export function createApp(env: Env, deps: { aiFetch?: typeof fetch } = {}) {
   const pool = createPool(env.DATABASE_URL);
   const db = createDb(pool);
   const mailer = createMailer(env);
   const auth = createAuth(env, pool, db, mailer);
+  const ai = createAi(env, pool, deps.aiFetch);
   const app = new Hono<{ Variables: Vars }>();
 
   const internal = (path: string, headers?: Headers) =>
@@ -197,6 +232,48 @@ export function createApp(env: Env) {
     return c.json({ deleted: true, message: "Your account and all your data are deleted from the server." });
   });
 
+  app.use("/ai/*", async (c, next) => {
+    if (!(await requireUser(c, next, (id) => c.set("userId", id))))
+      return c.json({ error: "unauthorized" }, 401);
+  });
+
+  /** Runs an AI task after the entitlement and budget checks. A failed task is 502 with the reason. */
+  async function aiCall<T>(
+    c: { get: (k: "userId") => string; json: (b: unknown, s?: number) => Response },
+    run: (userId: string) => Promise<{ ok: true; output: T } | { ok: false; error: string }>,
+  ): Promise<Response> {
+    const userId = c.get("userId");
+    const stop = await ai.refusal(userId);
+    if (stop) return c.json(stop.body, stop.status);
+    const r = await run(userId);
+    return r.ok ? c.json(r.output) : c.json({ error: "ai-failed", message: r.error }, 502);
+  }
+
+  app.post("/ai/explain-more", async (c) => {
+    const body = ExplainBody.safeParse(await c.req.json().catch(() => null));
+    if (!body.success) return c.json({ error: "invalid" }, 400);
+    return aiCall(c, (u) => ai.explain(u, body.data.reasons));
+  });
+
+  app.post("/ai/adjust-today", async (c) => {
+    const body = AdjustBody.safeParse(await c.req.json().catch(() => null));
+    if (!body.success) return c.json({ error: "invalid" }, 400);
+    return aiCall(c, (u) => ai.adjust(u, body.data.text, body.data.template as SessionTemplate));
+  });
+
+  app.post("/ai/meal-draft", async (c) => {
+    const body = MealBody.safeParse(await c.req.json().catch(() => ({})));
+    if (!body.success) return c.json({ error: "invalid" }, 400);
+    return aiCall(c, (u) => ai.meal(u, body.data.maxMinutes));
+  });
+
+  /** Makes the review of the last 7 days now, for a user who opens it before the Sunday job. */
+  app.post("/ai/weekly-review", async (c) => {
+    const r = await ai.review(c.get("userId"));
+    if (!r) return c.json({ error: "no-programme" }, 409);
+    return c.json({ week: r.numbers.week.to, words: r.words ?? null, proposals: r.proposals.length });
+  });
+
   app.post("/sync/upload", async (c) => {
     let body: unknown;
     try {
@@ -216,6 +293,8 @@ export function createApp(env: Env) {
     mailer,
     auth,
     db,
+    ai,
+    pool,
   };
 }
 

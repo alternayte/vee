@@ -65,7 +65,15 @@ export const exports = pgTable("exports", {
   expires_at: timestamp("expires_at", { withTimezone: true }).notNull(),
 });
 
-export const serverSchema = { ...pgSynced, ai_usage, audit_log, exports };
+/** AI answers that cost nothing to repeat, by a hash of the input (explain_more). */
+export const ai_cache = pgTable("ai_cache", {
+  id: text("id").primaryKey(),
+  task: text("task").notNull(),
+  output: text("output").notNull(),
+  at: timestamp("at", { withTimezone: true }).notNull(),
+});
+
+export const serverSchema = { ...pgSynced, ai_usage, ai_cache, audit_log, exports };
 
 const q = (name: string) => `"${name.replaceAll('"', '""')}"`;
 

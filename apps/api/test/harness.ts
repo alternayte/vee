@@ -18,7 +18,10 @@ export async function freshDatabase(): Promise<void> {
   await c.end();
 }
 
-export async function startApp(over: Record<string, string> = {}): Promise<App> {
+export async function startApp(
+  over: Record<string, string> = {},
+  deps: Parameters<typeof createApp>[1] = {},
+): Promise<App> {
   const env = readEnv({
     DATABASE_URL,
     BETTER_AUTH_SECRET: "test-secret-test-secret-test-secret-0123",
@@ -29,7 +32,7 @@ export async function startApp(over: Record<string, string> = {}): Promise<App> 
     ANDROID_CERT_SHA256: "AA:BB:CC",
     ...over,
   });
-  const app = createApp(env);
+  const app = createApp(env, deps);
   await app.migrate();
   return app;
 }
