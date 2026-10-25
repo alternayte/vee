@@ -93,6 +93,9 @@ const TEMPLATES: Record<string, string> = {
   TIME_CUT_FIRST_MAIN_SETS: "Sets on the first movement go down by 1 to fit {minutes} min.",
 };
 
+/** The template of a rule's reason, with its {inputs} unfilled. */
+export const ruleTemplate = (ruleId: string): string | undefined => TEMPLATES[ruleId];
+
 export function reason(ruleId: string, inputs: Record<string, number | string>): Reason {
   const template = TEMPLATES[ruleId];
   if (template === undefined) throw new Error(`no reason template for ${ruleId}`);

@@ -41,7 +41,7 @@ import type { ReviewNumbers } from "./types";
  * Per attempt. Tasks the user waits for: 20 s. The weekly review is a job,
  * and a meal draft at high effort takes longer (V12: p90 about 16 s), so 60 s.
  */
-export const TIMEOUT_MS: Record<TaskName, number> = {
+export const TIMEOUT_MS: Record<Exclude<TaskName, "coach_chat">, number> = {
   weekly_review: 60_000,
   explain_more: 20_000,
   adjust_today: 20_000,
@@ -70,21 +70,28 @@ export function reviewNumbers(
 ): ReviewNumbers {
   const { from: _f, to: _t, ...training } = trainingWeek(input, from, to);
   const p = input.programme;
-  const days = p?.templates ?? [];
-  // The changes the engine accepts now (I4), so the model picks from them.
-  const passes = (c: PlanChange) => p !== undefined && validateProposal(input, c).ok;
   return {
     week: { from, to },
     training,
     food,
     weight,
     minutesPerSession: input.profile.minutesPerSession,
-    plan: days.map((t) => ({
+    plan: (p?.templates ?? []).map((t) => ({
       dayType: t.dayType,
       name: t.name,
       minutes: t.estimatedMinutes,
       items: t.items.map((i) => ({ exerciseId: i.exerciseId, family: i.family, role: i.role, sets: i.sets })),
     })),
+    ...acceptedChanges(input),
+  };
+}
+
+/** The plan changes the engine accepts now (I4), so a model picks from them. */
+export function acceptedChanges(input: EngineInput) {
+  const p = input.programme;
+  const days = p?.templates ?? [];
+  const passes = (c: PlanChange) => p !== undefined && validateProposal(input, c).ok;
+  return {
     swapOptions: days
       .flatMap((t) =>
         t.items.map((i) => ({

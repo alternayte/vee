@@ -52,6 +52,7 @@ const routes: Routes = {
   meal_draft: { model, effort: "medium" },
   adjust_today: { model, effort: "low" },
   explain_more: { model, effort: "low" },
+  coach_chat: { model, effort: "low" },
 };
 const gw = createGateway({ apiKey: key });
 const loaded = loadCatalogue();

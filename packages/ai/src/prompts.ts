@@ -8,6 +8,7 @@ export const PROMPT_VERSIONS = {
   explain_more: 2,
   adjust_today: 2,
   meal_draft: 3,
+  coach_chat: 1,
 } as const;
 
 export type TaskName = keyof typeof PROMPT_VERSIONS;

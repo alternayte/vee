@@ -35,6 +35,54 @@ export type TaskSpec<T> = {
 
 type Message = { role: "system" | "user" | "assistant"; content: string };
 
+/** A message in a chat with tools (OpenAI format, as OpenRouter takes it). */
+export type ChatMessage =
+  | { role: "system" | "user"; content: string }
+  | { role: "assistant"; content: string; tool_calls?: ToolCall[] }
+  | { role: "tool"; tool_call_id: string; content: string };
+
+export type ToolCall = { id: string; type: "function"; function: { name: string; arguments: string } };
+
+export type ToolSpec = { name: string; description: string; parameters: unknown };
+
+export type ChatRound = { text: string; toolCalls: ToolCall[]; usage: Usage };
+
+type Delta = {
+  model?: string;
+  choices?: {
+    delta?: {
+      content?: string | null;
+      tool_calls?: { index: number; id?: string; function?: { name?: string; arguments?: string } }[];
+    };
+  }[];
+  usage?: { total_tokens?: number; cost?: number };
+  error?: { message?: string };
+};
+
+/** The JSON payloads of a server-sent event stream. */
+async function* events(body: ReadableStream<Uint8Array>): AsyncGenerator<string> {
+  const reader = body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    let end = buffer.indexOf("\n");
+    while (end >= 0) {
+      const line = buffer.slice(0, end).trim();
+      buffer = buffer.slice(end + 1);
+      // Lines that start with ":" are keep-alive comments.
+      if (line.startsWith("data:")) {
+        const data = line.slice(5).trim();
+        if (data === "[DONE]") return;
+        yield data;
+      }
+      end = buffer.indexOf("\n");
+    }
+  }
+}
+
 type Completion = {
   model?: string;
   choices?: { message?: { content?: string | null } }[];
@@ -98,6 +146,67 @@ export function createGateway(o: GatewayOptions) {
   }
 
   return {
+    /**
+     * One streamed chat round. Text deltas go to `onText` as they arrive; tool
+     * calls come back whole at the end.
+     */
+    async chatRound(spec: {
+      route: Route;
+      messages: ChatMessage[];
+      tools: ToolSpec[];
+      timeoutMs: number;
+      onText: (delta: string) => void;
+    }): Promise<ChatRound> {
+      const started = Date.now();
+      const r = await f(url, {
+        method: "POST",
+        headers: { authorization: `Bearer ${o.apiKey}`, "content-type": "application/json" },
+        signal: AbortSignal.timeout(spec.timeoutMs),
+        body: JSON.stringify({
+          model: spec.route.model,
+          messages: spec.messages,
+          stream: true,
+          reasoning: { effort: spec.route.effort, exclude: true },
+          ...(spec.tools.length ? { tools: spec.tools.map((t) => ({ type: "function", function: t })) } : {}),
+          provider: { zdr: true, data_collection: "deny", require_parameters: true },
+          usage: { include: true },
+        }),
+      });
+      if (!r.ok || !r.body)
+        throw new Error(`model call failed: ${r.status} ${(await r.text()).slice(0, 200)}`);
+      let text = "";
+      let model = spec.route.model;
+      let cost = 0;
+      let tokens = 0;
+      const calls: ToolCall[] = [];
+      for await (const data of events(r.body)) {
+        const d = JSON.parse(data) as Delta;
+        if (d.error) throw new Error(`model call failed: ${d.error.message ?? "stream error"}`);
+        if (d.model) model = d.model;
+        if (d.usage) {
+          cost = d.usage.cost ?? cost;
+          tokens = d.usage.total_tokens ?? tokens;
+        }
+        const delta = d.choices?.[0]?.delta;
+        if (delta?.content) {
+          text += delta.content;
+          spec.onText(delta.content);
+        }
+        for (const t of delta?.tool_calls ?? []) {
+          const c = calls[t.index] ?? { id: "", type: "function", function: { name: "", arguments: "" } };
+          calls[t.index] = c;
+          if (t.id) c.id = t.id;
+          if (t.function?.name) c.function.name += t.function.name;
+          if (t.function?.arguments) c.function.arguments += t.function.arguments;
+        }
+      }
+      return {
+        text,
+        toolCalls: calls.filter(Boolean),
+        usage: { model, costUsd: cost, tokens, ms: Date.now() - started },
+      };
+    },
+
     async run<T>(spec: TaskSpec<T>): Promise<TaskResult<T>> {
       const usage: Usage[] = [];
       const messages: Message[] = [
