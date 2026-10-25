@@ -10,11 +10,17 @@ import type { Auth } from "./auth";
 /** Any constant; every API process takes the same lock. */
 const MIGRATION_LOCK = 704_212_345;
 export const PUBLICATION = "powersync";
+/** PowerSync's bucket storage database (PS_STORAGE_URI). The API makes it, so no init script is needed. */
+export const POWERSYNC_STORAGE_DB = "powersync_storage";
 
 export async function migrate(pool: pg.Pool, auth: Auth): Promise<void> {
   const client = await pool.connect();
   try {
     await client.query("SELECT pg_advisory_lock($1)", [MIGRATION_LOCK]);
+    const storage = await client.query("SELECT 1 FROM pg_database WHERE datname = $1", [
+      POWERSYNC_STORAGE_DB,
+    ]);
+    if (storage.rowCount === 0) await client.query(`CREATE DATABASE "${POWERSYNC_STORAGE_DB}"`);
     for (const t of Object.values(serverSchema) as PgTable[]) {
       for (const sql of ddlFor(t)) await client.query(sql);
     }
