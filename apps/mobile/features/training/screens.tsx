@@ -17,6 +17,7 @@ import { useCallback, useState } from "react";
 import { View } from "react-native";
 import { Screen } from "@/components/screen";
 import { Button } from "@/components/ui/button";
+import { Choice } from "@/components/ui/choice";
 import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
 import { aiPost } from "@/features/ai/client";
@@ -27,7 +28,7 @@ import { activeSessionId, skipNext } from "@/features/session/data";
 import { catalogue } from "./catalogue";
 import { addTodayFlags, readEngineInput } from "./data";
 
-function useEngineInput(): EngineInput | undefined {
+export function useEngineInput(): EngineInput | undefined {
   const [input, setInput] = useState<EngineInput>();
   useFocusEffect(
     useCallback(() => {
@@ -132,11 +133,20 @@ function AdjustToday({ template, onApply }: { template: SessionTemplate; onApply
   );
 }
 
+/** "I only have 20 min" without AI (PRD "Time cut"); 0 is the full session. */
+const TIME_OPTIONS = [
+  { value: 0, label: "Full" },
+  { value: 30, label: "30 min" },
+  { value: 20, label: "20 min" },
+  { value: 15, label: "15 min" },
+];
+
 export function TodayScreen() {
   const input = useEngineInput();
   const [adjusted, setAdjusted] = useState<Prescription>();
   const [active, setActive] = useState<string>();
   const [skipped, setSkipped] = useState(false);
+  const [minutes, setMinutes] = useState(0);
   useFocusEffect(
     useCallback(() => {
       void activeSessionId().then(setActive);
@@ -169,6 +179,20 @@ export function TodayScreen() {
   const items = adjusted?.items ?? next.template.items;
   return (
     <Screen title="Today">
+      <View className="gap-2">
+        <Text variant="label">Time today</Text>
+        <Choice
+          options={TIME_OPTIONS}
+          selected={[minutes]}
+          onToggle={(m) => {
+            setMinutes(m);
+            void apply(m ? { minutes: m } : {});
+          }}
+        />
+        {minutes > 0 && (
+          <Text variant="muted">Accessories go first, then sets. The main movement stays.</Text>
+        )}
+      </View>
       <View className="gap-3 rounded-lg border border-border bg-surface p-4">
         <Text variant="label">Next session</Text>
         <Text variant="heading" testID="next-session">
@@ -211,40 +235,6 @@ export function TodayScreen() {
         {skipped && <Text variant="muted">Skipped. This session stays next, with no penalty.</Text>}
       </View>
       <AdjustToday template={next.template} onApply={(a) => void apply(a)} />
-    </Screen>
-  );
-}
-
-export function PlanScreen() {
-  const input = useEngineInput();
-  const p = input?.programme;
-  return (
-    <Screen title="Plan">
-      {p && (
-        <Text variant="muted">
-          Block week {p.blockWeek}. The rotation runs {p.rotation.join(" → ")}.
-        </Text>
-      )}
-      {p?.templates.map((t) => (
-        <View key={t.dayType} className="gap-3 rounded-lg border border-border bg-surface p-4">
-          <Text variant="heading">
-            {t.dayType} · {t.name}
-          </Text>
-          <Text variant="label">About {t.estimatedMinutes} min</Text>
-          {t.items.map((i) => (
-            <ItemRow key={`${i.order}-${i.exerciseId}`} item={i} />
-          ))}
-          {t.reasons.map((r) => (
-            <Why key={`${r.ruleId}-${r.text}`} reason={r} />
-          ))}
-          <TellMeMore
-            reasons={[...t.reasons, ...t.items.flatMap((i) => [i.reasons.exercise, ...i.reasons.sets])].slice(
-              0,
-              10,
-            )}
-          />
-        </View>
-      ))}
     </Screen>
   );
 }

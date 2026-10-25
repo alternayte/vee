@@ -1,0 +1,59 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# V9 Plan, offline: a swap the engine ranks, the ladders, a past session
+# logged with a set, moved and removed, and the time cut on Today.
+appId: app.vee.mobile
+---
+- clearState
+- launchApp
+- setAirplaneMode: enabled
+- runFlow: subflows/onboard-quick.yaml
+# Time cut: the estimate follows the minutes.
+- tapOn: "20 min"
+- assertVisible: "Accessories go first, then sets. The main movement stays."
+# Swap from the exercise page.
+- tapOn: "Plan"
+- assertVisible: ".* · next"
+- tapOn:
+    id: "plan-item-A"
+    index: 0
+- scrollUntilVisible:
+    element:
+      id: "swap-option"
+    timeout: 20000
+- tapOn: "Swap to .*"
+- extendedWaitUntil:
+    visible: "Ladder"
+    timeout: 10000
+- back
+# The ladders.
+- tapOn: "Ladders"
+- assertVisible: "Rung .* of .*"
+- back
+# A past session: log, add a set, move, remove.
+- tapOn: "History: log, edit or move a session"
+- tapOn: "Day A"
+- tapOn:
+    id: "past-log"
+- extendedWaitUntil:
+    visible: "No sets yet."
+    timeout: 10000
+- tapOn:
+    id: "set-add"
+- tapOn:
+    id: "set-value-input"
+- inputText: "9"
+- hideKeyboard
+- tapOn:
+    id: "set-save"
+- extendedWaitUntil:
+    visible:
+      id: "logged-set"
+    timeout: 10000
+- tapOn: "Remove this session"
+- tapOn:
+    id: "android:id/button1"
+- extendedWaitUntil:
+    notVisible:
+      id: "history-row"
+    timeout: 10000
+- setAirplaneMode: disabled

@@ -9,6 +9,7 @@ import { checkAllowed } from "./kit";
 import { familyName, MAX_SETS, planItem } from "./plan";
 import { blockWeek, DELOAD_WEEK, readinessMode, readinessScore, STALL_SESSIONS } from "./readiness";
 import { reason } from "./reasons";
+import { substitute } from "./substitute";
 import { estimateMinutes, orderForDial } from "./time";
 import type { DayType, EngineInput, Programme, Reason, SessionTemplate } from "./types";
 import { weeklyVolume } from "./volume";
@@ -204,4 +205,44 @@ export function validateProposal(input: EngineInput, change: PlanChange): Valida
     grew: change.sets > item.sets,
   });
   return bad ?? { ok: true, programme: replaceDay(p, newDay), reasons: [r] };
+}
+
+/**
+ * The user's own swap (PRD "Swap"): any candidate `substitute` ranks for the
+ * movement, on the same ladder or with the same pattern. It needs no stall,
+ * because the user chose it; kit, flags (in the ranking) and time still apply.
+ */
+export function swapByUser(
+  input: EngineInput,
+  dayType: DayType,
+  exerciseId: string,
+  to: string,
+): ValidationResult {
+  const p = input.programme;
+  if (!p) throw new Error("swapByUser needs a programme");
+  const day = p.templates.find((t) => t.dayType === dayType);
+  const at = day?.items.findIndex((i) => i.exerciseId === exerciseId) ?? -1;
+  const item = day?.items[at];
+  if (!day || !item) {
+    return refuse(
+      "not-in-plan",
+      reason("PROPOSAL_NOT_IN_PLAN", { what: exerciseName(input, exerciseId), day: dayType }),
+    );
+  }
+  const pick = substitute(input, exerciseId).find((c) => c.exerciseId === to);
+  const e = input.catalogue.exercises.find((x) => x.id === to);
+  if (!pick || !e) return refuse("kit", reason("PROPOSAL_KIT", { exercise: e?.names.en ?? to }));
+  const next = planItem(
+    input,
+    { family: e.family, role: item.role, sets: item.sets },
+    { exercise: e, reason: pick.reason },
+  );
+  if (item.pairGroup !== undefined) next.pairGroup = item.pairGroup;
+  const items = orderForDial(
+    day.items.map((x, n) => (n === at ? next : x)),
+    input.catalogue,
+  );
+  const newDay = { ...day, items, estimatedMinutes: estimateMinutes(items, input.catalogue) };
+  const bad = checkDay(input, p, newDay, { exerciseId: e.id, sets: item.sets, grew: false });
+  return bad ?? { ok: true, programme: replaceDay(p, newDay), reasons: [pick.reason] };
 }

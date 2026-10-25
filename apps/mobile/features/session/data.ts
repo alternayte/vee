@@ -10,6 +10,7 @@ import {
   nextSession,
   type PrescribeContext,
   type Prescription,
+  type ProgressState,
   prescribe,
   type Reason,
   readinessMode,
@@ -28,6 +29,67 @@ export type CheckinAnswers = Pick<Checkin, "energy" | "soreness" | "sleep">;
 
 /** "Adjust today" answers that the session start uses. */
 export type TodayAdjustment = Pick<PrescribeContext, "minutes" | "focus">;
+
+type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+/** The frozen prescription rows of a session (I3). */
+async function writePrescription(
+  tx: Tx,
+  sessionId: string,
+  rx: Prescription,
+  stamp: { created_at: string; updated_at: string },
+) {
+  const row = (section: "warmup" | "main", i: Prescription["items"][number]) => ({
+    id: uuidv7(),
+    session_id: sessionId,
+    section,
+    item_order: i.order,
+    family: i.family,
+    exercise_id: i.exerciseId,
+    role: i.role,
+    sets: i.sets,
+    target: JSON.stringify(i.target),
+    load_kg: i.loadKg ?? null,
+    band: i.band ? JSON.stringify(i.band) : null,
+    tempo: i.tempo ?? null,
+    rest_s: i.restS,
+    pair_group: i.pairGroup ?? null,
+    reasons: JSON.stringify(i.reasons),
+    engine_version: rx.engineVersion,
+    ...stamp,
+  });
+  for (const i of rx.warmup) await tx.insert(prescriptions).values(row("warmup", i));
+  for (const i of rx.items) await tx.insert(prescriptions).values(row("main", i));
+}
+
+/**
+ * A session logged after the fact (PRD "Edit later"): the day's prescription
+ * as the plan has it now, at full readiness. The sets are added on the edit
+ * screen, and every ladder state is rebuilt from the corrected history.
+ */
+export async function logPastSession(date: string, dayType: string): Promise<string> {
+  const input = await readEngineInput();
+  const template = input?.programme?.templates.find((t) => t.dayType === dayType);
+  if (!input || !template) throw new Error("This day is not in your plan.");
+  const id = uuidv7();
+  const rx = prescribe({ ...input, today: date }, template, { readiness: "full", sessionId: id });
+  const at = now();
+  const stamp = { created_at: at, updated_at: at };
+  await db.transaction(async (tx) => {
+    await tx.insert(sessions).values({
+      id,
+      kind: rx.kind,
+      day_type: rx.dayType ?? null,
+      status: "done",
+      date,
+      readiness_mode: rx.readinessMode,
+      deload: rx.deload ? 1 : 0,
+      ...stamp,
+    });
+    await writePrescription(tx, id, rx, stamp);
+  });
+  return id;
+}
 
 /** Starts the next session: the check-in, the frozen prescription, and the session row, in one transaction. */
 export async function startSession(answers: CheckinAnswers, adjust: TodayAdjustment = {}): Promise<string> {
@@ -59,27 +121,7 @@ export async function startSession(answers: CheckinAnswers, adjust: TodayAdjustm
       ...stamp,
     });
     await tx.insert(checkins).values({ id: uuidv7(), session_id: id, date: today, ...answers, ...stamp });
-    const row = (section: "warmup" | "main", i: Prescription["items"][number]) => ({
-      id: uuidv7(),
-      session_id: id,
-      section,
-      item_order: i.order,
-      family: i.family,
-      exercise_id: i.exerciseId,
-      role: i.role,
-      sets: i.sets,
-      target: JSON.stringify(i.target),
-      load_kg: i.loadKg ?? null,
-      band: i.band ? JSON.stringify(i.band) : null,
-      tempo: i.tempo ?? null,
-      rest_s: i.restS,
-      pair_group: i.pairGroup ?? null,
-      reasons: JSON.stringify(i.reasons),
-      engine_version: rx.engineVersion,
-      ...stamp,
-    });
-    for (const i of rx.warmup) await tx.insert(prescriptions).values(row("warmup", i));
-    for (const i of rx.items) await tx.insert(prescriptions).values(row("main", i));
+    await writePrescription(tx, id, rx, stamp);
   });
   return id;
 }
@@ -142,6 +184,14 @@ export async function finishSession(sessionId: string): Promise<Reason[]> {
   const input = await readEngineInput();
   if (!input) return [];
   const closed = closeSession(input, sessionId);
+  await storeProgress(closed.progress);
+  await db.delete(runner_state).where(eq(runner_state.session_id, sessionId));
+  return Object.values(closed.reasons).flat();
+}
+
+/** Replaces the ladder states: the old rows are soft-deleted, so the change syncs. */
+export async function storeProgress(progress: ProgressState[]) {
+  const at = now();
   const old = await db
     .select({ id: progress_state.id })
     .from(progress_state)
@@ -152,11 +202,9 @@ export async function finishSession(sessionId: string): Promise<Reason[]> {
         .update(progress_state)
         .set({ deleted_at: at, updated_at: at })
         .where(eq(progress_state.id, r.id));
-    for (const row of progressRows(closed.progress, { newId: uuidv7, now: at }))
+    for (const row of progressRows(progress, { newId: uuidv7, now: at }))
       await tx.insert(progress_state).values(row);
-    await tx.delete(runner_state).where(eq(runner_state.session_id, sessionId));
   });
-  return Object.values(closed.reasons).flat();
 }
 
 /** A skip has no penalty (PRD "Readiness"): the rotation moves on. */

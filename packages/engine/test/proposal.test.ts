@@ -7,6 +7,8 @@ import {
   generatePlan,
   type PlanChange,
   type Programme,
+  substitute,
+  swapByUser,
   V_TAPER_LEAN_GAIN,
   validateProposal,
 } from "../src";
@@ -187,5 +189,30 @@ describe("validateProposal", () => {
     const reason = r.ok ? r.reasons[0] : r.reason;
     expect(r.ok).toBe(false);
     expect(reason?.text).not.toMatch(/\{/);
+  });
+});
+
+describe("swapByUser", () => {
+  test("a ranked candidate replaces the movement with its reason, and needs no stall", () => {
+    const i = withPlan();
+    const row = dayA(i.programme)?.items.find((x) => x.family === "row");
+    if (!row) throw new Error("no row");
+    const pick = substitute(i, row.exerciseId)[0];
+    if (!pick) throw new Error("no candidate");
+    const r = validateProposal(i, { kind: "swap", dayType: "A", family: "row", to: pick.exerciseId });
+    expect(r.ok).toBe(false);
+    const own = swapByUser(i, "A", row.exerciseId, pick.exerciseId);
+    if (!own.ok) throw new Error(own.reason.text);
+    const after = dayA(own.programme)?.items.find((x) => x.exerciseId === pick.exerciseId);
+    expect(after?.sets).toBe(row.sets);
+    expect(after?.reasons.exercise.ruleId).toMatch(/^SWAP_/);
+  });
+
+  test("an exercise the ranking does not offer is refused", () => {
+    const i = withPlan();
+    const row = dayA(i.programme)?.items.find((x) => x.family === "row");
+    if (!row) throw new Error("no row");
+    const r = swapByUser(i, "A", row.exerciseId, "pullup-strict");
+    expect(r.ok).toBe(false);
   });
 });
