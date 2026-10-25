@@ -8,8 +8,12 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
+    "@better-auth/cimd": "1.7.12",
     "@better-auth/expo": "1.7.12",
+    "@better-auth/mcp": "1.7.12",
+    "@better-auth/oauth-provider": "1.7.12",
     "@better-auth/passkey": "1.7.12",
+    "@modelcontextprotocol/server": "2.4.0",
     "@vee/ai": "workspace:*",
     "@vee/catalogue": "workspace:*",
     "@vee/engine": "workspace:*",

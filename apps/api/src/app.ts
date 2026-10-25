@@ -14,10 +14,11 @@ import {
   readExport,
 } from "./account";
 import { createAi } from "./ai";
-import { createAuth } from "./auth";
+import { createAuth, mcpResource } from "./auth";
 import { createDb, createPool } from "./db";
 import type { Env } from "./env";
 import { createMailer } from "./mail";
+import { mountMcp } from "./mcp";
 import { migrate } from "./migrate";
 import { applyBatch, BatchSchema } from "./sync/upload";
 
@@ -100,6 +101,9 @@ export function createApp(env: Env, deps: { aiFetch?: typeof fetch } = {}) {
   }
 
   app.on(["GET", "POST"], "/api/auth/*", (c) => auth.handler(c.req.raw));
+
+  const resource = mcpResource(env);
+  if (resource) mountMcp(app, { env, auth, ai, pool, resource });
 
   app.get("/health", async (c) => {
     try {

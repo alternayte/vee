@@ -9,6 +9,7 @@ import { programmeRows } from "@vee/schema/engine";
 import { dueReviews, localParts, nextMonth } from "../src/ai";
 import type { App } from "../src/app";
 import { freshDatabase, OWNER_EMAIL, query, request, signIn, startApp } from "./harness";
+import { insert, onboard } from "./onboard";
 
 const catalogue = catalogueJson as unknown as Catalogue;
 let app: App;
@@ -59,71 +60,6 @@ const fakeModel = (async (_url: string, init: RequestInit) => {
     }),
   );
 }) as unknown as typeof fetch;
-
-async function insert(table: string, rows: Record<string, unknown>[]) {
-  for (const r of rows) {
-    const keys = Object.keys(r);
-    await query(
-      `INSERT INTO "${table}" (${keys.map((k) => `"${k}"`).join(", ")}) VALUES (${keys.map((_, i) => `$${i + 1}`).join(", ")})`,
-      keys.map((k) => r[k]),
-    );
-  }
-}
-
-/** A profile and the first programme for a user, as the app writes them. */
-async function onboard(userId: string) {
-  const kit: KitItem[] = [{ id: uuidv7(), kind: "dial_db", count: 1, params: { min: 2, max: 24, step: 2 } }];
-  const at = new Date().toISOString();
-  await insert("profiles", [
-    {
-      id: uuidv7(),
-      user_id: userId,
-      height_cm: 180,
-      birth_year: 1989,
-      sex: "male",
-      timezone: "Europe/Zurich",
-      goal_template: "v-taper-lean-gain",
-      minutes_per_session: 35,
-      created_at: at,
-      updated_at: at,
-    },
-  ]);
-  await insert(
-    "kit_items",
-    kit.map((k) => ({
-      id: k.id,
-      user_id: userId,
-      kind: k.kind,
-      count: k.count,
-      params: JSON.stringify(k.params),
-      created_at: at,
-      updated_at: at,
-    })),
-  );
-  const plan = generatePlan(
-    {
-      profile: {
-        heightCm: 180,
-        birthYear: 1989,
-        sex: "male",
-        minutesPerSession: 35,
-        goalTemplate: "v-taper-lean-gain",
-      },
-      kit,
-      flags: [],
-      catalogue,
-      history: emptyHistory(),
-      today: at.slice(0, 10),
-      engineVersion: ENGINE_VERSION,
-    },
-    V_TAPER_LEAN_GAIN,
-  );
-  const rows = programmeRows(plan, { newId: uuidv7, now: at, userId });
-  await insert("programmes", rows.programmes);
-  await insert("session_templates", rows.session_templates);
-  await insert("template_items", rows.template_items);
-  return plan;
-}
 
 beforeAll(async () => {
   await freshDatabase();
