@@ -39,9 +39,13 @@ export function mcpResource(env: Env): string | undefined {
   return u.protocol === "https:" || loopback ? `${u.origin}/mcp` : undefined;
 }
 
-/** A magic link that continues an OAuth sign-in opens in the browser, not the app. */
-const continuesOAuth = (url: string, env: Env) =>
-  new URL(url).searchParams.get("callbackURL")?.startsWith(`${env.BASE_URL}/api/auth/oauth2/`) ?? false;
+/** Where a sign-in link goes on in a browser, not the app: an OAuth sign-in or the coach web app. */
+function browserTarget(url: string, env: Env): "oauth" | "coach" | undefined {
+  const back = new URL(url).searchParams.get("callbackURL") ?? "";
+  if (back.startsWith(`${env.BASE_URL}/api/auth/oauth2/`)) return "oauth";
+  if (env.COACH_URL && back.startsWith(env.COACH_URL)) return "coach";
+  return undefined;
+}
 
 /** The first account whose email matches OWNER_EMAIL is the owner. With billing off, everyone else gets plus. */
 export async function grantEntitlement(db: Db, env: Env, user: { id: string; email: string }): Promise<Tier> {
@@ -73,7 +77,7 @@ export function createAuth(env: Env, pool: pg.Pool, db: Db, mailer: Mailer) {
     baseURL: env.BASE_URL,
     basePath: "/api/auth",
     secret: env.BETTER_AUTH_SECRET,
-    trustedOrigins: ["vee://", "app.vee.mobile://", env.BASE_URL],
+    trustedOrigins: ["vee://", "app.vee.mobile://", env.BASE_URL, ...(env.COACH_URL ? [env.COACH_URL] : [])],
     emailAndPassword: { enabled: false },
     session: { expiresIn: SESSION_DAYS * 24 * 3600, updateAge: 24 * 3600 },
     plugins: [
@@ -82,11 +86,20 @@ export function createAuth(env: Env, pool: pg.Pool, db: Db, mailer: Mailer) {
         // The link opens the app (Android App Link on the API domain). The app
         // then verifies the token itself and keeps the session token.
         sendMagicLink: async ({ email, token, url }) => {
-          if (continuesOAuth(url, env)) {
+          const target = browserTarget(url, env);
+          if (target === "oauth") {
             await mailer.send({
               to: email,
               subject: "Connect an app to Vee",
               text: `Open this link in the same browser to connect the app to your Vee data. The link works once and expires in 10 minutes.\n\n${url}\n`,
+            });
+            return;
+          }
+          if (target === "coach") {
+            await mailer.send({
+              to: email,
+              subject: "Sign in to Vee for coaches",
+              text: `Open this link in your browser to sign in to the coach dashboard. The link works once and expires in 10 minutes.\n\n${url}\n`,
             });
             return;
           }

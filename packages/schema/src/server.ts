@@ -73,7 +73,33 @@ export const ai_cache = pgTable("ai_cache", {
   at: timestamp("at", { withTimezone: true }).notNull(),
 });
 
-export const serverSchema = { ...pgSynced, ai_usage, ai_cache, audit_log, exports };
+/** A coach's invite. Only a hash of the code is kept; a client uses it once. */
+export const coach_invites = pgTable("coach_invites", {
+  id: text("id").primaryKey(),
+  coach_id: text("coach_id").notNull(),
+  code_hash: text("code_hash").notNull(),
+  expires_at: timestamp("expires_at", { withTimezone: true }).notNull(),
+  used_by: text("used_by"),
+  created_at: timestamp("created_at", { withTimezone: true }).notNull(),
+});
+
+/** FCM tokens per device, for coach pushes. */
+export const push_tokens = pgTable("push_tokens", {
+  id: text("id").primaryKey(),
+  user_id: text("user_id").notNull(),
+  token: text("token").notNull(),
+  updated_at: timestamp("updated_at", { withTimezone: true }).notNull(),
+});
+
+export const serverSchema = {
+  ...pgSynced,
+  ai_usage,
+  ai_cache,
+  audit_log,
+  exports,
+  coach_invites,
+  push_tokens,
+};
 
 const q = (name: string) => `"${name.replaceAll('"', '""')}"`;
 

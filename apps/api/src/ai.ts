@@ -197,6 +197,7 @@ export function createAi(env: Env, pool: pg.Pool, f?: typeof fetch) {
 
   return {
     refusal,
+    snapshot,
 
     /** Coach chat (streamed through the callbacks). Undefined when the user has no programme. */
     async chat(

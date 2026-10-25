@@ -36,6 +36,10 @@ export const EnvSchema = z.object({
   AI_MONTHLY_CAP_CHF: z.coerce.number().positive().default(5),
   /** Converts the provider's USD cost to CHF for the cap. */
   AI_CHF_PER_USD: z.coerce.number().positive().default(0.8),
+  /** Origin of the coach web app, for example https://coach.example.ch. Gets CORS and browser sign-in links. */
+  COACH_URL: z.string().url().optional(),
+  /** Firebase service-account JSON for FCM push. Push is off when it is empty. */
+  FCM_SERVICE_ACCOUNT: z.string().optional(),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

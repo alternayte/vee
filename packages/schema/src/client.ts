@@ -298,14 +298,21 @@ export const ai_proposals = sqliteTable("ai_proposals", {
   change: json("change"),
   validation: json("validation"),
   status: text("status").notNull(),
+  /** The coach who approved an AI proposal. The client still decides, unless auto-apply is on. */
+  approved_by: text("approved_by"),
 });
 
+/** A client's consent to one coach (I8). The server creates it from an invite; the client edits scopes, auto-apply and status. */
 export const coach_links = sqliteTable("coach_links", {
   ...common,
   coach_id: text("coach_id").notNull(),
   client_id: text("client_id").notNull(),
+  coach_name: text("coach_name"),
   scopes: json("scopes"),
   status: text("status").notNull(),
+  /** 1: the phone applies this coach's changes and approvals after the engine check, without a card. */
+  auto_apply: integer("auto_apply"),
+  last_access_at: text("last_access_at"),
 });
 
 export const comments = sqliteTable("comments", {

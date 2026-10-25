@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import type { SessionTemplate } from "@vee/engine";
+import type { PlanChange, SessionTemplate } from "@vee/engine";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { streamSSE } from "hono/streaming";
 import { createLocalJWKSet, type JSONWebKeySet, jwtVerify } from "jose";
 import { z } from "zod";
@@ -15,11 +16,22 @@ import {
 } from "./account";
 import { createAi } from "./ai";
 import { createAuth, mcpResource } from "./auth";
+import {
+  AcceptBody,
+  ChangeBody,
+  CommentBody,
+  createCoach,
+  DecisionBody,
+  isRefused,
+  MessageBody,
+  type Refused,
+} from "./coach";
 import { createDb, createPool } from "./db";
 import type { Env } from "./env";
 import { createMailer } from "./mail";
 import { mountMcp } from "./mcp";
 import { migrate } from "./migrate";
+import { createPush } from "./push";
 import { applyBatch, BatchSchema } from "./sync/upload";
 
 type Vars = { userId: string };
@@ -63,12 +75,14 @@ const ChatBody = z.object({
     .refine((m) => m.at(-1)?.role === "user", "The last message is the user's."),
 });
 
-export function createApp(env: Env, deps: { aiFetch?: typeof fetch } = {}) {
+export function createApp(env: Env, deps: { aiFetch?: typeof fetch; pushFetch?: typeof fetch } = {}) {
   const pool = createPool(env.DATABASE_URL);
   const db = createDb(pool);
   const mailer = createMailer(env);
   const auth = createAuth(env, pool, db, mailer);
   const ai = createAi(env, pool, deps.aiFetch);
+  const push = createPush(pool, env.FCM_SERVICE_ACCOUNT, deps.pushFetch);
+  const coach = createCoach(pool, ai, push);
   const app = new Hono<{ Variables: Vars }>();
 
   const internal = (path: string, headers?: Headers) =>
@@ -98,6 +112,12 @@ export function createApp(env: Env, deps: { aiFetch?: typeof fetch } = {}) {
     }
     const session = await auth.api.getSession({ headers });
     return session?.user.id;
+  }
+
+  // The coach web app runs on its own origin and calls the API with its session cookie.
+  if (env.COACH_URL) {
+    const fromCoach = cors({ origin: env.COACH_URL, credentials: true, allowHeaders: ["content-type"] });
+    for (const path of ["/api/auth/*", "/coach/*", "/admin/*"]) app.use(path, fromCoach);
   }
 
   app.on(["GET", "POST"], "/api/auth/*", (c) => auth.handler(c.req.raw));
@@ -320,6 +340,111 @@ export function createApp(env: Env, deps: { aiFetch?: typeof fetch } = {}) {
     const parsed = BatchSchema.safeParse(body);
     if (!parsed.success) return c.json({ error: "invalid-batch", issues: parsed.error.issues }, 400);
     return c.json(await applyBatch(db, c.get("userId"), parsed.data.batch));
+  });
+
+  const reply = (c: { json: (b: unknown, s?: number) => Response }, r: unknown) =>
+    isRefused(r) ? c.json({ error: r.error, message: r.message }, r.status) : c.json(r);
+
+  // ── Coaching (SDD "Coach access"): the client side ─────────────────────────
+  for (const path of ["/coach-links/*", "/push/*", "/admin/*"]) {
+    app.use(path, async (c, next) => {
+      if (!(await requireUser(c, next, (id) => c.set("userId", id))))
+        return c.json({ error: "unauthorized" }, 401);
+    });
+  }
+
+  app.get("/coach-links/invite/:code", async (c) => reply(c, await coach.preview(c.req.param("code"))));
+
+  app.post("/coach-links/accept", async (c) => {
+    const body = AcceptBody.safeParse(await c.req.json().catch(() => null));
+    if (!body.success) return c.json({ error: "invalid" }, 400);
+    const tier = await coach.tierOf(c.get("userId"));
+    if (tier === "free" || tier === undefined)
+      return c.json({ error: "plus-required", message: "A coach connection needs the plus tier." }, 403);
+    return reply(c, await coach.accept(c.get("userId"), body.data.code, body.data.scopes));
+  });
+
+  app.post("/push/token", async (c) => {
+    const body = z
+      .object({ token: z.string().min(10).max(4096) })
+      .safeParse(await c.req.json().catch(() => null));
+    if (!body.success) return c.json({ error: "invalid" }, 400);
+    await pool.query("DELETE FROM push_tokens WHERE token = $1", [body.data.token]);
+    await pool.query("INSERT INTO push_tokens (id, user_id, token, updated_at) VALUES ($1, $2, $3, now())", [
+      crypto.randomUUID(),
+      c.get("userId"),
+      body.data.token,
+    ]);
+    return c.json({ ok: true });
+  });
+
+  app.post("/admin/coaches", async (c) => {
+    const body = z
+      .object({ email: z.string().email(), coach: z.boolean() })
+      .safeParse(await c.req.json().catch(() => null));
+    if (!body.success) return c.json({ error: "invalid" }, 400);
+    return reply(c, await coach.setCoach(c.get("userId"), body.data.email, body.data.coach));
+  });
+
+  // ── Coaching: the coach dashboard ──────────────────────────────────────────
+  app.use("/coach/*", async (c, next) => {
+    let denied: Refused | undefined;
+    const ok = await requireUser(
+      c,
+      async () => {
+        const tier = await coach.tierOf(c.get("userId"));
+        if (tier !== "coach" && tier !== "owner") {
+          denied = {
+            status: 403,
+            error: "coach-tier",
+            message: "The coach dashboard needs a coach account.",
+          };
+          return;
+        }
+        await next();
+      },
+      (id) => c.set("userId", id),
+    );
+    if (!ok) return c.json({ error: "unauthorized" }, 401);
+    if (denied) return c.json({ error: denied.error, message: denied.message }, denied.status);
+  });
+
+  app.get("/coach/me", async (c) =>
+    c.json({ userId: c.get("userId"), tier: await coach.tierOf(c.get("userId")) }),
+  );
+  app.post("/coach/invites", async (c) => c.json(await coach.invite(c.get("userId"))));
+  app.get("/coach/clients", async (c) => c.json({ clients: await coach.clients(c.get("userId")) }));
+  app.get("/coach/clients/:id", async (c) =>
+    reply(c, await coach.client(c.get("userId"), c.req.param("id"))),
+  );
+  app.get("/coach/clients/:id/messages", async (c) =>
+    reply(c, await coach.thread(c.get("userId"), c.req.param("id"))),
+  );
+  app.post("/coach/clients/:id/messages", async (c) => {
+    const body = MessageBody.safeParse(await c.req.json().catch(() => null));
+    if (!body.success) return c.json({ error: "invalid" }, 400);
+    return reply(c, await coach.message(c.get("userId"), c.req.param("id"), body.data.body));
+  });
+  app.post("/coach/clients/:id/comments", async (c) => {
+    const body = CommentBody.safeParse(await c.req.json().catch(() => null));
+    if (!body.success) return c.json({ error: "invalid" }, 400);
+    return reply(c, await coach.comment(c.get("userId"), c.req.param("id"), body.data));
+  });
+  app.post("/coach/clients/:id/changes", async (c) => {
+    const body = ChangeBody.safeParse(await c.req.json().catch(() => null));
+    if (!body.success) return c.json({ error: "invalid" }, 400);
+    return reply(
+      c,
+      await coach.change(c.get("userId"), c.req.param("id"), body.data.change as PlanChange, body.data.why),
+    );
+  });
+  app.post("/coach/clients/:id/cards/:card", async (c) => {
+    const body = DecisionBody.safeParse(await c.req.json().catch(() => null));
+    if (!body.success) return c.json({ error: "invalid" }, 400);
+    return reply(
+      c,
+      await coach.decide(c.get("userId"), c.req.param("id"), c.req.param("card"), body.data.decision),
+    );
   });
 
   return {
