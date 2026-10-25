@@ -25,7 +25,7 @@ type Streamed = { stream: { text?: string; calls?: { name: string; args: unknown
 function sse(r: Streamed["stream"]) {
   const events: unknown[] = [];
   if (r.text) events.push({ choices: [{ delta: { content: r.text } }] });
-  (r.calls ?? []).forEach((c, index) =>
+  for (const [index, c] of (r.calls ?? []).entries())
     events.push({
       choices: [
         {
@@ -36,8 +36,7 @@ function sse(r: Streamed["stream"]) {
           },
         },
       ],
-    }),
-  );
+    });
   events.push({ model: "test/model", choices: [], usage: { total_tokens: 100, cost: 0.001 } });
   return new Response(`${events.map((e) => `data: ${JSON.stringify(e)}\n\n`).join("")}data: [DONE]\n\n`);
 }
