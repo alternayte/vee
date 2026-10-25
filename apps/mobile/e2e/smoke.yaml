@@ -14,7 +14,7 @@ appId: app.vee.mobile
 - tapOn: "Food"
 - assertVisible: "Saved meals"
 - tapOn: "Coach"
-- assertVisible: "AI and coach messages need an account and a connection."
+- assertVisible: "The coach chat needs an account, the plus tier and a connection.*"
 - tapOn: "Today"
 - openLink: "app.vee.mobile://dev/db"
 - extendedWaitUntil:

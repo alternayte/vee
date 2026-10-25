@@ -54,20 +54,23 @@ export async function acceptInvite(code: string, scopes: Scope[]) {
 
 const touch = () => new Date().toISOString();
 
-export const setScopes = (linkId: string, scopes: Scope[]) =>
-  db
+export const setScopes = async (linkId: string, scopes: Scope[]) =>
+  await db
     .update(coach_links)
     .set({ scopes: JSON.stringify(scopes), updated_at: touch() })
     .where(eq(coach_links.id, linkId));
 
-export const setAutoApply = (linkId: string, on: boolean) =>
-  db
+export const setAutoApply = async (linkId: string, on: boolean) =>
+  await db
     .update(coach_links)
     .set({ auto_apply: on ? 1 : 0, updated_at: touch() })
     .where(eq(coach_links.id, linkId));
 
-export const revoke = (linkId: string) =>
-  db.update(coach_links).set({ status: "revoked", updated_at: touch() }).where(eq(coach_links.id, linkId));
+export const revoke = async (linkId: string) =>
+  await db
+    .update(coach_links)
+    .set({ status: "revoked", updated_at: touch() })
+    .where(eq(coach_links.id, linkId));
 
 /**
  * Registers this phone for coach pushes. It needs the notification permission

@@ -198,6 +198,47 @@ export function createApp(env: Env, deps: { aiFetch?: typeof fetch; pushFetch?: 
       const token = mail?.text.match(/token=([^\s&]+)/)?.[1];
       return token ? c.json({ token: decodeURIComponent(token) }) : c.json({ error: "no-mail" }, 404);
     });
+
+    // Test mode only: a coach for the client flow, which has no dashboard to drive.
+    const devCoach = async (email: string) => {
+      const ctx = await auth.$context;
+      const user =
+        (await ctx.internalAdapter.findUserByEmail(email))?.user ??
+        (await ctx.internalAdapter.createUser(
+          { email, name: "Test Coach", emailVerified: true },
+          { method: "admin" },
+        ));
+      const now = new Date().toISOString();
+      await pool.query(
+        "INSERT INTO entitlements (id, user_id, tier, source, created_at, updated_at) VALUES ($1, $2, 'coach', 'instance', $3, $3)",
+        [crypto.randomUUID(), user.id, now],
+      );
+      return user.id;
+    };
+    app.post("/dev/coach-invite", async (c) => {
+      const { email } = (await c.req.json()) as { email: string };
+      return c.json(await coach.invite(await devCoach(email)));
+    });
+    app.post("/dev/coach-say", async (c) => {
+      const b = (await c.req.json()) as { coach: string; client: string; body: string; fewerSets?: boolean };
+      const coachId = await devCoach(b.coach);
+      const ctx = await auth.$context;
+      const client = (await ctx.internalAdapter.findUserByEmail(b.client))?.user;
+      if (!client) return c.json({ error: "no-client" }, 404);
+      const sent = await coach.message(coachId, client.id, b.body);
+      // One set fewer on the first movement of day A: a change the engine accepts.
+      const item = (await ai.snapshot(client.id, new Date()))?.input.programme?.templates[0]?.items[0];
+      const change =
+        b.fewerSets && item && item.sets > 1
+          ? await coach.change(
+              coachId,
+              client.id,
+              { kind: "sets", dayType: "A", exerciseId: item.exerciseId, sets: item.sets - 1 },
+              "A shorter day this week.",
+            )
+          : undefined;
+      return c.json({ sent, change });
+    });
   }
 
   app.use("/export", async (c, next) => {

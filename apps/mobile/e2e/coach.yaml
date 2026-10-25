@@ -1,0 +1,101 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# V9 coaching, client side: connect with an invite code and scopes, read a
+# coach message and a coach card, reply, and remove the coach.
+# Needs `just e2e-server` and an APK built with the test server addresses.
+appId: app.vee.mobile
+env:
+  EMAIL: client-e2e@example.test
+  COACH: coach-e2e@example.test
+---
+- clearState
+- launchApp
+- runFlow: subflows/onboard-quick.yaml
+- tapOn: "Settings"
+- tapOn:
+    id: "email-input"
+- inputText: ${EMAIL}
+- hideKeyboard
+- tapOn: "Send sign-in link"
+- extendedWaitUntil:
+    visible: "We sent a link to ${EMAIL}.*"
+    timeout: 10000
+- runScript:
+    file: scripts/magic-token.js
+    env:
+      EMAIL: ${EMAIL}
+- openLink: "app.vee.mobile://auth/magic?token=${output.token}"
+- extendedWaitUntil:
+    visible: "Signed in as ${EMAIL}"
+    timeout: 15000
+- tapOn: "Sync"
+- extendedWaitUntil:
+    visible:
+      id: "sync-pending"
+      text: "0"
+    timeout: 30000
+- back
+# Connect with the code the coach gives.
+- runScript:
+    file: scripts/coach-invite.js
+    env:
+      COACH: ${COACH}
+- tapOn: "Coach"
+- tapOn:
+    id: "invite-code"
+- inputText: ${output.code}
+- hideKeyboard
+- tapOn: "Check the code"
+- extendedWaitUntil:
+    visible: "Connect to Test Coach.*"
+    timeout: 10000
+- tapOn: "Connect"
+- extendedWaitUntil:
+    visible: "You are connected to Test Coach.*"
+    timeout: 10000
+- extendedWaitUntil:
+    visible:
+      id: "coach-link"
+    timeout: 30000
+- assertVisible: "Your coach has not opened your data yet."
+# The coach writes and proposes; it reaches the Coach tab through sync.
+- runScript:
+    file: scripts/coach-say.js
+    env:
+      COACH: ${COACH}
+      EMAIL: ${EMAIL}
+- back
+- back
+- tapOn: "Coach"
+- extendedWaitUntil:
+    visible: "How did day A go?"
+    timeout: 30000
+- scrollUntilVisible:
+    element: "A shorter day this week."
+    direction: UP
+    timeout: 20000
+- assertVisible: "Test Coach"
+- tapOn: "Accept"
+- extendedWaitUntil:
+    notVisible: "A shorter day this week."
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: "coach-message-input"
+    direction: DOWN
+- tapOn:
+    id: "coach-message-input"
+- inputText: "Good, thanks."
+- hideKeyboard
+- tapOn:
+    id: "coach-message-send"
+- assertVisible: "Good, thanks."
+# Remove the coach.
+- tapOn: "Settings"
+- tapOn: "Coach"
+- tapOn: "Remove this coach"
+- tapOn:
+    id: "android:id/button1"
+- extendedWaitUntil:
+    notVisible:
+      id: "coach-link"
+    timeout: 10000

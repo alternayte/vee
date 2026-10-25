@@ -80,7 +80,9 @@ export function SyncScreen() {
             <Button
               label="Dismiss"
               variant="ghost"
-              onPress={() => void db.delete(sync_errors).where(eq(sync_errors.id, r.id))}
+              onPress={async () => {
+                await db.delete(sync_errors).where(eq(sync_errors.id, r.id));
+              }}
             />
           </View>
         ))

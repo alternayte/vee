@@ -3,11 +3,12 @@
 default:
     @just --list
 
-# V1: types, lint, format and the import-boundary rule
+# V1: types, lint, format, the import-boundary rule, and awaited app writes
 check:
     bunx biome ci .
     bun run typecheck
     bunx turbo run typecheck
+    bun tools/drizzle-await.ts
 
 # Tests. No target runs all unit tests, properties and golden plans.
 # `just test engine` runs one package. `just test engine:props` runs its

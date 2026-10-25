@@ -12,8 +12,8 @@ import { useEffect, useRef } from "react";
 import { db } from "@/features/db/database";
 import { readEngineInput, readProgramme, saveProgramme } from "@/features/training/data";
 
-const setStatus = (id: string, status: string) =>
-  db
+const setStatus = async (id: string, status: string) =>
+  await db
     .update(ai_proposals)
     .set({ status, updated_at: new Date().toISOString() })
     .where(eq(ai_proposals.id, id));

@@ -89,4 +89,6 @@ export async function sendMessage(content: string, on: ChatEvents): Promise<stri
   return failed;
 }
 
-export const clearChat = () => db.delete(chat_messages);
+export async function clearChat() {
+  await db.delete(chat_messages);
+}

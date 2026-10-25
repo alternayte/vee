@@ -41,8 +41,8 @@ export function ProposalCard({
   refused?: boolean;
 }) {
   const [message, setMessage] = useState<string>();
-  const setStatus = (status: string) =>
-    db
+  const setStatus = async (status: string) =>
+    await db
       .update(ai_proposals)
       .set({ status, updated_at: new Date().toISOString() })
       .where(eq(ai_proposals.id, id));
