@@ -1,10 +1,18 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { Tabs } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
 import { Apple, ChartLine, CircleDot, ListChecks, MessageSquare } from "lucide-react-native";
+import { useEffect, useState } from "react";
 import { useTokens } from "@/features/theme/use-tokens";
+import { hasProfile } from "@/features/training/data";
 
 export default function TabsLayout() {
   const { color } = useTokens();
+  const [onboarded, setOnboarded] = useState<boolean>();
+  useEffect(() => {
+    void hasProfile().then(setOnboarded);
+  }, []);
+  if (onboarded === undefined) return null;
+  if (!onboarded) return <Redirect href="/welcome" />;
   return (
     <Tabs
       screenOptions={{

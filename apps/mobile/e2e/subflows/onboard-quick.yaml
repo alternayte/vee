@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Onboarding with no kit and no baseline test. Other flows start with it.
+appId: app.vee.mobile
+---
+- extendedWaitUntil:
+    visible: "Welcome to Vee"
+    timeout: 20000
+- tapOn: "Start"
+- tapOn:
+    id: "height"
+- inputText: "180"
+- tapOn:
+    id: "weight"
+- inputText: "75"
+- tapOn:
+    id: "birth-year"
+- inputText: "1989"
+- hideKeyboard
+- tapOn: "Male"
+- scrollUntilVisible:
+    element: "Next"
+- tapOn: "Next"
+- tapOn: "I have no kit"
+- tapOn: "Next"
+- tapOn: "Next"
+- tapOn: "Nothing hurts"
+- tapOn: "Skip it"
+- tapOn: "Skip the test and make my plan"
+- extendedWaitUntil:
+    visible: "Next session"
+    timeout: 20000

@@ -1,0 +1,111 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# V9 onboarding: offline, the PRD kit and a baseline test give the first
+# programme; a restart keeps it.
+appId: app.vee.mobile
+---
+- clearState
+- setAirplaneMode: enabled
+- launchApp
+- extendedWaitUntil:
+    visible: "Welcome to Vee"
+    timeout: 20000
+- tapOn: "Start"
+# Body: the next button stays off until the answers are valid.
+- tapOn:
+    id: "height"
+- inputText: "180"
+- tapOn:
+    id: "weight"
+- inputText: "78"
+- tapOn:
+    id: "birth-year"
+- inputText: "1989"
+- hideKeyboard
+- tapOn: "Male"
+- tapOn:
+    id: "waist"
+- inputText: "84"
+- hideKeyboard
+- scrollUntilVisible:
+    element: "Next"
+- tapOn: "Next"
+# Kit: one dial dumbbell 2–24 kg, one band, a station with dip handles.
+- extendedWaitUntil:
+    visible: "Your kit"
+    timeout: 5000
+- tapOn: "Dial dumbbell"
+- tapOn: "Add dial dumbbell"
+- assertVisible: "Dial dumbbell, one: 2–24 kg in 2 kg steps"
+- tapOn: "Band"
+- tapOn: "Colour"
+- inputText: "red"
+- hideKeyboard
+- scrollUntilVisible:
+    element: "Add band"
+- tapOn: "Add band"
+- assertVisible: "Band, red, about 15 kg"
+- scrollUntilVisible:
+    element: "Pull-up station"
+- tapOn: "Pull-up station"
+- scrollUntilVisible:
+    element: "Add pull-up station"
+- tapOn: "Add pull-up station"
+- assertVisible: "Pull-up station: straight grip, dip handles"
+- scrollUntilVisible:
+    element: "Next"
+- tapOn: "Next"
+# Time: 35 min is the default.
+- extendedWaitUntil:
+    visible: "Your time"
+    timeout: 5000
+- assertVisible:
+    text: "35 min"
+    selected: true
+- tapOn: "Next"
+- assertVisible: "V-taper, lean gain"
+- tapOn: "Next"
+- tapOn: "Nothing hurts"
+# Baseline test.
+- tapOn: "Do the test now"
+- tapOn:
+    id: "test-hang"
+- inputText: "25"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: "test-pullups"
+- tapOn:
+    id: "test-pullups"
+- inputText: "0"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: "test-pushups"
+- tapOn:
+    id: "test-pushups"
+- inputText: "12"
+- hideKeyboard
+- scrollUntilVisible:
+    element: "Save results and make my plan"
+- tapOn: "Save results and make my plan"
+# The first programme. Hang 25 s and no pull-up place the vertical pull ladder on rung 3.
+- extendedWaitUntil:
+    visible: "Next session"
+    timeout: 20000
+- assertVisible:
+    id: "next-session"
+    text: "A · Pull and side delts"
+- assertVisible: "Jumping negative pull-up"
+- tapOn: "Plan"
+- assertVisible: "Block week 1.*"
+- scrollUntilVisible:
+    element: "D · Pull and arms"
+# A restart keeps the setup: it is in SQLite.
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "next-session"
+      text: "A · Pull and side delts"
+    timeout: 20000
+- setAirplaneMode: disabled

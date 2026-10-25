@@ -58,7 +58,7 @@ test-sync:
     cd apps/api && node node_modules/vitest/vitest.mjs run test-sync --testTimeout 120000 --hookTimeout 180000
 
 # Android release APK for arm64 (bundles the JavaScript, so no Metro server)
-apk:
+apk: catalogue
     cd apps/mobile && CI=1 bunx expo prebuild -p android --clean
     cd apps/mobile/android && ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a --console=plain
 

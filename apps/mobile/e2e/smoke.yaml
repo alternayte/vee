@@ -6,11 +6,9 @@ appId: app.vee.mobile
 - clearState
 - setAirplaneMode: enabled
 - launchApp
-- extendedWaitUntil:
-    visible: "You have no plan yet.*"
-    timeout: 20000
+- runFlow: subflows/onboard-quick.yaml
 - tapOn: "Plan"
-- assertVisible: "Your programme shows here after setup."
+- assertVisible: "Block week 1.*"
 - tapOn: "Body"
 - assertVisible: "Your tests, measurements and charts show here."
 - tapOn: "Food"

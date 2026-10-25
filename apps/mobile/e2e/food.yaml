@@ -6,9 +6,7 @@ appId: app.vee.mobile
 - clearState
 - setAirplaneMode: enabled
 - launchApp
-- extendedWaitUntil:
-    visible: "You have no plan yet.*"
-    timeout: 20000
+- runFlow: subflows/onboard-quick.yaml
 - tapOn: "Food"
 - extendedWaitUntil:
     visible: "Protein: 0 of 7 palms"

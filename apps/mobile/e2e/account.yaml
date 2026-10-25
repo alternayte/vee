@@ -8,9 +8,7 @@ env:
 ---
 - clearState
 - launchApp
-- extendedWaitUntil:
-    visible: "You have no plan yet.*"
-    timeout: 20000
+- runFlow: subflows/onboard-quick.yaml
 # History with no account (I10).
 - tapOn: "Food"
 - extendedWaitUntil:
