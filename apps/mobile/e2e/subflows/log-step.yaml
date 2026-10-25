@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Logs the set on screen as Good, then skips the rest when one starts.
+appId: app.vee.mobile
+---
+- tapOn:
+    id: "effort-good"
+- runFlow:
+    when:
+      visible:
+        id: "rest-skip"
+    commands:
+      - tapOn:
+          id: "rest-skip"

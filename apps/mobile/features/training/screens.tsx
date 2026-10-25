@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-// Today and Plan read the stored programme. The session runner (B08) and the
-// full Today and Plan screens (B09) build on these.
+// Today and Plan read the stored programme. Today starts the session runner,
+// or resumes it after a crash; the full Plan screen (B09) builds on these.
 import type { Joint, Severity } from "@vee/catalogue";
 import {
   type EngineInput,
@@ -12,7 +12,7 @@ import {
   type SessionTemplate,
   type TemplateItem,
 } from "@vee/engine";
-import { useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { View } from "react-native";
 import { Screen } from "@/components/screen";
@@ -22,6 +22,8 @@ import { Text } from "@/components/ui/text";
 import { aiPost } from "@/features/ai/client";
 import { TellMeMore } from "@/features/ai/tell-me-more";
 import { localDate } from "@/features/food/data";
+import { useTodayAdjust } from "@/features/session/adjust";
+import { activeSessionId, skipNext } from "@/features/session/data";
 import { catalogue } from "./catalogue";
 import { addTodayFlags, readEngineInput } from "./data";
 
@@ -133,6 +135,13 @@ function AdjustToday({ template, onApply }: { template: SessionTemplate; onApply
 export function TodayScreen() {
   const input = useEngineInput();
   const [adjusted, setAdjusted] = useState<Prescription>();
+  const [active, setActive] = useState<string>();
+  const [skipped, setSkipped] = useState(false);
+  useFocusEffect(
+    useCallback(() => {
+      void activeSessionId().then(setActive);
+    }, []),
+  );
   if (!input?.programme) return <Screen title="Today">{null}</Screen>;
   const next = nextSession(input);
 
@@ -140,6 +149,10 @@ export function TodayScreen() {
     if (!input) return;
     const today = localDate();
     if (a.flags?.length) await addTodayFlags(a.flags, today);
+    useTodayAdjust.getState().set({
+      ...(a.minutes !== undefined ? { minutes: a.minutes } : {}),
+      ...(a.focus?.length ? { focus: a.focus } : {}),
+    });
     const flags = [
       ...input.flags,
       ...(a.flags ?? []).map((f) => ({ ...f, activeFrom: today, activeTo: today })),
@@ -172,6 +185,30 @@ export function TodayScreen() {
         {adjusted?.reasons.map((r) => (
           <Why key={`${r.ruleId}-${r.text}`} reason={r} />
         ))}
+        {active ? (
+          <Button
+            label="Resume the session"
+            onPress={() => router.push({ pathname: "/session/[id]", params: { id: active } })}
+            testID="session-resume"
+          />
+        ) : (
+          <Button
+            label="Start the session"
+            onPress={() => router.push("/session/start")}
+            testID="session-start"
+          />
+        )}
+        {!active && !skipped && (
+          <Button
+            label="Skip today"
+            variant="ghost"
+            onPress={async () => {
+              await skipNext();
+              setSkipped(true);
+            }}
+          />
+        )}
+        {skipped && <Text variant="muted">Skipped. This session stays next, with no penalty.</Text>}
       </View>
       <AdjustToday template={next.template} onApply={(a) => void apply(a)} />
     </Screen>

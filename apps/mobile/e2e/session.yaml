@@ -1,0 +1,67 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# V9 session runner, offline: check-in, warm-up, one-tap sets with rest,
+# resume after the app is killed, finish with the summary, and the rotation
+# moves on to the next day.
+appId: app.vee.mobile
+---
+- clearState
+- launchApp
+- setAirplaneMode: enabled
+- runFlow: subflows/onboard-quick.yaml
+- assertVisible: "A · .*"
+- tapOn:
+    id: "session-start"
+# Check-in: 3 taps.
+- tapOn: "4"
+- tapOn:
+    index: 1
+    text: "1"
+- tapOn: "Good"
+- tapOn:
+    id: "checkin-start"
+- runFlow:
+    when:
+      visible:
+        id: "warmup-done"
+    commands:
+      - tapOn:
+          id: "warmup-done"
+- extendedWaitUntil:
+    visible:
+      id: "set-card"
+    timeout: 10000
+- runFlow: subflows/log-step.yaml
+- assertVisible: "Step 2 of .*"
+# The OS kills the app mid-session: it resumes at the same step.
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "session-resume"
+    timeout: 20000
+- tapOn:
+    id: "session-resume"
+- extendedWaitUntil:
+    visible: "Step 2 of .*"
+    timeout: 10000
+# Log every remaining set.
+- repeat:
+    while:
+      visible:
+        id: "set-card"
+    commands:
+      - runFlow: subflows/log-step.yaml
+- tapOn:
+    id: "finish"
+- extendedWaitUntil:
+    visible:
+      id: "summary"
+    timeout: 10000
+- tapOn:
+    id: "summary-done"
+- extendedWaitUntil:
+    visible: "B · .*"
+    timeout: 10000
+- assertVisible:
+    id: "session-start"
+- setAirplaneMode: disabled
