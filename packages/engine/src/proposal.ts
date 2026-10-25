@@ -1,19 +1,17 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Plan changes from the AI or a coach (invariant I4). The engine checks each
 // change against kit, flags, rungs, time and volume limits, and returns the
-// changed programme. Nothing applies until the user accepts it.
+// changed programme. Nothing applies until the user accepts it. Each change
+// also needs evidence in the data: a stalled movement or low check-ins.
 
 import { GOAL_TEMPLATES, GROUP_NAMES, MUSCLE_GROUPS, type MuscleGroup } from "./goals";
 import { checkAllowed } from "./kit";
 import { familyName, MAX_SETS, planItem } from "./plan";
-import { blockWeek, DELOAD_WEEK, readinessMode, readinessScore } from "./readiness";
+import { blockWeek, DELOAD_WEEK, readinessMode, readinessScore, STALL_SESSIONS } from "./readiness";
 import { reason } from "./reasons";
 import { estimateMinutes, orderForDial } from "./time";
 import type { DayType, EngineInput, Programme, Reason, SessionTemplate } from "./types";
 import { weeklyVolume } from "./volume";
-
-/** Sessions without gain that count toward an early-deload proposal. */
-export const DELOAD_PROPOSAL_STALL = 2;
 
 export type PlanChange =
   | { kind: "swap"; dayType: DayType; family: string; to: string }
@@ -29,7 +27,8 @@ export type RefusalCode =
   | "sets"
   | "time"
   | "volume"
-  | "deload";
+  | "deload"
+  | "evidence";
 
 export type ValidationResult =
   | { ok: true; programme: Programme; reasons: Reason[] }
@@ -39,6 +38,23 @@ const refuse = (code: RefusalCode, r: Reason): ValidationResult => ({ ok: false,
 
 const exerciseName = (input: EngineInput, id: string) =>
   input.catalogue.exercises.find((e) => e.id === id)?.names.en ?? id;
+
+const stallOf = (input: EngineInput, family: string) =>
+  input.history.progress.find((s) => s.family === family)?.streaks?.stall ?? 0;
+
+/** A swap or more sets needs the movement to be stalled (P5). */
+function notStalled(input: EngineInput, family: string, exerciseId: string): ValidationResult | undefined {
+  const sessions = stallOf(input, family);
+  if (sessions >= STALL_SESSIONS) return undefined;
+  return refuse(
+    "evidence",
+    reason("PROPOSAL_NOT_STALLED", {
+      exercise: exerciseName(input, exerciseId),
+      sessions,
+      needed: STALL_SESSIONS,
+    }),
+  );
+}
 
 function replaceDay(p: Programme, day: SessionTemplate): Programme {
   return { ...p, templates: p.templates.map((t) => (t.dayType === day.dayType ? day : t)) };
@@ -88,16 +104,17 @@ export function validateProposal(input: EngineInput, change: PlanChange): Valida
       return refuse("deload", reason("PROPOSAL_DELOAD_RUNNING", {}));
     }
     // An early deload needs a reason in the data: stalls or low readiness.
-    const stalled = input.history.progress.filter(
-      (s) => (s.streaks?.stall ?? 0) >= DELOAD_PROPOSAL_STALL,
-    ).length;
+    const stalled = input.history.progress.filter((s) => (s.streaks?.stall ?? 0) >= STALL_SESSIONS).length;
     const recent = input.history.checkins
       .filter((c) => c.date >= p.blockStart)
       .sort((a, b) => a.date.localeCompare(b.date))
       .slice(-4);
     const low = recent.filter((c) => readinessMode(readinessScore(c)) !== "full").length;
     if (stalled < 2 && low < 2) {
-      return refuse("deload", reason("PROPOSAL_DELOAD_NOT_NEEDED", { stalled, low, of: recent.length }));
+      return refuse(
+        "evidence",
+        reason("PROPOSAL_DELOAD_NOT_NEEDED", { stalled, low, of: recent.length, needed: STALL_SESSIONS }),
+      );
     }
     return {
       ok: true,
@@ -134,6 +151,8 @@ export function validateProposal(input: EngineInput, change: PlanChange): Valida
     if (!checkAllowed(e, input.kit, input.flags, input.today).ok) {
       return refuse("kit", reason("PROPOSAL_KIT", { exercise: e.names.en }));
     }
+    const idle = notStalled(input, item.family, item.exerciseId);
+    if (idle) return idle;
     const r = reason("PROPOSAL_SWAP", {
       exercise: e.names.en,
       was: exerciseName(input, item.exerciseId),
@@ -162,6 +181,11 @@ export function validateProposal(input: EngineInput, change: PlanChange): Valida
   const max = MAX_SETS[item.role];
   if (!Number.isInteger(change.sets) || change.sets < 1 || change.sets > max) {
     return refuse("sets", reason("PROPOSAL_SETS_RANGE", { role: item.role, max }));
+  }
+  if (change.sets > item.sets) {
+    if (change.sets > item.sets + 1) return refuse("sets", reason("PROPOSAL_SETS_STEP", { from: item.sets }));
+    const idle = notStalled(input, item.family, item.exerciseId);
+    if (idle) return idle;
   }
   const r = reason("PROPOSAL_SETS", {
     exercise: exerciseName(input, item.exerciseId),

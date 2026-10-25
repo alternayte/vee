@@ -81,7 +81,10 @@ const TEMPLATES: Record<string, string> = {
   PROPOSAL_VOLUME: "With {sets} sets, {group} gets {volume} sets a week. The limit for your goal is {limit}.",
   PROPOSAL_DELOAD_RUNNING: "A deload week runs now or is done in this block.",
   PROPOSAL_DELOAD_NOT_NEEDED:
-    "A deload needs 2 stalled movements or 2 low check-ins. Now {stalled} movements stalled and {low} of your last {of} check-ins were low.",
+    "A deload needs 2 movements stalled for {needed} sessions or 2 low check-ins. Now {stalled} movements stalled and {low} of your last {of} check-ins were low.",
+  PROPOSAL_NOT_STALLED:
+    "Sessions without progress for {exercise}: {sessions}. A change needs {needed}, so the plan stays.",
+  PROPOSAL_SETS_STEP: "Sets go up by 1 at a time. The movement has {from} sets now.",
   PROPOSAL_UNKNOWN: "Vee does not know the exercise {exercise}.",
   TIME_CUT_DROP: "{exercise} is removed to fit {minutes} min.",
   TIME_CUT_PAIR: "Accessories alternate in pairs with shorter rest to fit {minutes} min.",

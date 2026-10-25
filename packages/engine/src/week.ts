@@ -100,7 +100,7 @@ export function trainingWeek(input: EngineInput, from: LocalDate, to: LocalDate)
     movedUp: all.filter((m) => m.to > m.from),
     movedDown: all.filter((m) => m.to < m.from),
     stalled: after
-      .filter((s) => (s.streaks?.stall ?? 0) >= STALL_SESSIONS - 1)
+      .filter((s) => (s.streaks?.stall ?? 0) >= STALL_SESSIONS)
       .map((s) => ({
         family: s.family,
         exercise: name(input, s.exerciseId),

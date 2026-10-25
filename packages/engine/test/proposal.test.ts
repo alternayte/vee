@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { describe, expect, test } from "vitest";
 import {
+  type DayType,
   type EngineInput,
   emptyHistory,
   generatePlan,
@@ -18,9 +19,29 @@ function withPlan(over: Partial<EngineInput> = {}): EngineInput & { programme: P
 
 const dayA = (p: Programme) => p.templates.find((t) => t.dayType === "A");
 
+/** Marks the plan's movements of these families as stalled for `sessions`. */
+function stalled<T extends EngineInput & { programme: Programme }>(
+  i: T,
+  families: string[],
+  sessions = 3,
+): T {
+  const items = i.programme.templates.flatMap((t) => t.items);
+  const progress = families.map((family) => {
+    const item = items.find((x) => x.family === family);
+    if (!item) throw new Error(`no ${family} in plan`);
+    return {
+      family,
+      rung: 1,
+      exerciseId: item.exerciseId,
+      streaks: { top: 0, miss: 0, stall: sessions, hold: 0 },
+    };
+  });
+  return { ...i, history: { ...i.history, progress } };
+}
+
 describe("validateProposal", () => {
   test("a swap to an allowed exercise on the same ladder and rung applies", () => {
-    const i = withPlan();
+    const i = stalled(withPlan(), ["row"]);
     const before = dayA(i.programme)?.items.find((x) => x.family === "row");
     expect(before).toBeDefined();
     const r = validateProposal(i, { kind: "swap", dayType: "A", family: "row", to: "row-band" });
@@ -29,6 +50,38 @@ describe("validateProposal", () => {
     expect(after?.exerciseId).toBe("row-band");
     expect(after?.sets).toBe(before?.sets);
     expect(after?.reasons.exercise.ruleId).toBe("PROPOSAL_SWAP");
+  });
+
+  test("a swap or one more set for a movement stalled for fewer than 3 sessions is refused", () => {
+    const i = stalled(withPlan({ profile: { ...input().profile, minutesPerSession: 90 } }), ["row"], 2);
+    const row = dayA(i.programme)?.items.find((x) => x.family === "row");
+    if (!row) throw new Error("no row");
+    const changes: PlanChange[] = [
+      { kind: "swap", dayType: "A", family: "row", to: "row-band" },
+      { kind: "sets", dayType: "A", exerciseId: row.exerciseId, sets: row.sets + 1 },
+    ];
+    for (const c of changes) {
+      const r = validateProposal(i, c);
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.reason.ruleId).toBe("PROPOSAL_NOT_STALLED");
+    }
+  });
+
+  test("a stalled movement gets one more set, not two", () => {
+    const plan = withPlan({ profile: { ...input().profile, minutesPerSession: 90 } });
+    const sets = (dayType: DayType, exerciseId: string, n: number): PlanChange => ({
+      kind: "sets",
+      dayType,
+      exerciseId,
+      sets: n,
+    });
+    const fits = plan.programme.templates
+      .flatMap((t) => t.items.map((x) => ({ t, x, i: stalled(plan, [x.family]) })))
+      .find(({ t, x, i }) => validateProposal(i, sets(t.dayType, x.exerciseId, x.sets + 1)).ok);
+    if (!fits) throw new Error("no movement takes one more set");
+    const two = validateProposal(fits.i, sets(fits.t.dayType, fits.x.exerciseId, fits.x.sets + 2));
+    expect(two.ok).toBe(false);
+    if (!two.ok) expect(two.reason.ruleId).toBe("PROPOSAL_SETS_STEP");
   });
 
   test("a swap to a higher rung than the user owns is refused", () => {
@@ -61,28 +114,35 @@ describe("validateProposal", () => {
   });
 
   test("fewer sets apply; sets that do not fit the minutes are refused", () => {
-    const i = withPlan({ profile: { ...input().profile, minutesPerSession: 35 } });
-    const first = dayA(i.programme)?.items[0];
+    const plan = withPlan({ profile: { ...input().profile, minutesPerSession: 35 } });
+    const first = dayA(plan.programme)?.items[0];
     if (!first) throw new Error("no item");
+    const i = stalled(plan, [first.family]);
     const down = validateProposal(i, { kind: "sets", dayType: "A", exerciseId: first.exerciseId, sets: 2 });
     expect(down.ok).toBe(true);
     if (down.ok) expect(dayA(down.programme)?.items[0]?.sets).toBe(2);
-    const up = validateProposal(i, { kind: "sets", dayType: "A", exerciseId: first.exerciseId, sets: 5 });
+    const up = validateProposal(i, {
+      kind: "sets",
+      dayType: "A",
+      exerciseId: first.exerciseId,
+      sets: first.sets + 1,
+    });
     expect(up.ok).toBe(false);
     if (!up.ok) expect(up.code).toBe("time");
   });
 
   test("sets above the volume limit are refused even when time allows", () => {
-    const long = withPlan({ profile: { ...input().profile, minutesPerSession: 90 } });
-    const curl = long.programme.templates
+    const plan = withPlan({ profile: { ...input().profile, minutesPerSession: 90 } });
+    const curl = plan.programme.templates
       .flatMap((t) => t.items.map((x) => ({ t, x })))
       .find((p) => p.x.exerciseId.startsWith("curl"));
     if (!curl) throw new Error("no curl");
+    const long = stalled(plan, [curl.x.family]);
     const r = validateProposal(long, {
       kind: "sets",
       dayType: curl.t.dayType,
       exerciseId: curl.x.exerciseId,
-      sets: 5,
+      sets: curl.x.sets + 1,
     });
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.code).toBe("volume");
@@ -94,17 +154,14 @@ describe("validateProposal", () => {
     if (!r.ok) expect(r.reason.ruleId).toBe("PROPOSAL_DELOAD_NOT_NEEDED");
   });
 
+  test("an early deload needs 2 movements stalled for 3 sessions", () => {
+    const r = validateProposal(stalled(withPlan(), ["row", "squat"], 2), { kind: "deload" });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.code).toBe("evidence");
+  });
+
   test("an early deload sets the start date; a second one is refused", () => {
-    const stalls = { top: 0, miss: 0, stall: 2, hold: 0 };
-    const i = withPlan({
-      history: {
-        ...emptyHistory(),
-        progress: [
-          { family: "row", rung: 1, exerciseId: "row-single-arm-db", loadKg: 8, streaks: stalls },
-          { family: "squat", rung: 1, exerciseId: "goblet-squat", loadKg: 8, streaks: stalls },
-        ],
-      },
-    });
+    const i = stalled(withPlan(), ["row", "squat"]);
     const r = validateProposal(i, { kind: "deload" });
     if (!r.ok) throw new Error(r.reason.text);
     expect(r.programme.earlyDeloadFrom).toBe(i.today);
