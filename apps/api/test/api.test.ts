@@ -235,3 +235,18 @@ describe("migrations", () => {
     await Promise.all([x.close(), y.close()]);
   });
 });
+
+test("an empty variable from compose counts as not set", async () => {
+  const { readEnv } = await import("../src/env");
+  const env = readEnv({
+    DATABASE_URL: "postgres://x@localhost/x",
+    BETTER_AUTH_SECRET: "x".repeat(32),
+    BASE_URL: "https://vee.example.test",
+    PASSKEY_RP_ID: "vee.example.test",
+    MAIL_TRANSPORT: "memory",
+    COACH_URL: "",
+    OPENROUTER_API_KEY: "",
+  });
+  expect(env.COACH_URL).toBeUndefined();
+  expect(env.OPENROUTER_API_KEY).toBeUndefined();
+});

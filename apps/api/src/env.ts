@@ -45,7 +45,9 @@ export const EnvSchema = z.object({
 export type Env = z.infer<typeof EnvSchema>;
 
 export function readEnv(source: Record<string, string | undefined> = process.env): Env {
-  const env = EnvSchema.parse(source);
+  // Compose passes an unset variable as an empty string: that means "not set".
+  const set = Object.fromEntries(Object.entries(source).filter(([, v]) => v !== ""));
+  const env = EnvSchema.parse(set);
   if (env.MAIL_TRANSPORT === "smtp" && !env.SMTP_URL)
     throw new Error("SMTP_URL is required when MAIL_TRANSPORT=smtp");
   return env;
