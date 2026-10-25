@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./theme.css": "./theme.css"
+    "./theme.css": "./theme.css",
+    "./web.css": "./web.css"
   },
   "scripts": {
     "css": "bun scripts/css.ts",

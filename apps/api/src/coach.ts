@@ -69,6 +69,37 @@ const tool = (name: string) => {
 const read = (data: CoachData, name: string, args: unknown = {}) =>
   runTool(data, tool(name), args, { propose: async () => "" });
 
+const exerciseName = (data: CoachData, id: string) =>
+  data.input.catalogue.exercises.find((e) => e.id === id)?.names.en ?? id;
+
+/** Sessions with their sets and ids, newest first, so the coach can comment on either. */
+function sessionLog(data: CoachData, days: number) {
+  const since = addDays(data.input.today, -days);
+  const h = data.input.history;
+  return h.sessions
+    .filter((s) => s.date >= since)
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .map((s) => ({
+      id: s.id,
+      date: s.date,
+      kind: s.kind,
+      ...(s.dayType ? { day: s.dayType } : {}),
+      status: s.status,
+      ...(s.readinessMode ? { readiness: s.readinessMode } : {}),
+      sets: h.sets
+        .filter((x) => x.sessionId === s.id && !x.deletedAt)
+        .map((x) => ({
+          id: x.id,
+          exercise: exerciseName(data, x.exerciseId),
+          ...(x.reps !== undefined ? { reps: x.reps } : {}),
+          ...(x.seconds !== undefined ? { seconds: x.seconds } : {}),
+          ...(x.loadKg !== undefined ? { kg: x.loadKg } : {}),
+          ...(x.side ? { side: x.side } : {}),
+          effort: x.effort,
+        })),
+    }));
+}
+
 export function createCoach(pool: pg.Pool, ai: Ai, push: Push) {
   async function tierOf(userId: string): Promise<string | undefined> {
     return (
@@ -312,7 +343,14 @@ export function createCoach(pool: pg.Pool, ai: Ai, push: Push) {
         ...(data && has("training")
           ? {
               training: {
-                sessions: await read(data, "get_sessions", { from: addDays(today ?? "", -55) }),
+                summary: await read(data, "get_sessions", { from: addDays(today ?? "", -27) }),
+                sessions: sessionLog(data, 55),
+                comments: (
+                  await pool.query(
+                    "SELECT id, target_type, target_id, body, created_at FROM comments WHERE user_id = $1 AND author_id = $2 AND deleted_at IS NULL ORDER BY created_at",
+                    [clientId, coachId],
+                  )
+                ).rows,
                 ladders: await read(data, "get_progress_state"),
                 checkins: await read(data, "get_checkins"),
                 tests: await read(data, "get_tests"),

@@ -1,0 +1,46 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+/* Direction: a machinist's ledger on a steel bench, in the Vee brass-and-steel tokens: dense ruled rows of tabular figures, one brass accent for the action that matters, state colours only for state. */
+@import "tailwindcss";
+@import "@vee/tokens/web.css";
+
+/* Type: Inter from the tokens, a tight 1.2 step (12 · 14 · 16 · 20 · 24), tabular figures everywhere.
+   Space: a 4 px base; rows at 8 px vertical padding, sections 24 px apart, so a coach sees 20 clients without scrolling.
+   Colour: the token roles only; brass marks the next action and the attention score. */
+@theme inline {
+  --color-ground: var(--color-background);
+  --color-panel: var(--color-surface);
+  --color-raised: var(--color-surface-raised);
+  --color-rule: var(--color-border);
+  --color-ink: var(--color-text);
+  --color-muted: var(--color-text-muted);
+  --color-brass: var(--color-accent);
+  --color-on-brass: var(--color-accent-text);
+  --color-good: var(--color-good);
+  --color-warn: var(--color-warning);
+  --color-bad: var(--color-critical);
+  --font-sans: var(--font-sans);
+  --text-xs: var(--text-xs);
+  --text-sm: var(--text-sm);
+  --text-base: var(--text-base);
+  --text-lg: var(--text-lg);
+  --text-xl: var(--text-xl);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --spacing: 4px;
+}
+
+html,
+body {
+  background: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-sm);
+  line-height: 1.45;
+  margin: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}

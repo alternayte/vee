@@ -102,6 +102,34 @@ export function contrast(a: string, b: string): number {
   return (hi + 0.05) / (lo + 0.05);
 }
 
+/**
+ * The web theme CSS (coach web app): every colour role as `--color-*`, light
+ * by default and dark when the system asks for it, plus the type, radius and
+ * motion tokens.
+ */
+export function webThemeCss(): string {
+  const roles = (t: ThemeName, pad: string) => COLOR_ROLES.map((r) => `${pad}--color-${r}: ${colors[t][r]};`);
+  return [
+    "/* SPDX-License-Identifier: AGPL-3.0-or-later */",
+    "/* Generated from packages/tokens/src/index.ts by `bun run css`. Do not edit. */",
+    ":root {",
+    "  color-scheme: light dark;",
+    ...roles("light", "  "),
+    ...Object.entries(type.size).map(([k, v]) => `  --text-${k}: ${v / 16}rem;`),
+    ...Object.entries(radius).map(([k, v]) => `  --radius-${k}: ${v}px;`),
+    ...Object.entries(motion.duration).map(([k, v]) => `  --duration-${k}: ${v}ms;`),
+    `  --ease: ${motion.easing};`,
+    `  --font-sans: "${type.family}", system-ui, sans-serif;`,
+    "}",
+    "@media (prefers-color-scheme: dark) {",
+    "  :root {",
+    ...roles("dark", "    "),
+    "  }",
+    "}",
+    "",
+  ].join("\n");
+}
+
 /** The Uniwind theme CSS: every colour role as `--color-*` in both themes. */
 export function themeCss(): string {
   const block = (t: ThemeName) =>

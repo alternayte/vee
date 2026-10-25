@@ -1,0 +1,48 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+/* Generated from packages/tokens/src/index.ts by `bun run css`. Do not edit. */
+:root {
+  color-scheme: light dark;
+  --color-background: #f4f2ee;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ebe8e2;
+  --color-border: #c9c4ba;
+  --color-text: #16191d;
+  --color-text-muted: #535a63;
+  --color-accent: #7d5d1c;
+  --color-accent-text: #ffffff;
+  --color-good: #22693a;
+  --color-warning: #8a5a00;
+  --color-critical: #b3261e;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+  --text-display: 3.5rem;
+  --text-dial: 6rem;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+  --duration-fast: 120ms;
+  --duration-base: 160ms;
+  --duration-max: 200ms;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #0e1114;
+    --color-surface: #171b20;
+    --color-surface-raised: #20262d;
+    --color-border: #323a43;
+    --color-text: #e8eaed;
+    --color-text-muted: #9aa3ad;
+    --color-accent: #c9a253;
+    --color-accent-text: #14110a;
+    --color-good: #5cb87a;
+    --color-warning: #e0a43c;
+    --color-critical: #e5675c;
+  }
+}

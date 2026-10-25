@@ -2,7 +2,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, test } from "vitest";
-import { CONTRAST_PAIRS, colors, contrast, motion, themeCss } from "../src";
+import { CONTRAST_PAIRS, colors, contrast, motion, themeCss, webThemeCss } from "../src";
 
 describe("tokens", () => {
   test.each(["dark", "light"] as const)("%s theme passes WCAG AA for every text pair", (theme) => {
@@ -18,6 +18,10 @@ describe("tokens", () => {
 
   test("no transition is longer than 200 ms", () => {
     expect(Math.max(...Object.values(motion.duration))).toBeLessThanOrEqual(200);
+  });
+
+  test("the committed web.css matches the tokens", () => {
+    expect(readFileSync(join(import.meta.dirname, "..", "web.css"), "utf8")).toBe(webThemeCss());
   });
 
   test("the committed theme.css matches the tokens", () => {
