@@ -1,0 +1,19 @@
+{
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://vee.tennant.dev",
+        "EXPO_PUBLIC_POWERSYNC_URL": "https://vee-sync.tennant.dev"
+      },
+      "bun": "1.4.3"
+    }
+  }
+}

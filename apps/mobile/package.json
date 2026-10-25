@@ -72,7 +72,8 @@
     "start": "expo start",
     "android": "expo run:android",
     "prebuild": "expo prebuild -p android --clean",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "eas-build-post-install": "cd ../.. && bunx turbo run build --filter=@vee/catalogue"
   },
   "private": true,
   "license": "AGPL-3.0-or-later"
