@@ -13,13 +13,42 @@ import { freshDatabase, OWNER_EMAIL, query, request, signIn, startApp } from "./
 const catalogue = catalogueJson as unknown as Catalogue;
 let app: App;
 let owner: { token: string; userId: string };
-/** Scripted answers in order. A function answers from the input the model got. */
+/**
+ * Scripted answers in order. A function answers from the input the model got.
+ * A `{ stream }` answer is a streamed chat round: text and tool calls.
+ */
 const answers: unknown[] = [];
 let calls = 0;
 
+type Streamed = { stream: { text?: string; calls?: { name: string; args: unknown }[] } };
+
+function sse(r: Streamed["stream"]) {
+  const events: unknown[] = [];
+  if (r.text) events.push({ choices: [{ delta: { content: r.text } }] });
+  (r.calls ?? []).forEach((c, index) =>
+    events.push({
+      choices: [
+        {
+          delta: {
+            tool_calls: [
+              { index, id: `c${index}`, function: { name: c.name, arguments: JSON.stringify(c.args) } },
+            ],
+          },
+        },
+      ],
+    }),
+  );
+  events.push({ model: "test/model", choices: [], usage: { total_tokens: 100, cost: 0.001 } });
+  return new Response(`${events.map((e) => `data: ${JSON.stringify(e)}\n\n`).join("")}data: [DONE]\n\n`);
+}
+
 const fakeModel = (async (_url: string, init: RequestInit) => {
   calls++;
-  const body = JSON.parse(String(init.body)) as { messages: { content: string }[] };
+  const body = JSON.parse(String(init.body)) as { messages: { content: string }[]; stream?: boolean };
+  if (body.stream) {
+    const next = answers.shift() as Streamed | undefined;
+    return next ? sse(next.stream) : new Response("no answer scripted", { status: 500 });
+  }
   const head = answers.shift();
   const next = typeof head === "function" ? head(JSON.parse(body.messages.at(-1)?.content ?? "{}")) : head;
   if (next === undefined) return new Response("no answer scripted", { status: 500 });
@@ -246,6 +275,91 @@ describe("meal draft", () => {
     expect(sent?.library).toContainEqual({ name: "Owner tofu bowl", protein: "tofu" });
     expect(sent?.library.some((m) => m.name === "Teriyaki salmon with rice and broccoli")).toBe(true);
     expect(sent?.protein).toBeTruthy();
+  });
+});
+
+/** The server-sent events of a response, in order. */
+async function events(r: Response) {
+  return (await r.text())
+    .split("\n\n")
+    .filter((b) => b.includes("event:"))
+    .map((b) => ({
+      event: /event: (\w+)/.exec(b)?.[1],
+      data: JSON.parse(/data: (.*)/.exec(b)?.[1] ?? "null"),
+    }));
+}
+
+describe("coach chat", () => {
+  test("streams the answer, stores an accepted proposal as a chat card, and records the cost", async () => {
+    const user = await signIn(app, "chat@example.test");
+    await onboard(user.userId);
+    answers.push(
+      {
+        stream: {
+          calls: [
+            { name: "get_plan", args: {} },
+            { name: "propose_change", args: { change: { kind: "deload" }, why: "Rest." } },
+          ],
+        },
+      },
+      { stream: { text: "The engine does not allow a deload now." } },
+    );
+    const r = await post("/ai/chat", { messages: [{ role: "user", content: "Can I deload?" }] }, user.token);
+    expect(r.status).toBe(200);
+    expect(r.headers.get("content-type")).toMatch(/text\/event-stream/);
+    const ev = await events(r);
+    expect(ev.map((e) => e.event)).toEqual(["text", "done"]);
+    expect(ev[0]?.data.delta).toBe("The engine does not allow a deload now.");
+    expect(ev[1]?.data).toEqual({ unconfirmed: [] });
+    const rows = await query("SELECT * FROM ai_proposals WHERE user_id = $1", [user.userId]);
+    expect(rows).toHaveLength(0);
+    const usage = await query<{ task: string }>("SELECT task FROM ai_usage WHERE user_id = $1", [
+      user.userId,
+    ]);
+    expect(usage.map((u) => u.task)).toEqual(["coach_chat", "coach_chat"]);
+  });
+
+  test("an accepted change is a pending chat card and a proposal event", async () => {
+    const user = await signIn(app, "chat2@example.test");
+    const plan = await onboard(user.userId);
+    const row = plan.templates[0]?.items[0];
+    if (!row) throw new Error("no item");
+    answers.push(
+      {
+        stream: {
+          calls: [
+            {
+              name: "propose_change",
+              args: {
+                change: { kind: "sets", dayType: "A", exerciseId: row.exerciseId, sets: 1 },
+                why: "Short on time.",
+              },
+            },
+          ],
+        },
+      },
+      { stream: { text: "A card is in the Coach tab." } },
+    );
+    const r = await post(
+      "/ai/chat",
+      { messages: [{ role: "user", content: "One set only on the first one" }] },
+      user.token,
+    );
+    const ev = await events(r);
+    expect(ev.map((e) => e.event)).toEqual(["proposal", "text", "done"]);
+    const rows = await query<{ id: string; source: string; status: string }>(
+      "SELECT id, source, status FROM ai_proposals WHERE user_id = $1",
+      [user.userId],
+    );
+    expect(rows).toEqual([{ id: ev[0]?.data.id, source: "chat", status: "pending" }]);
+  });
+
+  test("the last message must be the user's, and a user with no plan gets an error event", async () => {
+    const bad = await post("/ai/chat", { messages: [{ role: "assistant", content: "Hi" }] });
+    expect(bad.status).toBe(400);
+    const user = await signIn(app, "chat3@example.test");
+    const r = await post("/ai/chat", { messages: [{ role: "user", content: "Hi" }] }, user.token);
+    expect((await events(r)).map((e) => e.event)).toEqual(["error"]);
   });
 });
 

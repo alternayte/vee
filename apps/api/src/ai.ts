@@ -4,13 +4,21 @@
 import { createHash } from "node:crypto";
 import {
   adjustToday,
+  type ChatTurn,
+  type CoachData,
+  coachChat,
   createGateway,
   explainMore,
   foodWeek,
   type Gateway,
   mealDraft,
+  type Proposed,
   type Review,
   reviewNumbers,
+  runTool,
+  SCOPES,
+  type Scope,
+  toolsFor,
   type Usage,
   weeklyReview,
 } from "@vee/ai";
@@ -114,8 +122,112 @@ export function createAi(env: Env, pool: pg.Pool, f?: typeof fetch) {
     return localParts(now, tz ?? "UTC").date;
   }
 
+  async function foodLogs(userId: string, from: string, to: string) {
+    return (
+      await pool.query<{
+        date: string;
+        palm: number | null;
+        fist: number | null;
+        cupped: number | null;
+        thumb: number | null;
+      }>(
+        "SELECT date, palm, fist, cupped, thumb FROM food_logs WHERE user_id = $1 AND deleted_at IS NULL AND date >= $2 AND date <= $3",
+        [userId, from, to],
+      )
+    ).rows.map((l) => ({
+      date: l.date,
+      portions: { palm: l.palm ?? 0, fist: l.fist ?? 0, cupped: l.cupped ?? 0, thumb: l.thumb ?? 0 },
+    }));
+  }
+
+  async function foodTargets(userId: string) {
+    const row = (
+      await pool.query<{ per_moment: string | null }>(
+        "SELECT per_moment FROM food_targets WHERE user_id = $1 AND deleted_at IS NULL ORDER BY updated_at DESC LIMIT 1",
+        [userId],
+      )
+    ).rows[0];
+    return row?.per_moment ? parseTargets(row.per_moment) : undefined;
+  }
+
+  async function weighIns(userId: string, since: string) {
+    return (
+      await pool.query<{ measured_at: string; value: number }>(
+        "SELECT measured_at, value FROM body_metrics WHERE user_id = $1 AND kind = 'weight' AND deleted_at IS NULL AND value IS NOT NULL AND measured_at >= $2 ORDER BY measured_at",
+        [userId, since],
+      )
+    ).rows.map((w) => ({ date: w.measured_at.slice(0, 10), kg: w.value }));
+  }
+
+  /** What the coach tools read for one user. Undefined without a programme. */
+  async function snapshot(userId: string, now: Date): Promise<CoachData | undefined> {
+    const end = await today(userId, now);
+    const input = toEngineInput(await rows(userId), { catalogue, today: end, engineVersion: ENGINE_VERSION });
+    if (!input?.programme) return undefined;
+    const since = addDays(end, -120);
+    const reviews = (
+      await pool.query<{ week: string; words: string | null; numbers: string | null }>(
+        "SELECT week, words, numbers FROM reviews WHERE user_id = $1 AND deleted_at IS NULL ORDER BY week DESC LIMIT 6",
+        [userId],
+      )
+    ).rows.map((r) => {
+      const focus = r.numbers ? (JSON.parse(r.numbers) as { focus?: string }).focus : undefined;
+      return { week: r.week, ...(r.words ? { words: r.words } : {}), ...(focus ? { focus } : {}) };
+    });
+    const perMoment = await foodTargets(userId);
+    return {
+      input,
+      food: { logs: await foodLogs(userId, since, end), ...(perMoment ? { perMoment } : {}) },
+      weighIns: await weighIns(userId, since),
+      reviews,
+    };
+  }
+
+  /** A pending proposal card for the user. The engine has accepted the change. */
+  async function propose(userId: string, source: "chat" | "mcp", p: Proposed): Promise<string> {
+    const id = uuidv7();
+    const at = new Date().toISOString();
+    await pool.query(
+      `INSERT INTO ai_proposals (id, user_id, source, change, validation, status, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, 'pending', $6, $6)`,
+      [id, userId, source, JSON.stringify({ ...p.change, why: p.why }), JSON.stringify(p.reasons), at],
+    );
+    return id;
+  }
+
   return {
     refusal,
+
+    /** Coach chat (streamed through the callbacks). Undefined when the user has no programme. */
+    async chat(
+      userId: string,
+      turns: ChatTurn[],
+      on: { text: (d: string) => void; proposal: (p: Proposed & { id: string }) => void },
+      now = new Date(),
+    ) {
+      const data = await snapshot(userId, now);
+      if (!data) return undefined;
+      const r = await coachChat(need(), routes.coach_chat, {
+        data,
+        // The chat in the app reads everything the user owns; MCP tokens carry their own scopes.
+        scopes: SCOPES,
+        turns,
+        ctx: { propose: (p) => propose(userId, "chat", p) },
+        onText: on.text,
+        onProposal: on.proposal,
+      });
+      await record(userId, "coach_chat", r.usage);
+      return r;
+    },
+
+    /** One coach tool for an MCP client with these scopes. */
+    async tool(userId: string, name: string, args: unknown, scopes: readonly Scope[], now = new Date()) {
+      const t = toolsFor(scopes).find((x) => x.name === name);
+      if (!t) return { error: `No tool "${name}" for the granted scopes.` };
+      const data = await snapshot(userId, now);
+      if (!data) return { error: "No plan yet. Finish onboarding in the app first." };
+      return runTool(data, t, args, { propose: (p) => propose(userId, "mcp", p) });
+    },
 
     async explain(userId: string, reasons: Reason[]) {
       const key = createHash("sha256")
@@ -212,44 +324,13 @@ export function createAi(env: Env, pool: pg.Pool, f?: typeof fetch) {
       });
       if (!input?.programme) return undefined;
       const days = Array.from({ length: 7 }, (_, n) => addDays(from, n));
-      const logs = (
-        await pool.query<{
-          date: string;
-          palm: number | null;
-          fist: number | null;
-          cupped: number | null;
-          thumb: number | null;
-        }>(
-          "SELECT date, palm, fist, cupped, thumb FROM food_logs WHERE user_id = $1 AND deleted_at IS NULL AND date >= $2 AND date <= $3",
-          [userId, from, end],
-        )
-      ).rows.map((l) => ({
-        date: l.date,
-        portions: { palm: l.palm ?? 0, fist: l.fist ?? 0, cupped: l.cupped ?? 0, thumb: l.thumb ?? 0 },
-      }));
-      const targetRow = (
-        await pool.query<{ per_moment: string | null }>(
-          "SELECT per_moment FROM food_targets WHERE user_id = $1 AND deleted_at IS NULL ORDER BY updated_at DESC LIMIT 1",
-          [userId],
-        )
-      ).rows[0];
-      const weighIns = (
-        await pool.query<{ measured_at: string; value: number }>(
-          "SELECT measured_at, value FROM body_metrics WHERE user_id = $1 AND kind = 'weight' AND deleted_at IS NULL AND value IS NOT NULL AND measured_at >= $2 ORDER BY measured_at",
-          [userId, addDays(end, -21)],
-        )
-      ).rows.map((w) => ({ date: w.measured_at.slice(0, 10), kg: w.value }));
-      const numbers = reviewNumbers(
-        input,
-        from,
-        end,
-        foodWeek(logs, targetRow?.per_moment ? parseTargets(targetRow.per_moment) : undefined, days),
-        {
-          weighIns: weighIns.length,
-          slopeKgPerWeek:
-            weighIns.length >= MIN_WEIGH_INS ? Math.round(weeklySlope(weighIns) * 100) / 100 : null,
-        },
-      );
+      const logs = await foodLogs(userId, from, end);
+      const perMoment = await foodTargets(userId);
+      const weights = await weighIns(userId, addDays(end, -21));
+      const numbers = reviewNumbers(input, from, end, foodWeek(logs, perMoment, days), {
+        weighIns: weights.length,
+        slopeKgPerWeek: weights.length >= MIN_WEIGH_INS ? Math.round(weeklySlope(weights) * 100) / 100 : null,
+      });
       const stop = await refusal(userId, now);
       const review: Review = stop
         ? { numbers, proposals: [], usage: [], error: stop.body.error }

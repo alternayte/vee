@@ -11,5 +11,7 @@ export function modelRoutes(env: Env): Routes {
     meal_draft: { model: env.AI_MODEL_STRUCTURED, effort: "medium" },
     adjust_today: { model: env.AI_MODEL_STRUCTURED, effort: "low" },
     explain_more: { model: env.AI_MODEL_WRITER, effort: "low" },
+    // The user waits for the first word; tool rounds come before it.
+    coach_chat: { model: env.AI_MODEL_WRITER, effort: "low" },
   };
 }

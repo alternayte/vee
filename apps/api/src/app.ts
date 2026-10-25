@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { SessionTemplate } from "@vee/engine";
 import { Hono } from "hono";
+import { streamSSE } from "hono/streaming";
 import { createLocalJWKSet, type JSONWebKeySet, jwtVerify } from "jose";
 import { z } from "zod";
 import {
@@ -52,6 +53,14 @@ const AdjustBody = z.object({
   }),
 });
 const MealBody = z.object({ maxMinutes: z.number().int().min(5).max(180).optional() });
+/** The last turns of the conversation, as the phone keeps it (local only). */
+const ChatBody = z.object({
+  messages: z
+    .array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().min(1).max(4000) }))
+    .min(1)
+    .max(20)
+    .refine((m) => m.at(-1)?.role === "user", "The last message is the user's."),
+});
 
 export function createApp(env: Env, deps: { aiFetch?: typeof fetch } = {}) {
   const pool = createPool(env.DATABASE_URL);
@@ -265,6 +274,29 @@ export function createApp(env: Env, deps: { aiFetch?: typeof fetch } = {}) {
     const body = MealBody.safeParse(await c.req.json().catch(() => ({})));
     if (!body.success) return c.json({ error: "invalid" }, 400);
     return aiCall(c, (u) => ai.meal(u, body.data.maxMinutes));
+  });
+
+  /**
+   * Coach chat, streamed as server-sent events: "text" deltas, a "proposal" for
+   * each card the engine accepted, then "done" with the numbers no data
+   * confirms, or "error".
+   */
+  app.post("/ai/chat", async (c) => {
+    const body = ChatBody.safeParse(await c.req.json().catch(() => null));
+    if (!body.success) return c.json({ error: "invalid" }, 400);
+    const userId = c.get("userId");
+    const stop = await ai.refusal(userId);
+    if (stop) return c.json(stop.body, stop.status);
+    return streamSSE(c, async (stream) => {
+      const send = (event: string, data: unknown) => stream.writeSSE({ event, data: JSON.stringify(data) });
+      const r = await ai.chat(userId, body.data.messages, {
+        text: (delta) => void send("text", { delta }),
+        proposal: (p) => void send("proposal", p),
+      });
+      if (!r) await send("error", { error: "no-programme", message: "Finish onboarding first." });
+      else if (r.error) await send("error", { error: "ai-failed", message: r.error });
+      else await send("done", { unconfirmed: r.unconfirmed });
+    });
   });
 
   /** Makes the review of the last 7 days now, for a user who opens it before the Sunday job. */
