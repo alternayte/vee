@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<resources>
+  <string name="vee_widget_label">Vee: next session</string>
+  <string name="vee_widget_description">Your next session and your 4-week consistency.</string>
+</resources>

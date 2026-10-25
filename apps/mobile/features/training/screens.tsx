@@ -23,6 +23,7 @@ import { Text } from "@/components/ui/text";
 import { aiPost } from "@/features/ai/client";
 import { TellMeMore } from "@/features/ai/tell-me-more";
 import { localDate } from "@/features/food/data";
+import { scheduleAll } from "@/features/reminders/schedule";
 import { useTodayAdjust } from "@/features/session/adjust";
 import { activeSessionId, skipNext } from "@/features/session/data";
 import { catalogue } from "./catalogue";
@@ -229,6 +230,7 @@ export function TodayScreen() {
             onPress={async () => {
               await skipNext();
               setSkipped(true);
+              void scheduleAll();
             }}
           />
         )}

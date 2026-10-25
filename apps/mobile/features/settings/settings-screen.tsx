@@ -10,7 +10,7 @@ import * as LocalAuthentication from "expo-local-authentication";
 import { Link } from "expo-router";
 import { ChevronRight } from "lucide-react-native";
 import { type ReactNode, useState } from "react";
-import { Alert, Pressable, Switch, View } from "react-native";
+import { Alert, Linking, Pressable, Switch, View } from "react-native";
 import { Screen } from "@/components/screen";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,7 @@ import { AccountError, deleteAccount, requestLink, signOut, useAccount } from "@
 import { HAS_SERVER } from "@/features/account/config";
 import { LOCK_KEY, setBodyLock } from "@/features/body/screens";
 import { db, powersync } from "@/features/db/database";
+import { REMINDERS, setReminder } from "@/features/reminders/schedule";
 import { useTokens } from "@/features/theme/use-tokens";
 import { importCsvFile, shareExportJson, shareSetsCsv } from "./data";
 
@@ -179,6 +180,38 @@ function DataSection() {
   );
 }
 
+/** One switch per local reminder. Quiet hours (21:30 to 07:30) hold them all back. */
+function Reminders() {
+  const { data } = useQuery(toCompilableQuery(db.select().from(ui_prefs)));
+  const off = new Set(data.filter((r) => r.value === "0").map((r) => r.key));
+  return (
+    <>
+      {REMINDERS.map((r) => (
+        <View key={r.key} className="flex-row items-center justify-between gap-3">
+          <Text className="flex-1">{r.label}</Text>
+          <Switch
+            value={!off.has(r.key)}
+            accessibilityLabel={r.label}
+            onValueChange={(on) => void setReminder(r.key, on)}
+          />
+        </View>
+      ))}
+      <Text variant="muted">
+        Quiet hours from 21:30 to 07:30. During a session, the rest alert still comes.
+      </Text>
+      <Text variant="muted">
+        For a rest alert on the second, allow "Alarms and reminders" for Vee in the Android settings. Without
+        it, Android can send the alert up to a minute late when the screen is off.
+      </Text>
+      <Button
+        label="Open Vee's Android settings"
+        variant="ghost"
+        onPress={() => void Linking.openSettings()}
+      />
+    </>
+  );
+}
+
 /** Locks the Body tab and photos behind a fingerprint or face check. */
 function BodyLock() {
   const { data } = useQuery(toCompilableQuery(db.select().from(ui_prefs).where(eq(ui_prefs.key, LOCK_KEY))));
@@ -231,6 +264,9 @@ export function SettingsScreen() {
           <ChevronRight color={color["text-muted"]} />
         </Pressable>
       </Link>
+      <Section title="Reminders">
+        <Reminders />
+      </Section>
       <Section title="Privacy">
         <BodyLock />
       </Section>

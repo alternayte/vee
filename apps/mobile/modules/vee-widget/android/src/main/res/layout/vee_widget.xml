@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<!-- Brass-and-steel tokens: background #171b20, text #e8eaed, muted #9aa3ad, accent #c9a253. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:id="@+id/vee_widget_root"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:orientation="vertical"
+  android:padding="16dp"
+  android:background="#171b20">
+  <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+    android:text="Next session" android:textColor="#9aa3ad" android:textSize="12sp" />
+  <TextView android:id="@+id/vee_widget_title" android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:text="Open Vee" android:textColor="#e8eaed" android:textSize="18sp" android:textStyle="bold"
+    android:maxLines="2" android:ellipsize="end" />
+  <TextView android:id="@+id/vee_widget_minutes" android:layout_width="wrap_content" android:layout_height="wrap_content"
+    android:textColor="#9aa3ad" android:textSize="14sp" />
+  <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1" />
+  <TextView android:id="@+id/vee_widget_consistency" android:layout_width="wrap_content" android:layout_height="wrap_content"
+    android:textColor="#c9a253" android:textSize="14sp" />
+</LinearLayout>

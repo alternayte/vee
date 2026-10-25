@@ -13,7 +13,9 @@ import { Screen } from "@/components/screen";
 import { Button } from "@/components/ui/button";
 import { Choice } from "@/components/ui/choice";
 import { Text } from "@/components/ui/text";
+import { scheduleAll } from "@/features/reminders/schedule";
 import { catalogue } from "@/features/training/catalogue";
+import { live } from "@/modules/vee-live";
 import { useTodayAdjust } from "./adjust";
 import {
   type CheckinAnswers,
@@ -312,6 +314,39 @@ export function RunnerScreen() {
   }, [id]);
 
   const steps = useMemo(() => (session ? sessionSteps(session.rx, catalogue) : []), [session]);
+
+  // The Live Update: "Set done" and "+30 s" from the notification come back here.
+  const actions = useRef<{ done?: () => void; add30?: () => void }>({});
+  useEffect(() => {
+    const sub = live.onAction((a) => (a === "done" ? actions.current.done?.() : actions.current.add30?.()));
+    return () => sub?.remove();
+  }, []);
+  const liveKey = runner ? `${runner.phase}|${runner.cursor}|${runner.restEndsAt ?? ""}` : "";
+  useEffect(() => {
+    if (!session || !runner || runner.sessionId !== id || !liveKey) return;
+    if (runner.phase === "summary") {
+      live.end();
+      return;
+    }
+    // During rest the notification shows what comes next.
+    const s = steps[runner.phase === "rest" ? runner.cursor + 1 : runner.cursor] ?? steps[runner.cursor];
+    const it = s ? session.rx.items[s.item] : undefined;
+    if (!s || !it) return;
+    const lastStep = new Map(steps.map((x, n) => [x.item, n]));
+    const done = [...lastStep.values()].filter((n) => n < runner.cursor).length;
+    live.start({
+      sessionTitle: session.rx.dayType ? `Session ${session.rx.dayType}` : "Session",
+      exercise: runner.phase === "warmup" ? "Warm-up" : nameOf(it.exerciseId),
+      setLabel:
+        runner.phase === "warmup"
+          ? "Light sets first"
+          : `Set ${s.set} of ${it.sets}${s.side ? ` · ${s.side}` : ""}`,
+      restEndsAt: runner.phase === "rest" ? (runner.restEndsAt ?? null) : null,
+      progress: done,
+      segments: session.rx.items.length,
+    });
+  }, [liveKey, session, id, runner, steps]);
+
   if (error) return <Screen title="Session">{<Text>{error}</Text>}</Screen>;
   if (!session || !runner || runner.sessionId !== id) return <Screen title="Session">{null}</Screen>;
 
@@ -338,6 +373,16 @@ export function RunnerScreen() {
     } catch {
       setError("Vee could not save the set. Try again.");
     }
+  };
+
+  actions.current = {
+    done: () => {
+      if (runner.phase === "work" && item) void log(aimFor(item, state), "good");
+      else if (runner.phase === "rest") void endRest(runner);
+    },
+    add30: () => {
+      if (runner.phase === "rest") void addRest(runner, nextText);
+    },
   };
 
   return (
@@ -368,7 +413,10 @@ export function RunnerScreen() {
         <Summary
           finished={runner.reasons !== undefined}
           reasons={runner.reasons}
-          onFinish={async () => closed(runner, await finishSession(runner.sessionId))}
+          onFinish={async () => {
+            await closed(runner, await finishSession(runner.sessionId));
+            void scheduleAll();
+          }}
         />
       )}
       {runner.logged.length > 0 && runner.reasons === undefined && (
@@ -395,6 +443,8 @@ export function RunnerScreen() {
                 style: "destructive",
                 onPress: async () => {
                   await skipSession(runner.sessionId);
+                  live.end();
+                  void scheduleAll();
                   router.replace("/");
                 },
               },
