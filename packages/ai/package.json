@@ -9,7 +9,8 @@
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "eval": "bun eval/run.ts"
   },
   "dependencies": {
     "@vee/catalogue": "workspace:*",
@@ -20,6 +21,7 @@
   "devDependencies": {
     "@types/bun": "1.4.4",
     "typescript": "7.0.2",
-    "vitest": "5.0.5"
+    "vitest": "5.0.5",
+    "@vee/fixtures": "workspace:*"
   }
 }

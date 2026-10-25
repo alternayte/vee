@@ -57,6 +57,13 @@ test-sync: catalogue
     trap '$compose down -v >/dev/null 2>&1 || true' EXIT
     cd apps/api && node node_modules/vitest/vitest.mjs run test-sync --testTimeout 120000 --hookTimeout 180000
 
+# V12: AI eval against the real model. Needs OPENROUTER_API_KEY in infra/.env.
+eval: catalogue
+    #!/usr/bin/env bash
+    set -euo pipefail
+    set -a; source infra/.env; set +a
+    cd packages/ai && bun eval/run.ts
+
 # Android release APK for arm64 (bundles the JavaScript, so no Metro server)
 apk: catalogue
     cd apps/mobile && CI=1 bunx expo prebuild -p android --clean

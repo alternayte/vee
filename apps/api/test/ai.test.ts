@@ -210,8 +210,9 @@ describe("weekly review", () => {
     const row = plan.templates[0]?.items.find((i) => i.family === "row");
     expect(row).toBeDefined();
     answers.push({
-      words: "You set up your plan. No sessions are logged yet.",
-      focus: "Do session A.",
+      words:
+        "You set up your plan this week. No sessions are logged yet, so no movement moved up or down. Start with session A when you can, and log each set as you go.",
+      focus: "Do session A first.",
       proposals: [
         { change: { kind: "sets", dayType: "A", exerciseId: row?.exerciseId, sets: 2 }, why: "Start easy." },
         { change: { kind: "swap", dayType: "A", family: "row", to: "goblet-squat" }, why: "Legs." },
@@ -226,7 +227,7 @@ describe("weekly review", () => {
     expect(reviews).toHaveLength(1);
     expect(reviews[0]?.words).toMatch(/No sessions/);
     expect(JSON.parse(reviews[0]?.numbers ?? "{}")).toMatchObject({
-      focus: "Do session A.",
+      focus: "Do session A first.",
       training: { mainDone: 0 },
     });
     const proposals = await query<{ change: string; status: string; source: string }>(

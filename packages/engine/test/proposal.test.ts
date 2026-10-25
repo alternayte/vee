@@ -88,8 +88,23 @@ describe("validateProposal", () => {
     if (!r.ok) expect(r.code).toBe("volume");
   });
 
+  test("an early deload with no stalls and no low check-ins is refused", () => {
+    const r = validateProposal(withPlan(), { kind: "deload" });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.reason.ruleId).toBe("PROPOSAL_DELOAD_NOT_NEEDED");
+  });
+
   test("an early deload sets the start date; a second one is refused", () => {
-    const i = withPlan();
+    const stalls = { top: 0, miss: 0, stall: 2, hold: 0 };
+    const i = withPlan({
+      history: {
+        ...emptyHistory(),
+        progress: [
+          { family: "row", rung: 1, exerciseId: "row-single-arm-db", loadKg: 8, streaks: stalls },
+          { family: "squat", rung: 1, exerciseId: "goblet-squat", loadKg: 8, streaks: stalls },
+        ],
+      },
+    });
     const r = validateProposal(i, { kind: "deload" });
     if (!r.ok) throw new Error(r.reason.text);
     expect(r.programme.earlyDeloadFrom).toBe(i.today);
@@ -113,6 +128,7 @@ describe("validateProposal", () => {
   test("every result carries a reason with filled text", () => {
     const r = validateProposal(withPlan({ history: emptyHistory() }), { kind: "deload" });
     const reason = r.ok ? r.reasons[0] : r.reason;
+    expect(r.ok).toBe(false);
     expect(reason?.text).not.toMatch(/\{/);
   });
 });

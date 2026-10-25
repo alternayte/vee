@@ -16,7 +16,7 @@ export type GatewayOptions = {
 export type Usage = { model: string; costUsd: number; tokens: number; ms: number };
 
 export type TaskResult<T> =
-  | { ok: true; output: T; usage: Usage[] }
+  | { ok: true; output: T; usage: Usage[]; retriedFor?: string[] }
   | { ok: false; error: string; usage: Usage[] };
 
 export type TaskSpec<T> = {
@@ -25,6 +25,8 @@ export type TaskSpec<T> = {
   /** The minimised input, sent as JSON. */
   input: unknown;
   schema: z.ZodType<T>;
+  /** The schema sent to the model, when it is stricter than the one that parses the answer. */
+  wireSchema?: z.ZodType;
   /** Problems with a schema-valid answer. Empty means it passes. */
   validate: (out: T) => string[];
   route: Route;
@@ -44,7 +46,7 @@ function parse<T>(schema: z.ZodType<T>, raw: string): { out?: T; errors: string[
   try {
     json = JSON.parse(raw.replace(/^```(?:json)?\s*|\s*```$/g, ""));
   } catch {
-    return { errors: ["The answer is not valid JSON."] };
+    return { errors: [`The answer is not valid JSON: ${JSON.stringify(raw.slice(0, 120))}`] };
   }
   const r = schema.safeParse(json);
   if (!r.success)
@@ -71,7 +73,11 @@ export function createGateway(o: GatewayOptions) {
         reasoning: { effort: spec.route.effort, exclude: true },
         response_format: {
           type: "json_schema",
-          json_schema: { name: spec.name, strict: false, schema: z.toJSONSchema(spec.schema) },
+          json_schema: {
+            name: spec.name,
+            strict: false,
+            schema: z.toJSONSchema(spec.wireSchema ?? spec.schema),
+          },
         },
         // Only providers that keep no prompts and do not train on them.
         provider: { zdr: true, data_collection: "deny", require_parameters: true },
@@ -99,6 +105,7 @@ export function createGateway(o: GatewayOptions) {
         { role: "user", content: JSON.stringify(spec.input) },
       ];
       let errors: string[] = [];
+      let firstErrors: string[] = [];
       for (let attempt = 0; attempt < 2; attempt++) {
         let text: string;
         try {
@@ -106,11 +113,16 @@ export function createGateway(o: GatewayOptions) {
           usage.push(c.usage);
           text = c.text;
         } catch (e) {
-          return { ok: false, error: e instanceof Error ? e.message : String(e), usage };
+          // A timeout or a provider error gets the same one retry.
+          errors = [e instanceof Error ? e.message : String(e)];
+          firstErrors = errors;
+          continue;
         }
         const parsed = parse(spec.schema, text);
         errors = parsed.out === undefined ? parsed.errors : spec.validate(parsed.out);
-        if (parsed.out !== undefined && errors.length === 0) return { ok: true, output: parsed.out, usage };
+        if (parsed.out !== undefined && errors.length === 0)
+          return { ok: true, output: parsed.out, usage, ...(attempt > 0 ? { retriedFor: firstErrors } : {}) };
+        firstErrors = errors;
         messages.push(
           { role: "assistant", content: text },
           {

@@ -15,9 +15,18 @@ export const PlanChangeSchema = z.discriminatedUnion("kind", [
 export const WeeklyReviewOut = z.object({
   words: z.string().min(1),
   focus: z.string().min(1),
-  proposals: z.array(z.object({ change: PlanChangeSchema, why: z.string().min(1) })).max(3),
+  // A malformed change is dropped later, like a change the engine refuses,
+  // so one bad proposal does not cost the whole review.
+  proposals: z
+    .array(z.object({ change: z.record(z.string(), z.unknown()), why: z.string().optional() }))
+    .max(3),
 });
 export type WeeklyReviewOut = z.infer<typeof WeeklyReviewOut>;
+
+/** What the model is asked for. An empty answer came back for the open `change` object. */
+export const WeeklyReviewWire = WeeklyReviewOut.extend({
+  proposals: z.array(z.object({ change: PlanChangeSchema, why: z.string().min(1) })).max(3),
+});
 
 export const AdjustTodayOut = z.object({
   minutes: z.number().int().min(10).max(90).optional(),
@@ -50,4 +59,4 @@ export const MealDraftOut = z.object({
 });
 export type MealDraftOut = z.infer<typeof MealDraftOut>;
 
-export const LIMITS = { reviewWords: 120, explainWords: 80, proposals: 3 } as const;
+export const LIMITS = { reviewWords: 120, reviewMinWords: 25, explainWords: 80, proposals: 3 } as const;

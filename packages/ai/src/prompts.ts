@@ -4,10 +4,10 @@
 import { readFileSync } from "node:fs";
 
 export const PROMPT_VERSIONS = {
-  weekly_review: 1,
+  weekly_review: 2,
   explain_more: 1,
-  adjust_today: 1,
-  meal_draft: 1,
+  adjust_today: 2,
+  meal_draft: 2,
 } as const;
 
 export type TaskName = keyof typeof PROMPT_VERSIONS;

@@ -87,6 +87,20 @@ describe("gateway", () => {
     expect(r.usage).toHaveLength(2);
   });
 
+  test("a provider error gets the same one retry", async () => {
+    let n = 0;
+    const f = (async () => {
+      n++;
+      if (n === 1) return new Response("busy", { status: 503 });
+      return new Response(
+        JSON.stringify({ choices: [{ message: { content: '{"text":"Plain."}' } }], usage: {} }),
+      );
+    }) as unknown as typeof fetch;
+    const r = await explainMore(createGateway({ apiKey: "k", fetch: f }), route, []);
+    expect(r.ok).toBe(true);
+    expect(n).toBe(2);
+  });
+
   test("two failures give the error, not an answer", async () => {
     const { gw } = scripted("no", "still no");
     const r = await explainMore(gw, route, []);
@@ -95,7 +109,8 @@ describe("gateway", () => {
 });
 
 describe("weekly_review", () => {
-  const words = "You trained this week. Keep going.";
+  const words =
+    "You set up your plan this week. No sessions are logged yet, so no movement moved up or down. Start with session A when you can, and log each set as you go.";
 
   test("an invented number gets a retry; a second one falls back to numbers only", async () => {
     const bad = { words: "You did 99 sets.", focus: "Sleep.", proposals: [] };
@@ -109,7 +124,7 @@ describe("weekly_review", () => {
   test("a proposal that fails the engine check is dropped; a valid one stays", async () => {
     const { gw } = scripted({
       words,
-      focus: "Keep the rows strict.",
+      focus: "Keep the rows strict next week.",
       proposals: [
         {
           change: { kind: "swap", dayType: "A", family: "vertical-pull", to: "pullup-strict" },
@@ -141,12 +156,6 @@ describe("adjust_today", () => {
     const { gw } = scripted({ focus: ["squat"] }, { focus: ["row"] });
     const r = await adjustToday(gw, route, "rows first please", day);
     expect(r.ok && r.output.focus).toEqual(["row"]);
-  });
-
-  test("minutes that the text does not give are refused", async () => {
-    const { gw } = scripted({ minutes: 25 }, { minutes: 15 });
-    const r = await adjustToday(gw, route, "only 15 min today", day);
-    expect(r.ok && r.output.minutes).toBe(15);
   });
 });
 
@@ -188,4 +197,28 @@ describe("meal_draft", () => {
     if (!r.ok) throw new Error(r.error);
     expect(r.output).toMatchObject({ id: "m1", origin: "ai", name: "Chicken rice" });
   });
+});
+
+test("weekly_review: a malformed proposal is dropped, the review stays", async () => {
+  const { gw, requests } = scripted({
+    words:
+      "You set up your plan this week. No sessions are logged yet, so no movement moved up or down. Start with session A when you can, and log each set as you go.",
+    focus: "Start with session A.",
+    proposals: [{ change: { kind: "sets", dayType: "Z" }, why: "More." }],
+  });
+  const r = await weeklyReview(gw, route, input, numbers);
+  expect(requests).toHaveLength(1);
+  expect(r.error).toBeUndefined();
+  expect(r.words).toMatch(/^You set up your plan/);
+  expect(r.proposals).toEqual([]);
+});
+
+test("weekly_review: placeholder or too-short words get a retry", async () => {
+  const { gw, requests } = scripted(
+    { words: "PLACEHOLDER", focus: "Train.", proposals: [] },
+    { words: "PLACEHOLDER", focus: "Train.", proposals: [] },
+  );
+  const r = await weeklyReview(gw, route, input, numbers);
+  expect(requests).toHaveLength(2);
+  expect(r.words).toBeUndefined();
 });

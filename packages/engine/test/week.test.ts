@@ -70,6 +70,7 @@ describe("trainingWeek", () => {
       kind: "hold",
       from: 10,
       to: 15,
+      unit: "s",
     });
   });
 

@@ -6,11 +6,14 @@
 import { GOAL_TEMPLATES, GROUP_NAMES, MUSCLE_GROUPS, type MuscleGroup } from "./goals";
 import { checkAllowed } from "./kit";
 import { familyName, MAX_SETS, planItem } from "./plan";
-import { blockWeek, DELOAD_WEEK } from "./readiness";
+import { blockWeek, DELOAD_WEEK, readinessMode, readinessScore } from "./readiness";
 import { reason } from "./reasons";
 import { estimateMinutes, orderForDial } from "./time";
 import type { DayType, EngineInput, Programme, Reason, SessionTemplate } from "./types";
 import { weeklyVolume } from "./volume";
+
+/** Sessions without gain that count toward an early-deload proposal. */
+export const DELOAD_PROPOSAL_STALL = 2;
 
 export type PlanChange =
   | { kind: "swap"; dayType: DayType; family: string; to: string }
@@ -83,6 +86,18 @@ export function validateProposal(input: EngineInput, change: PlanChange): Valida
     const week = blockWeek(p, input.today);
     if (p.earlyDeloadFrom !== undefined || week >= DELOAD_WEEK) {
       return refuse("deload", reason("PROPOSAL_DELOAD_RUNNING", {}));
+    }
+    // An early deload needs a reason in the data: stalls or low readiness.
+    const stalled = input.history.progress.filter(
+      (s) => (s.streaks?.stall ?? 0) >= DELOAD_PROPOSAL_STALL,
+    ).length;
+    const recent = input.history.checkins
+      .filter((c) => c.date >= p.blockStart)
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .slice(-4);
+    const low = recent.filter((c) => readinessMode(readinessScore(c)) !== "full").length;
+    if (stalled < 2 && low < 2) {
+      return refuse("deload", reason("PROPOSAL_DELOAD_NOT_NEEDED", { stalled, low, of: recent.length }));
     }
     return {
       ok: true,

@@ -8,7 +8,6 @@ import {
   type PlanChange,
   type Reason,
   type SessionTemplate,
-  type TrainingWeek,
   trainingWeek,
   validateProposal,
 } from "@vee/engine";
@@ -32,19 +31,26 @@ import {
   LIMITS,
   type MealDraftOut as MealDraft,
   MealDraftOut,
+  PlanChangeSchema,
   WeeklyReviewOut,
+  WeeklyReviewWire,
 } from "./schemas";
 import type { ReviewNumbers } from "./types";
 
-/** Structured tasks wait 20 s; the weekly review is a job and waits 60 s. */
+/**
+ * Per attempt. Tasks the user waits for: 20 s. The weekly review is a job,
+ * and a meal draft at high effort takes longer (V12: p90 about 16 s), so 60 s.
+ */
 export const TIMEOUT_MS: Record<TaskName, number> = {
   weekly_review: 60_000,
   explain_more: 20_000,
   adjust_today: 20_000,
-  meal_draft: 20_000,
+  meal_draft: 60_000,
 };
 
 export type Routes = Record<TaskName, Route>;
+
+const PLACEHOLDER = /placeholder|lorem ipsum|\bTODO\b|\.\.\.$|\[[a-z ]+\]/i;
 
 function numbersProblem(where: string, text: string, input: unknown): string[] {
   const bad = inventedNumbers(text, input);
@@ -120,23 +126,35 @@ export async function weeklyReview(
     system: prompt("weekly_review"),
     input: numbers,
     schema: WeeklyReviewOut,
+    wireSchema: WeeklyReviewWire,
     route,
     timeoutMs: TIMEOUT_MS.weekly_review,
     validate: (out) => [
+      ...(wordCount(out.words) < LIMITS.reviewMinWords
+        ? [
+            `"words" has ${wordCount(out.words)} words. Write the review: at least ${LIMITS.reviewMinWords} words.`,
+          ]
+        : []),
+      ...(wordCount(out.focus) < 4 ? ['"focus" must be one full sentence.'] : []),
+      ...(PLACEHOLDER.test(`${out.words} ${out.focus}`)
+        ? ["The answer has placeholder text. Write the real review."]
+        : []),
       ...(wordCount(out.words) > LIMITS.reviewWords
         ? [`"words" has ${wordCount(out.words)} words. The limit is ${LIMITS.reviewWords}.`]
         : []),
       ...numbersProblem('"words"', out.words, numbers),
       ...numbersProblem('"focus"', out.focus, numbers),
-      ...out.proposals.flatMap((p, n) => numbersProblem(`proposal ${n + 1} "why"`, p.why, numbers)),
+      ...out.proposals.flatMap((p, n) => numbersProblem(`proposal ${n + 1} "why"`, p.why ?? "", numbers)),
     ],
   });
   if (!r.ok) return { numbers, proposals: [], usage: r.usage, error: r.error };
   // A proposal that fails the engine check is dropped, not shown.
   const proposals: ReviewProposal[] = [];
   for (const p of r.output.proposals) {
-    const v = validateProposal(input, p.change as PlanChange);
-    if (v.ok) proposals.push({ change: p.change as PlanChange, why: p.why, reasons: v.reasons });
+    const change = PlanChangeSchema.safeParse(p.change);
+    if (!change.success || !p.why) continue;
+    const v = validateProposal(input, change.data as PlanChange);
+    if (v.ok) proposals.push({ change: change.data as PlanChange, why: p.why, reasons: v.reasons });
   }
   return {
     numbers,
@@ -196,7 +214,6 @@ export async function adjustToday(gw: Gateway, route: Route, text: string, templ
       ...(out.focus ?? [])
         .filter((f) => !families.includes(f))
         .map((f) => `"focus" has "${f}", which is not in "families".`),
-      ...(out.minutes !== undefined ? numbersProblem('"minutes"', String(out.minutes), text) : []),
     ],
   });
 }
@@ -226,7 +243,13 @@ function allowedIngredients(c: MealContext): Ingredient[] {
 export async function mealDraft(gw: Gateway, route: Route, c: MealContext, newId: () => string) {
   const allowed = allowedIngredients(c);
   const input = {
-    ingredients: allowed.map((i) => ({ id: i.id, name: i.name, tags: i.tags })),
+    ingredients: allowed.map((i) => ({
+      id: i.id,
+      name: i.name,
+      tags: i.tags,
+      ...(i.per100?.palm ? { proteinPalmsPer100: i.per100.palm } : {}),
+      ...(i.pieceG ? { gramsPerPiece: i.pieceG } : {}),
+    })),
     exclusions: c.exclusions.map((x) => ({
       member: c.household.find((m) => m.id === x.memberId)?.name ?? x.memberId,
       kind: x.kind,

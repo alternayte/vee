@@ -12,6 +12,7 @@ export type Move = {
   kind: "rung" | "load" | "hold";
   from: number;
   to: number;
+  unit: "rung" | "kg" | "s";
 };
 
 export type TrainingWeek = {
@@ -50,11 +51,12 @@ function moves(input: EngineInput, before: ProgressState[], after: ProgressState
     const b = before.find((x) => x.family === a.family);
     if (!b) continue;
     const exercise = name(input, a.exerciseId);
-    if (a.rung !== b.rung) out.push({ family: a.family, exercise, kind: "rung", from: b.rung, to: a.rung });
+    if (a.rung !== b.rung)
+      out.push({ family: a.family, exercise, kind: "rung", from: b.rung, to: a.rung, unit: "rung" });
     else if (a.loadKg !== undefined && b.loadKg !== undefined && a.loadKg !== b.loadKg)
-      out.push({ family: a.family, exercise, kind: "load", from: b.loadKg, to: a.loadKg });
+      out.push({ family: a.family, exercise, kind: "load", from: b.loadKg, to: a.loadKg, unit: "kg" });
     else if (a.holdS !== undefined && b.holdS !== undefined && a.holdS !== b.holdS)
-      out.push({ family: a.family, exercise, kind: "hold", from: b.holdS, to: a.holdS });
+      out.push({ family: a.family, exercise, kind: "hold", from: b.holdS, to: a.holdS, unit: "s" });
   }
   return out;
 }
