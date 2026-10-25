@@ -20,7 +20,8 @@ const exerciseName = (id: string) => catalogue.exercises.find((e) => e.id === id
 
 function describeChange(c: StoredChange): string {
   if (c.kind === "deload") return "Start a deload week now";
-  if (c.kind === "sets") return `Day ${c.dayType}: ${exerciseName(c.exerciseId)} to ${c.sets} sets`;
+  if (c.kind === "sets")
+    return `Day ${c.dayType}: ${exerciseName(c.exerciseId)} to ${c.sets} ${c.sets === 1 ? "set" : "sets"}`;
   return `Day ${c.dayType}: change to ${exerciseName(c.to)}`;
 }
 

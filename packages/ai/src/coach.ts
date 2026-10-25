@@ -315,7 +315,7 @@ export const TOOLS: Tool[] = [
     scope: "training",
     args: z.object({
       change: PlanChangeSchema,
-      why: z.string().min(1).describe("One sentence: the reason for the change"),
+      why: z.string().min(1).describe('One sentence to the person, as "you": the reason for the change'),
     }),
     run: async (data, a, ctx) => {
       const change = a.change as PlanChange;

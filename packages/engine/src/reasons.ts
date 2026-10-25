@@ -70,7 +70,7 @@ const TEMPLATES: Record<string, string> = {
   DELOAD_EARLY_STALL: "{count} movements have stalled: {families}. A deload week starts now.",
   PROPOSAL_SWAP:
     "{exercise} replaces {was} on day {day}. Same ladder, rung {rung}, and your kit and flags allow it.",
-  PROPOSAL_SETS: "{exercise} on day {day} goes from {from} to {to} sets. The day still fits {minutes} min.",
+  PROPOSAL_SETS: "Sets for {exercise} on day {day} go from {from} to {to}. The day still fits {minutes} min.",
   PROPOSAL_DELOAD: "A deload week starts on {date}. Sets are half, and loads and rungs stay the same.",
   PROPOSAL_NOT_IN_PLAN: "The plan has no {what} on day {day}.",
   PROPOSAL_FAMILY: "{exercise} is not on the {familyName} ladder.",
