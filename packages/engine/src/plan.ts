@@ -111,17 +111,24 @@ function buildItem(input: EngineInput, slot: Slot, pick: Picked): TemplateItem {
   if (!range) throw new Error(`exercise ${e.id} has no reps or seconds`);
   const unit = e.default.reps ? "reps" : "seconds";
   const load = chooseLoad(input, e);
+  // Timed work plans the hold the prescription will ask for, so the time
+  // model counts the real hold, not the middle of the catalogue range.
+  const state = input.history.progress.find((p) => p.family === e.family && p.exerciseId === e.id);
+  const hold = e.load === "timed" && e.default.seconds ? (state?.holdS ?? e.default.seconds[0]) : undefined;
   const item: TemplateItem = {
     order: 0,
     family: e.family,
     exerciseId: e.id,
     role: slot.role,
     sets,
-    target: { unit, low: range[0], high: range[1] },
+    target: hold === undefined ? { unit, low: range[0], high: range[1] } : { unit, low: hold, high: hold },
     reasons: {
       exercise: pick.reason,
       sets: [reason("SETS_BASE", { role: slot.role, sets })],
-      target: reason("TARGET_DEFAULT", { low: range[0], high: range[1], unit }),
+      target:
+        hold === undefined
+          ? reason("TARGET_DEFAULT", { low: range[0], high: range[1], unit })
+          : reason(state?.holdS !== undefined ? "HOLD_STATE" : "HOLD_START", { hold }),
     },
   };
   if (load) {

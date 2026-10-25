@@ -6,10 +6,10 @@ progress: core=dead-bug, push-up=pushup-incline-counter
 A Pull and side delts — 8 min
   1. dead-bug [accessory] 2 × 6–12 reps
   reasons: PLAN_NO_OPTION, PLAN_NO_OPTION, PLAN_NO_OPTION, PLAN_NO_OPTION
-B Legs and core — 22 min
+B Legs and core — 21 min
   1. squat-bodyweight [main] 3 × 10–20 reps
   2. glute-bridge [main] 3 × 10–20 reps
-  3. hollow-hold [accessory] 2 × 10–40 seconds
+  3. hollow-hold [accessory] 2 × 10 seconds
   reasons: PLAN_NO_OPTION, PLAN_NO_OPTION, PLAN_NO_OPTION
 C Push and delts — 23 min
   1. pushup-incline-counter [main] 5 × 8–15 reps
@@ -28,7 +28,7 @@ A Pull and side delts — 8 min
 B Legs and core — 24 min
   1. squat-bodyweight [main] 4 × 10–20 reps
   2. glute-bridge [main] 3 × 10–20 reps
-  3. hollow-hold [accessory] 2 × 10–40 seconds
+  3. hollow-hold [accessory] 2 × 10 seconds
   reasons: PLAN_NO_OPTION, PLAN_NO_OPTION, PLAN_NO_OPTION
 C Push and delts — 25 min
   1. pushup-incline-counter [main] 5 × 8–15 reps

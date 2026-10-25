@@ -9,12 +9,12 @@ A Pull and side delts — 37 min
   3. dead-bug [accessory] 2 × 6–12 reps
   4. lateral-raise-db [accessory] 3 × 10–15 reps @ 4 kg
   5. rear-delt-raise-db [accessory] 2 × 10–15 reps @ 4 kg
-B Legs and core — 33 min
+B Legs and core — 31 min
   1. glute-bridge [main] 3 × 10–20 reps
-  2. hollow-hold [accessory] 2 × 10–40 seconds
+  2. hollow-hold [accessory] 2 × 10 seconds
   3. lateral-raise-db [accessory] 3 × 10–15 reps @ 4 kg
   4. floor-press-db [accessory] 2 × 8–12 reps @ 4 kg
-  5. suitcase-carry [accessory] 2 × 20–60 seconds @ 15 kg
+  5. suitcase-carry [accessory] 2 × 20 seconds @ 15 kg
   reasons: PLAN_NO_OPTION
 C Push and delts — 37 min
   1. dip-negative [main] 3 × 3–5 reps
@@ -39,12 +39,12 @@ A Pull and side delts — 44 min
   3. dead-bug [accessory] 2 × 6–12 reps
   4. lateral-raise-db [accessory] 4 × 10–15 reps @ 4 kg
   5. rear-delt-raise-db [accessory] 4 × 10–15 reps @ 4 kg
-B Legs and core — 45 min
+B Legs and core — 43 min
   1. glute-bridge [main] 5 × 10–20 reps
-  2. hollow-hold [accessory] 2 × 10–40 seconds
+  2. hollow-hold [accessory] 2 × 10 seconds
   3. lateral-raise-db [accessory] 5 × 10–15 reps @ 4 kg
   4. floor-press-db [accessory] 3 × 8–12 reps @ 4 kg
-  5. suitcase-carry [accessory] 2 × 20–60 seconds @ 15 kg
+  5. suitcase-carry [accessory] 2 × 20 seconds @ 15 kg
   reasons: PLAN_NO_OPTION
 C Push and delts — 44 min
   1. dip-negative [main] 4 × 3–5 reps

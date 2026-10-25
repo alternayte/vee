@@ -9,12 +9,12 @@ A Pull and side delts — 30 min
   3. lateral-raise-band [accessory] 2 × 12–20 reps pair 1
   4. band-pull-apart [accessory] 2 × 12–20 reps pair 1
   reasons: TIME_CUT_DROP(hanging-knee-raise), TIME_CUT_PAIR, TIME_CUT_ACCESSORY_SETS
-B Legs and core — 29 min
+B Legs and core — 30 min
   1. split-squat [main] 2 × 8–12 reps @ 8 kg
   2. glute-bridge [main] 2 × 10–20 reps
   3. lateral-raise-band [accessory] 2 × 12–20 reps pair 1
   4. floor-press-db [accessory] 2 × 8–12 reps @ 2 kg pair 1
-  5. hollow-hold [accessory] 2 × 10–40 seconds
+  5. hollow-hold [accessory] 3 × 10 seconds
   reasons: TIME_CUT_DROP(suitcase-carry), TIME_CUT_PAIR, TIME_CUT_ACCESSORY_SETS, TIME_CUT_MAIN_SETS
 C Push and delts — 30 min
   1. dip-band-assisted [main] 2 × 5–8 reps
@@ -30,7 +30,7 @@ D Pull and arms — 27 min
   4. glute-bridge [accessory] 2 × 10–20 reps pair 1
   5. curl-band [accessory] 2 × 12–20 reps
   reasons: TIME_CUT_DROP(hanging-knee-raise), TIME_CUT_PAIR, TIME_CUT_MAIN_SETS
-volume: lats-upper-back 13.2, side-delts 7, rear-delts 4, chest 6, triceps 5.4, biceps 7.6, quads 4, hamstrings-glutes 7.2, core 2
+volume: lats-upper-back 13.2, side-delts 7, rear-delts 4, chest 6, triceps 5.4, biceps 7.6, quads 4, hamstrings-glutes 7.2, core 3
 
 ## Week 4
 A Pull and side delts — 30 min
@@ -39,12 +39,12 @@ A Pull and side delts — 30 min
   3. lateral-raise-band [accessory] 2 × 12–20 reps pair 1
   4. band-pull-apart [accessory] 2 × 12–20 reps pair 1
   reasons: TIME_CUT_DROP(hanging-knee-raise), TIME_CUT_PAIR, TIME_CUT_ACCESSORY_SETS
-B Legs and core — 29 min
+B Legs and core — 30 min
   1. split-squat [main] 2 × 8–12 reps @ 8 kg
   2. glute-bridge [main] 2 × 10–20 reps
   3. lateral-raise-band [accessory] 2 × 12–20 reps pair 1
   4. floor-press-db [accessory] 2 × 8–12 reps @ 2 kg pair 1
-  5. hollow-hold [accessory] 2 × 10–40 seconds
+  5. hollow-hold [accessory] 3 × 10 seconds
   reasons: TIME_CUT_DROP(suitcase-carry), TIME_CUT_PAIR, TIME_CUT_ACCESSORY_SETS, TIME_CUT_MAIN_SETS
 C Push and delts — 30 min
   1. dip-band-assisted [main] 2 × 5–8 reps
@@ -60,7 +60,7 @@ D Pull and arms — 30 min
   4. glute-bridge [accessory] 2 × 10–20 reps pair 1
   5. curl-band [accessory] 2 × 12–20 reps
   reasons: TIME_CUT_DROP(hanging-knee-raise), TIME_CUT_PAIR, TIME_CUT_MAIN_SETS
-volume: lats-upper-back 14.8, side-delts 7, rear-delts 6, chest 6, triceps 5.4, biceps 7.6, quads 4, hamstrings-glutes 7.2, core 2
+volume: lats-upper-back 14.8, side-delts 7, rear-delts 6, chest 6, triceps 5.4, biceps 7.6, quads 4, hamstrings-glutes 7.2, core 3
 
 ## Day A, full readiness
 main A readiness=full deload=false — 30 min

@@ -175,6 +175,26 @@ describe("generatePlan", () => {
     expect(first?.loadKg).toBe(2);
   });
 
+  test("timed work plans the hold from progress state, as the prescription does", () => {
+    const fresh = day(generatePlan(input(), V_TAPER_LEAN_GAIN), "A").items[0];
+    expect(fresh?.exerciseId).toBe("dead-hang");
+    expect(fresh?.target).toEqual({ unit: "seconds", low: 10, high: 10 });
+    expect(fresh?.reasons.target.ruleId).toBe("HOLD_START");
+
+    const held = generatePlan(
+      input({
+        history: {
+          ...emptyHistory(),
+          progress: [{ family: "vertical-pull", rung: 1, exerciseId: "dead-hang", holdS: 25 }],
+        },
+      }),
+      V_TAPER_LEAN_GAIN,
+    );
+    const item = day(held, "A").items[0];
+    expect(item?.target).toEqual({ unit: "seconds", low: 25, high: 25 });
+    expect(item?.reasons.target.ruleId).toBe("HOLD_STATE");
+  });
+
   test("every day fits the planned minutes", () => {
     for (const minutes of [20, 30, 40]) {
       const p = generatePlan(

@@ -13,7 +13,7 @@ B Legs and core — 33 min
   1. squat-bodyweight [main] 4 × 10–20 reps
   2. glute-bridge [main] 3 × 10–20 reps
   3. lateral-raise-band [accessory] 3 × 12–20 reps
-  4. hollow-hold [accessory] 2 × 10–40 seconds
+  4. hollow-hold [accessory] 2 × 10 seconds
   reasons: PLAN_NO_OPTION, PLAN_NO_OPTION
 C Push and delts — 34 min
   1. pushup-floor [main] 5 × 5–15 reps
@@ -37,11 +37,11 @@ A Pull and side delts — 35 min
   3. lateral-raise-band [accessory] 3 × 12–20 reps
   4. band-pull-apart [accessory] 2 × 12–20 reps
   5. hanging-knee-raise [accessory] 2 × 6–12 reps
-B Legs and core — 33 min
-  1. squat-bodyweight [main] 4 × 10–20 reps
+B Legs and core — 35 min
+  1. squat-bodyweight [main] 5 × 10–20 reps
   2. glute-bridge [main] 3 × 10–20 reps
   3. lateral-raise-band [accessory] 3 × 12–20 reps
-  4. hollow-hold [accessory] 2 × 10–40 seconds
+  4. hollow-hold [accessory] 2 × 10 seconds
   reasons: PLAN_NO_OPTION, PLAN_NO_OPTION
 C Push and delts — 34 min
   1. pushup-floor [main] 5 × 5–15 reps
@@ -56,7 +56,7 @@ D Pull and arms — 35 min
   4. glute-bridge [accessory] 2 × 10–20 reps
   5. curl-band [accessory] 2 × 12–20 reps
   6. hanging-knee-raise [accessory] 2 × 6–12 reps
-volume: lats-upper-back 15.2, side-delts 9, rear-delts 4, chest 5, triceps 5, biceps 6.2, quads 6, hamstrings-glutes 9.2, core 6
+volume: lats-upper-back 15.2, side-delts 9, rear-delts 4, chest 5, triceps 5, biceps 6.2, quads 7, hamstrings-glutes 9.9, core 6
 
 ## Day A, full readiness
 main A readiness=full deload=false — 35 min
