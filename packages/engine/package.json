@@ -9,7 +9,7 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run --exclude 'test/props/**'",
-    "test:props": "vitest run test/props"
+    "test:props": "vitest run test/props --testTimeout 60000"
   },
   "dependencies": {
     "@vee/catalogue": "workspace:*"

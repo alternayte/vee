@@ -9,17 +9,13 @@ COPY apps apps
 COPY packages packages
 RUN bun install --frozen-lockfile --filter @vee/catalogue
 RUN cd packages/catalogue && bun scripts/build.ts
+RUN mkdir /manifests && find apps packages -maxdepth 2 -name package.json -exec cp --parents {} /manifests \;
 
 FROM oven/bun:1.4.3-slim
 WORKDIR /repo
 COPY package.json bun.lock ./
-COPY --from=catalogue /repo/apps/api/package.json apps/api/
-COPY --from=catalogue /repo/packages/ai/package.json packages/ai/
-COPY --from=catalogue /repo/packages/catalogue/package.json packages/catalogue/
-COPY --from=catalogue /repo/packages/engine/package.json packages/engine/
-COPY --from=catalogue /repo/packages/importers/package.json packages/importers/
-COPY --from=catalogue /repo/packages/nutrition/package.json packages/nutrition/
-COPY --from=catalogue /repo/packages/schema/package.json packages/schema/
+# Every workspace manifest: the lockfile lists them all.
+COPY --from=catalogue /manifests/ ./
 RUN bun install --frozen-lockfile --production --filter @vee/api
 COPY packages/ai packages/ai
 COPY packages/catalogue/src packages/catalogue/src
