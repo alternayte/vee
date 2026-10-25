@@ -109,12 +109,13 @@ export function acceptedChanges(input: EngineInput) {
         })),
       )
       .filter((o) => o.options.length > 0),
+    // One set more (a stalled movement) or one set fewer, where the engine accepts it.
     setsOptions: days.flatMap((t) =>
-      t.items
-        .filter((i) =>
-          passes({ kind: "sets", dayType: t.dayType, exerciseId: i.exerciseId, sets: i.sets + 1 }),
-        )
-        .map((i) => ({ dayType: t.dayType, exerciseId: i.exerciseId, sets: i.sets + 1 })),
+      t.items.flatMap((i) =>
+        [i.sets + 1, i.sets - 1]
+          .filter((sets) => passes({ kind: "sets", dayType: t.dayType, exerciseId: i.exerciseId, sets }))
+          .map((sets) => ({ dayType: t.dayType, exerciseId: i.exerciseId, sets })),
+      ),
     ),
     deloadAllowed: passes({ kind: "deload" }),
   };

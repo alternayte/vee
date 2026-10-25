@@ -91,7 +91,7 @@ export function CoachScreen() {
   };
 
   return (
-    <Screen title="Coach">
+    <Screen title="Coach" stickToEnd>
       <Cards />
       <Text variant="heading" accessibilityRole="header">
         Coach chat

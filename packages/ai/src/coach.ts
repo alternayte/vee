@@ -394,6 +394,8 @@ export async function coachChat(
   let retried = false;
   for (let round = 0; round <= CHAT_ROUNDS; round++) {
     let streamed = false;
+    // Text before a tool call is a paragraph of its own: the next round starts after a break.
+    const gap = text && !/\s$/.test(text) ? "\n\n" : "";
     let r: Awaited<ReturnType<Gateway["chatRound"]>>;
     try {
       r = await gw.chatRound({
@@ -410,6 +412,7 @@ export async function coachChat(
             : [],
         timeoutMs: Math.max(1_000, deadline - Date.now()),
         onText: (d) => {
+          if (!streamed && gap) o.onText(gap);
           streamed = true;
           o.onText(d);
         },
@@ -431,11 +434,7 @@ export async function coachChat(
       };
     }
     usage.push(r.usage);
-    if (text && r.text && !/\s$/.test(text)) {
-      text += "\n\n";
-      o.onText("\n\n");
-    }
-    text += r.text;
+    text += r.text && gap ? gap + r.text : r.text;
     if (r.toolCalls.length === 0) break;
     messages.push({ role: "assistant", content: r.text, tool_calls: r.toolCalls });
     for (const call of r.toolCalls) {

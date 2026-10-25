@@ -180,7 +180,13 @@ describe("weekly_review", () => {
 
   test("the options list only changes the engine accepts now", () => {
     expect(numbers.swapOptions).toEqual([]);
-    expect(numbers.setsOptions).toEqual([]);
+    // With no stall, only one set fewer is open.
+    const planned = (o: { dayType: string; exerciseId: string }) =>
+      input.programme.templates
+        .find((t) => t.dayType === o.dayType)
+        ?.items.find((i) => i.exerciseId === o.exerciseId)?.sets;
+    expect(numbers.setsOptions.length).toBeGreaterThan(0);
+    for (const o of numbers.setsOptions) expect(o.sets).toBe((planned(o) ?? 0) - 1);
     expect(numbers.deloadAllowed).toBe(false);
     const stall = { top: 0, miss: 0, stall: 3, hold: 0 };
     const rows = {
