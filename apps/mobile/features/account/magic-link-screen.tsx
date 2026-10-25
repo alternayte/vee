@@ -18,7 +18,11 @@ export function MagicLinkScreen() {
       return;
     }
     verifyLink(token)
-      .then(() => router.replace("/settings"))
+      .then(() => {
+        // The link may open the app on this screen alone: put the tabs under Settings.
+        router.replace("/");
+        router.push("/settings");
+      })
       .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)));
   }, [token]);
 
@@ -27,7 +31,13 @@ export function MagicLinkScreen() {
       {error ? (
         <>
           <Text testID="magic-error">{error}</Text>
-          <Button label="Go to Settings" onPress={() => router.replace("/settings")} />
+          <Button
+            label="Go to Settings"
+            onPress={() => {
+              router.replace("/");
+              router.push("/settings");
+            }}
+          />
         </>
       ) : (
         <Text variant="muted">Signing in…</Text>
