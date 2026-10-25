@@ -104,7 +104,8 @@ export function chooseLoad(input: EngineInput, e: Exercise): { loadKg: number; r
   return { loadKg: load, reason: reason("LOAD_SNAP", { was: state.loadKg, load }) };
 }
 
-function buildItem(input: EngineInput, slot: Slot, pick: Picked): TemplateItem {
+/** One template item for a slot: target, load and reasons from progress state. */
+export function planItem(input: EngineInput, slot: Slot, pick: Picked): TemplateItem {
   const e = pick.exercise;
   const sets = slot.sets ?? BASE_SETS[slot.role];
   const range = e.default.reps ?? e.default.seconds;
@@ -151,7 +152,7 @@ function buildDay(input: EngineInput, day: GoalTemplate["days"][number]): Day {
       reasons.push(reason("PLAN_NO_OPTION", { family: slot.family, familyName: name }));
       continue;
     }
-    items.push(buildItem(input, slot, pick));
+    items.push(planItem(input, slot, pick));
   }
   // The first main movement leads the day, even when an earlier main slot is empty.
   items.sort((a, b) => (a.role === b.role ? 0 : a.role === "main" ? -1 : 1));
