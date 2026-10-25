@@ -117,7 +117,7 @@ describe("coach_chat", () => {
     expect(r.error).toBeUndefined();
     expect(deltas.join("")).toBe("Your row is at 12 kg. It has not moved in 3 sessions.");
     const tool = requests[1]?.messages.find((m) => m.role === "tool");
-    expect(JSON.parse(tool?.content ?? "[]")[0]).toMatchObject({
+    expect(JSON.parse(tool?.content ?? "{}").ladders[0]).toMatchObject({
       family: "row",
       kg: 12,
       sessionsWithoutProgress: 3,

@@ -12,6 +12,7 @@ import {
   readinessMode,
   readinessScore,
   ruleTemplate,
+  STALL_SESSIONS,
   validateProposal,
 } from "@vee/engine";
 import { MIN_WEIGH_INS, type Moment, type Portions, weeklySlope } from "@vee/nutrition";
@@ -82,28 +83,47 @@ const tool = <A extends z.ZodObject>(t: {
 export const TOOLS: Tool[] = [
   tool({
     name: "get_sessions",
-    description: "Sessions in a date range: date, kind, day, status, readiness, sets logged and exercises.",
+    description:
+      "Sessions in a date range: the counts by status and kind, and each session's date, kind, day, status, readiness, sets logged and exercises.",
     scope: "training",
     args: Range,
     run: (data, a) => {
       const { from, to } = range(data, a);
       const h = data.input.history;
-      return h.sessions
+      const inRange = h.sessions
         .filter((s) => s.date >= from && s.date <= to)
-        .sort((x, y) => x.date.localeCompare(y.date))
-        .map((s) => {
-          const sets = h.sets.filter((x) => x.sessionId === s.id && !x.deletedAt);
-          return {
-            date: s.date,
-            kind: s.kind,
-            ...(s.dayType ? { day: s.dayType } : {}),
-            status: s.status,
-            ...(s.readinessMode ? { readiness: s.readinessMode } : {}),
-            ...(s.deload ? { deload: true } : {}),
-            sets: sets.length,
-            exercises: [...new Set(sets.map((x) => exercise(data, x.exerciseId)))],
-          };
-        });
+        .sort((x, y) => x.date.localeCompare(y.date));
+      // Counts come from here, so the model does not count a list itself.
+      const count = (f: (s: (typeof inRange)[number]) => boolean) => inRange.filter(f).length;
+      const sessions = inRange.map((s) => {
+        const sets = h.sets.filter((x) => x.sessionId === s.id && !x.deletedAt);
+        return {
+          date: s.date,
+          kind: s.kind,
+          ...(s.dayType ? { day: s.dayType } : {}),
+          status: s.status,
+          ...(s.readinessMode ? { readiness: s.readinessMode } : {}),
+          ...(s.deload ? { deload: true } : {}),
+          sets: sets.length,
+          exercises: [...new Set(sets.map((x) => exercise(data, x.exerciseId)))],
+        };
+      });
+      return {
+        from,
+        to,
+        done: count((s) => s.status === "done"),
+        skipped: count((s) => s.status === "skipped"),
+        mainDone: count((s) => s.status === "done" && (s.kind === "main" || s.kind === "recovery")),
+        microDone: count((s) => s.status === "done" && s.kind === "micro"),
+        deloadDone: count((s) => s.status === "done" && s.deload === true),
+        readiness: {
+          full: count((s) => s.status === "done" && s.readinessMode === "full"),
+          trimmed: count((s) => s.status === "done" && s.readinessMode === "trimmed"),
+          recovery: count((s) => s.status === "done" && s.readinessMode === "recovery"),
+        },
+        setsLogged: sessions.reduce((n, s) => n + s.sets, 0),
+        sessions,
+      };
     },
   }),
   tool({
@@ -156,11 +176,12 @@ export const TOOLS: Tool[] = [
   tool({
     name: "get_progress_state",
     description:
-      "Each ladder now: the current exercise, rung, load or hold, best set, and sessions without progress.",
+      "Each ladder now: the current exercise, rung, load or hold, best set, and sessions without progress. A movement is stalled at stalledAtSessions.",
     scope: "training",
     args: z.object({}),
-    run: (data) =>
-      data.input.history.progress.map((s) => ({
+    run: (data) => ({
+      stalledAtSessions: STALL_SESSIONS,
+      ladders: data.input.history.progress.map((s) => ({
         family: s.family,
         exercise: exercise(data, s.exerciseId),
         rung: s.rung,
@@ -169,6 +190,7 @@ export const TOOLS: Tool[] = [
         ...(s.best !== undefined ? { best: s.best } : {}),
         sessionsWithoutProgress: s.streaks?.stall ?? 0,
       })),
+    }),
   }),
   tool({
     name: "get_checkins",
@@ -226,6 +248,7 @@ export const TOOLS: Tool[] = [
       const since = addDays(data.input.today, -27);
       const w = data.weighIns.filter((x) => x.date >= since).sort((x, y) => x.date.localeCompare(y.date));
       return {
+        goal: data.input.profile.goalTemplate,
         weighIns: w.length,
         ...(w.length
           ? {
@@ -258,6 +281,7 @@ export const TOOLS: Tool[] = [
       const p = data.input.programme;
       if (!p) return { error: "No plan yet." };
       return {
+        goal: data.input.profile.goalTemplate,
         blockStart: p.blockStart,
         days: p.templates.map((t) => ({
           day: t.dayType,
@@ -326,6 +350,8 @@ export type ChatResult = {
   /** Numbers in the answer that are in no message and no tool result. */
   unconfirmed: string[];
   proposals: (Proposed & { id: string })[];
+  /** Tool names in call order. */
+  toolsUsed: string[];
   usage: Usage[];
   error?: string;
 };
@@ -352,6 +378,7 @@ export async function coachChat(
     ...o.turns,
   ];
   const results: unknown[] = [];
+  const toolsUsed: string[] = [];
   const proposals: (Proposed & { id: string })[] = [];
   const usage: Usage[] = [];
   const ctx: ToolContext = {
@@ -394,20 +421,32 @@ export async function coachChat(
         round--;
         continue;
       }
-      return { text, unconfirmed: [], proposals, usage, error: e instanceof Error ? e.message : String(e) };
+      return {
+        text,
+        unconfirmed: [],
+        proposals,
+        toolsUsed,
+        usage,
+        error: e instanceof Error ? e.message : String(e),
+      };
     }
     usage.push(r.usage);
+    if (text && r.text && !/\s$/.test(text)) {
+      text += "\n\n";
+      o.onText("\n\n");
+    }
     text += r.text;
     if (r.toolCalls.length === 0) break;
     messages.push({ role: "assistant", content: r.text, tool_calls: r.toolCalls });
     for (const call of r.toolCalls) {
+      toolsUsed.push(call.function.name);
       const out = await callTool(o.data, tools, call, ctx);
       results.push(out);
       messages.push({ role: "tool", tool_call_id: call.id, content: JSON.stringify(out) });
     }
   }
   const unconfirmed = inventedNumbers(text, { turns: o.turns, results, today: o.data.input.today });
-  return { text, unconfirmed, proposals, usage };
+  return { text, unconfirmed, proposals, toolsUsed, usage };
 }
 
 async function callTool(data: CoachData, tools: Tool[], call: ToolCall, ctx: ToolContext) {

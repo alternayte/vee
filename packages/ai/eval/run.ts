@@ -28,6 +28,8 @@ import {
 import { SEED_INGREDIENTS, SEED_MEALS } from "@vee/nutrition/seed";
 import {
   adjustToday,
+  type CoachData,
+  coachChat,
   createGateway,
   explainMore,
   foodWeek,
@@ -38,6 +40,7 @@ import {
   reviewNumbers,
   type Usage,
   weeklyReview,
+  wordCount,
 } from "../src";
 
 const N = 40;
@@ -348,15 +351,92 @@ async function evalMeals(route: Route) {
   });
 }
 
-const started = Date.now();
-await Promise.all([
-  evalReviews(routes.weekly_review),
-  evalExplain(routes.explain_more),
-  evalAdjust(routes.adjust_today),
-  evalMeals(routes.meal_draft),
-]);
+// ── coach_chat: 6 personas × 7 questions ────────────────────────────────────
+const QUESTIONS: { text: string; data: boolean; pain?: boolean }[] = [
+  { text: "Why am I stuck? Which movement has not moved up?", data: true },
+  { text: "How did my training go in the last two weeks?", data: true },
+  { text: "Is my weight going the right way, and how is my food logging?", data: true },
+  { text: "Can you swap an exercise that has stalled?", data: true },
+  { text: "Should I take a deload week now?", data: true },
+  { text: "My left shoulder hurts when I press overhead. What should I do?", data: false, pain: true },
+  { text: "What does the rule P5_STALL mean for me?", data: true },
+];
 
-const tasks = ["weekly_review", "explain_more", "adjust_today", "meal_draft"];
+async function evalChat(route: Route) {
+  const fixtures = PERSONAS.flatMap((p, pi) =>
+    QUESTIONS.map((q, qi) => ({ p, pi, q, w: 3 + ((pi + qi) % 5) })),
+  ).slice(0, N);
+  await pool(fixtures, 4, async ({ p, pi, q, w }) => {
+    const input = simulate(p, w).input;
+    const days = Array.from({ length: 28 }, (_, n) => addDays(input.today, n - 27));
+    const targets = startTargets({ goal: "lean-gain", sex: p.profile.sex });
+    const data: CoachData = {
+      input,
+      food: {
+        logs: days
+          .filter((_, n) => (n + pi) % 3 !== 0)
+          .map((date, n) => ({
+            date,
+            portions: { palm: 5 + (n % 3), fist: 4 + (n % 4), cupped: 4, thumb: 3 },
+          })),
+        perMoment: targets.perMoment,
+      },
+      weighIns: Array.from({ length: 14 }, (_, n) => ({
+        date: addDays(input.today, -n * 2),
+        kg: Math.round((78 + ((pi % 3) - 1) * 0.05 * (14 - n) + (n % 3) * 0.1) * 10) / 10,
+      })),
+      reviews: [],
+    };
+    let n = 0;
+    const r = await coachChat(gw, route, {
+      data,
+      scopes: ["training", "food", "body"],
+      turns: [{ role: "user", content: q.text }],
+      ctx: { propose: async () => `eval-${pi}-${n++}` },
+      onText: () => {},
+    });
+    const problems: string[] = [];
+    if (r.error) problems.push(`error: ${r.error}`);
+    if (!r.text.trim()) problems.push("no answer");
+    if (q.data && r.toolsUsed.length === 0) problems.push("answered a data question without a tool");
+    if (r.unconfirmed.length) problems.push(`unconfirmed numbers: ${r.unconfirmed.join(", ")}`);
+    for (const x of r.proposals)
+      if (!validateProposal(input, x.change).ok)
+        problems.push(`invalid proposal: ${JSON.stringify(x.change)}`);
+    if (q.pain && !/doctor|physio/i.test(r.text))
+      problems.push("pain answer without the doctor or physiotherapist advice");
+    if (wordCount(r.text) > 160) problems.push(`${wordCount(r.text)} words`);
+    rows.push({
+      task: "coach_chat",
+      fixture: `${p.id} week ${w}: ${q.text}`,
+      ok: problems.length === 0,
+      problems,
+      usage: r.usage,
+      sample: {
+        question: q.text,
+        text: r.text,
+        tools: r.toolsUsed,
+        proposals: r.proposals.map((x) => x.change),
+      },
+    });
+  });
+}
+
+const RUNS = {
+  weekly_review: () => evalReviews(routes.weekly_review),
+  explain_more: () => evalExplain(routes.explain_more),
+  adjust_today: () => evalAdjust(routes.adjust_today),
+  meal_draft: () => evalMeals(routes.meal_draft),
+  coach_chat: () => evalChat(routes.coach_chat),
+};
+// `bun eval/run.ts coach_chat` runs one task; no argument runs all (the V12 gate).
+const tasks = process.argv[2] ? [process.argv[2]] : Object.keys(RUNS);
+const unknown = tasks.filter((t) => !(t in RUNS));
+if (unknown.length) throw new Error(`unknown task: ${unknown.join(", ")}`);
+
+const started = Date.now();
+await Promise.all(tasks.map((t) => RUNS[t as keyof typeof RUNS]()));
+
 const pct = (xs: number[], q: number) => [...xs].sort((a, b) => a - b)[Math.floor((xs.length - 1) * q)] ?? 0;
 const summary = tasks.map((task) => {
   const mine = rows.filter((r) => r.task === task);
@@ -366,7 +446,8 @@ const summary = tasks.map((task) => {
     task,
     fixtures: mine.length,
     passed: mine.filter((r) => r.ok).length,
-    retries: mine.filter((r) => r.usage.length > 1).length,
+    // A chat makes one call per tool round, so more calls are not retries there.
+    retries: task === "coach_chat" ? 0 : mine.filter((r) => r.usage.length > 1).length,
     costUsd: Math.round(calls.reduce((s, u) => s + u.costUsd, 0) * 10000) / 10000,
     p50ms: pct(ms, 0.5),
     p90ms: pct(ms, 0.9),
