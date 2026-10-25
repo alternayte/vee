@@ -8,7 +8,7 @@ import { Link } from "@tanstack/react-router";
 import catalogueJson from "@vee/catalogue/catalogue.v1.json";
 import { useState } from "react";
 import { api } from "../../api";
-import { Button, ErrorText, Input, Section, Table, Tag, TextArea } from "../../ui/kit";
+import { Button, ErrorText, Input, Section, Select, Table, Tag, TextArea } from "../../ui/kit";
 
 const names = new Map(
   (catalogueJson as unknown as { exercises: { id: string; names: { en: string } }[] }).exercises.map((e) => [
@@ -17,6 +17,12 @@ const names = new Map(
   ]),
 );
 const exercise = (id: string) => names.get(id) ?? id;
+const PORTION: Record<string, string> = {
+  palm: "Protein (palms)",
+  fist: "Vegetables (fists)",
+  cupped: "Carbs (cupped hands)",
+  thumb: "Fats (thumbs)",
+};
 
 type SetRow = {
   id: string;
@@ -262,12 +268,9 @@ function Cards({ d }: { d: Detail }) {
           </span>,
           c.status === "pending" && c.source !== "coach" ? (
             <span key="a" className="flex gap-2">
-              <Button
-                onClick={() => decide.mutate({ id: c.id, decision: "approve" })}
-                disabled={Boolean(c.approved_by)}
-              >
-                Approve
-              </Button>
+              {!c.approved_by && (
+                <Button onClick={() => decide.mutate({ id: c.id, decision: "approve" })}>Approve</Button>
+              )}
               <Button tone="plain" onClick={() => decide.mutate({ id: c.id, decision: "reject" })}>
                 Reject
               </Button>
@@ -284,6 +287,7 @@ function Cards({ d }: { d: Detail }) {
 function Propose({ d }: { d: Detail }) {
   const plan = d.training?.plan;
   const [why, setWhy] = useState("");
+  const [pick, setPick] = useState(0);
   const done = useAct(d.clientId);
   const send = useMutation({
     mutationFn: (change: Change) =>
@@ -304,6 +308,7 @@ function Propose({ d }: { d: Detail }) {
     ),
     ...(a.deloadAllowed ? [{ kind: "deload" } as Change] : []),
   ];
+  const chosen = options[pick];
   return (
     <Section
       title="Propose a plan change"
@@ -312,23 +317,34 @@ function Propose({ d }: { d: Detail }) {
       <p className="text-muted">
         The client sees a card and accepts or rejects it, unless they let your changes apply without asking.
       </p>
-      <Input
-        value={why}
-        onChange={(e) => setWhy(e.target.value)}
-        placeholder="Why, in one sentence, to the client"
-        className="w-full"
-      />
+      {options.length === 0 ? (
+        <p className="text-muted">The engine accepts no change now.</p>
+      ) : (
+        <div className="flex flex-col gap-2">
+          <Select value={pick} onChange={(e) => setPick(Number(e.target.value))} aria-label="Change">
+            {options.map((c, n) => (
+              <option key={JSON.stringify(c)} value={n}>
+                {describe(c)}
+              </option>
+            ))}
+          </Select>
+          <Input
+            value={why}
+            onChange={(e) => setWhy(e.target.value)}
+            placeholder="Why, in one sentence, to the client"
+          />
+          <div>
+            <Button
+              onClick={() => chosen && send.mutate(chosen)}
+              disabled={!why.trim() || !chosen || send.isPending}
+            >
+              Propose
+            </Button>
+          </div>
+        </div>
+      )}
+      {send.isSuccess && <p className="text-good">The card is on the client's phone after the next sync.</p>}
       <ErrorText error={send.error} />
-      <Table
-        head={["Change", ""]}
-        empty="The engine accepts no change now."
-        rows={options.map((c) => [
-          describe(c),
-          <Button key="p" onClick={() => send.mutate(c)} disabled={!why.trim() || send.isPending}>
-            Propose
-          </Button>,
-        ])}
-      />
     </Section>
   );
 }
@@ -408,7 +424,7 @@ export function ClientDetail({ clientId, me }: { clientId: string; me: string })
         <span className="text-xs text-muted">Shares: {d.scopes.join(", ") || "nothing"}</span>
       </div>
       {d.note && <p className="text-muted">{d.note}</p>}
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <div className="flex min-w-0 flex-col gap-6">
           {t && <Cards d={d} />}
           {t && <Propose d={d} />}
@@ -451,7 +467,7 @@ export function ClientDetail({ clientId, me }: { clientId: string; me: string })
                     i.exercise,
                     i.role,
                     i.sets,
-                    `${i.target.low}–${i.target.high} ${i.target.unit}${i.kg !== undefined ? ` at ${i.kg} kg` : ""}`,
+                    `${i.target.low === i.target.high ? i.target.low : `${i.target.low}–${i.target.high}`} ${i.target.unit === "seconds" ? "s" : i.target.unit}${i.kg !== undefined ? ` at ${i.kg} kg` : ""}`,
                   ]),
                 )}
               />
@@ -487,11 +503,13 @@ export function ClientDetail({ clientId, me }: { clientId: string; me: string })
               <p>
                 Logged on {d.food.daysLogged} of {d.food.days} days.
               </p>
-              <Table
-                head={["Portion", "Of target"]}
-                empty=""
-                rows={Object.entries(d.food.percentOfTarget).map(([k, v]) => [k, `${v}%`])}
-              />
+              {d.food.daysLogged > 0 && (
+                <Table
+                  head={["Portion", "Of target"]}
+                  empty=""
+                  rows={Object.entries(d.food.percentOfTarget).map(([k, v]) => [PORTION[k] ?? k, `${v}%`])}
+                />
+              )}
             </Section>
           )}
           {d.body && (

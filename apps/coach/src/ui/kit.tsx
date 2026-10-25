@@ -89,7 +89,8 @@ export function Table({ head, rows, empty }: { head: string[]; rows: ReactNode[]
   if (rows.length === 0) return <p className="text-muted">{empty}</p>;
   return (
     <div className="overflow-x-auto">
-      <table className="w-full border-collapse text-left text-sm">
+      {/* At phone width the ledger keeps its columns and scrolls sideways (min 120 × 4 px). */}
+      <table className="w-full min-w-120 border-collapse text-left text-sm">
         <thead>
           <tr>
             {head.map((h) => (
@@ -108,7 +109,7 @@ export function Table({ head, rows, empty }: { head: string[]; rows: ReactNode[]
             <tr key={i} className="border-b border-rule last:border-0 hover:bg-raised">
               {r.map((c, j) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: cells have no id of their own
-                <td key={j} className="px-2 py-2 align-top">
+                <td key={j} className={cx("px-2 py-2 align-top", j === 0 && "whitespace-nowrap")}>
                   {c}
                 </td>
               ))}

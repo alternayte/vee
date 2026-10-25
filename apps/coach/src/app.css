@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later */
 /* Direction: a machinist's ledger on a steel bench, in the Vee brass-and-steel tokens: dense ruled rows of tabular figures, one brass accent for the action that matters, state colours only for state. */
 @import "tailwindcss";
+@import "@fontsource-variable/inter";
 @import "@vee/tokens/web.css";
 
 /* Type: Inter from the tokens, a tight 1.2 step (12 · 14 · 16 · 20 · 24), tabular figures everywhere.
@@ -27,6 +28,11 @@
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
   --spacing: 4px;
+}
+
+:root {
+  /* The tokens' Inter, from the bundled variable font (no font CDN: coach IPs stay here). */
+  --font-sans: "Inter Variable", "Inter", system-ui, sans-serif;
 }
 
 html,
