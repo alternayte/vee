@@ -25,7 +25,7 @@ import {
   WEEKNIGHT_MAX_MIN,
   weeklySlope,
 } from "@vee/nutrition";
-import { SEED_INGREDIENTS } from "@vee/nutrition/seed";
+import { SEED_INGREDIENTS, SEED_MEALS } from "@vee/nutrition/seed";
 import { uuidv7 } from "@vee/schema";
 import { ENGINE_TABLES, type EngineRows, toEngineInput } from "@vee/schema/engine";
 import type pg from "pg";
@@ -174,16 +174,24 @@ export function createAi(env: Env, pool: pg.Pool, f?: typeof fetch) {
       // The library is lactose-free for the user (PRD), so AI meals are too.
       if (!exclusions.some((x) => x.memberId === selfId && x.kind === "lactose"))
         exclusions.push({ memberId: selfId, kind: "lactose" });
-      const recent = (
-        await pool.query<{ name: string }>(
-          "SELECT name FROM meals WHERE user_id = $1 AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 20",
+      const stored = (
+        await pool.query<{ name: string; ingredient_ids: string[] }>(
+          `SELECT m.name, coalesce(array_agg(mi.ingredient_id) FILTER (WHERE mi.ingredient_id IS NOT NULL), '{}') AS ingredient_ids
+             FROM meals m
+             LEFT JOIN meal_ingredients mi ON mi.meal_id = m.id AND mi.deleted_at IS NULL
+            WHERE m.user_id = $1 AND m.deleted_at IS NULL
+            GROUP BY m.id, m.name`,
           [userId],
         )
-      ).rows.map((m) => m.name);
+      ).rows;
+      const library = [
+        ...SEED_MEALS.map((m) => ({ name: m.name, ingredientIds: m.ingredients.map((i) => i.ingredientId) })),
+        ...stored.map((m) => ({ name: m.name, ingredientIds: m.ingredient_ids })),
+      ];
       const r = await mealDraft(
         need(),
         routes.meal_draft,
-        { ingredients: SEED_INGREDIENTS, exclusions, household, maxMinutes, recent },
+        { ingredients: SEED_INGREDIENTS, exclusions, household, maxMinutes, library },
         uuidv7,
       );
       await record(userId, "meal_draft", r.usage);

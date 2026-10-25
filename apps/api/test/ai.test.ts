@@ -13,12 +13,15 @@ import { freshDatabase, OWNER_EMAIL, query, request, signIn, startApp } from "./
 const catalogue = catalogueJson as unknown as Catalogue;
 let app: App;
 let owner: { token: string; userId: string };
+/** Scripted answers in order. A function answers from the input the model got. */
 const answers: unknown[] = [];
 let calls = 0;
 
-const fakeModel = (async () => {
+const fakeModel = (async (_url: string, init: RequestInit) => {
   calls++;
-  const next = answers.shift();
+  const body = JSON.parse(String(init.body)) as { messages: { content: string }[] };
+  const head = answers.shift();
+  const next = typeof head === "function" ? head(JSON.parse(body.messages.at(-1)?.content ?? "{}")) : head;
   if (next === undefined) return new Response("no answer scripted", { status: 500 });
   return new Response(
     JSON.stringify({
@@ -200,6 +203,49 @@ describe("AI routes", () => {
     expect(r.status).toBe(402);
     expect(await r.json()).toMatchObject({ error: "budget", paused_until: nextMonth(new Date()) });
     await query("DELETE FROM ai_usage WHERE task = 'test'");
+  });
+});
+
+describe("meal draft", () => {
+  test("sends the library with stored meals and their main protein, and builds on the picked protein", async () => {
+    const at = new Date().toISOString();
+    const mealId = uuidv7();
+    await insert("meals", [
+      { id: mealId, user_id: owner.userId, name: "Owner tofu bowl", created_at: at, updated_at: at },
+    ]);
+    await insert("meal_ingredients", [
+      {
+        id: uuidv7(),
+        user_id: owner.userId,
+        meal_id: mealId,
+        ingredient_id: "tofu",
+        qty: 300,
+        unit: "g",
+        role: "pot",
+        created_at: at,
+        updated_at: at,
+      },
+    ]);
+    let sent: { protein: string; library: { name: string; protein?: string }[] } | undefined;
+    answers.push((input: typeof sent) => {
+      sent = input;
+      return {
+        name: "Weeknight plate",
+        minutes: 20,
+        servings: 2,
+        noCook: false,
+        steps: ["Cook the protein.", "Cook the rice.", "Serve it."],
+        ingredients: [
+          { ingredientId: input?.protein, qty: 800, unit: "g", role: "pot" },
+          { ingredientId: "rice-basmati", qty: 150, unit: "g", role: "pot" },
+        ],
+      };
+    });
+    const r = await post("/ai/meal-draft", {});
+    expect(r.status).toBe(200);
+    expect(sent?.library).toContainEqual({ name: "Owner tofu bowl", protein: "tofu" });
+    expect(sent?.library.some((m) => m.name === "Teriyaki salmon with rice and broccoli")).toBe(true);
+    expect(sent?.protein).toBeTruthy();
   });
 });
 

@@ -14,6 +14,7 @@ import { describe, expect, test } from "vitest";
 import {
   adjustToday,
   createGateway,
+  draftProblems,
   explainMore,
   foodWeek,
   mealDraft,
@@ -122,6 +123,20 @@ describe("weekly_review", () => {
   });
 
   test("a proposal that fails the engine check is dropped; a valid one stays", async () => {
+    const rowStalled = {
+      ...input,
+      history: {
+        ...input.history,
+        progress: [
+          {
+            family: "row",
+            rung: 1,
+            exerciseId: "row-single-arm-db",
+            streaks: { top: 0, miss: 0, stall: 3, hold: 0 },
+          },
+        ],
+      },
+    };
     const { gw } = scripted({
       words,
       focus: "Keep the rows strict next week.",
@@ -133,19 +148,65 @@ describe("weekly_review", () => {
         { change: { kind: "swap", dayType: "A", family: "row", to: "row-band" }, why: "Less dial work." },
       ],
     });
-    const r = await weeklyReview(gw, route, input, numbers);
+    const r = await weeklyReview(gw, route, rowStalled, numbers);
     expect(r.proposals.map((p) => p.change)).toEqual([
       { kind: "swap", dayType: "A", family: "row", to: "row-band" },
     ]);
     expect(r.proposals[0]?.reasons[0]?.ruleId).toBe("PROPOSAL_SWAP");
   });
 
-  test("swap options list only allowed exercises on owned rungs", () => {
-    const a = numbers.swapOptions.find((o) => o.dayType === "A" && o.family === "row");
-    expect(a?.options).toEqual(["row-band"]);
-    const vp = numbers.swapOptions.find((o) => o.family === "vertical-pull");
-    expect(vp?.options).toEqual([]);
+  test("a focus that names an exercise outside the plan, with no swap, gets a retry", async () => {
+    const off = { words, focus: "Use the band row on day A next week.", proposals: [] };
+    const { gw, requests } = scripted(off, { ...off, focus: "Log each set next week." });
+    const r = await weeklyReview(gw, route, input, numbers);
+    expect(requests[1]?.messages.at(-1)?.content).toMatch(/Band row/i);
+    expect(r.focus).toBe("Log each set next week.");
   });
+
+  test("a focus that changes a load gets a retry", async () => {
+    const off = { words, focus: "Add a small load to the floor press next week.", proposals: [] };
+    const { gw, requests } = scripted(off, { ...off, focus: "Log each set next week." });
+    await weeklyReview(gw, route, input, numbers);
+    expect(requests).toHaveLength(2);
+  });
+
+  test("a focus that changes sets without a sets proposal gets a retry", async () => {
+    const off = { words, focus: "Add one set to each movement on day A.", proposals: [] };
+    const { gw, requests } = scripted(off, { ...off, focus: "Log each set next week." });
+    const r = await weeklyReview(gw, route, input, numbers);
+    expect(requests).toHaveLength(2);
+    expect(r.focus).toBe("Log each set next week.");
+  });
+
+  test("the options list only changes the engine accepts now", () => {
+    expect(numbers.swapOptions).toEqual([]);
+    expect(numbers.setsOptions).toEqual([]);
+    expect(numbers.deloadAllowed).toBe(false);
+    const stall = { top: 0, miss: 0, stall: 3, hold: 0 };
+    const rows = {
+      ...input,
+      history: {
+        ...input.history,
+        progress: [{ family: "row", rung: 1, exerciseId: "row-single-arm-db", streaks: stall }],
+      },
+    };
+    const n = reviewNumbers(rows, "2026-11-02", "2026-11-08", foodWeek([], undefined, ["2026-11-02"]), {
+      weighIns: 0,
+      slopeKgPerWeek: null,
+    });
+    expect(n.swapOptions.find((o) => o.dayType === "A" && o.family === "row")?.options).toEqual(["row-band"]);
+    expect(n.swapOptions.some((o) => o.family === "vertical-pull")).toBe(false);
+  });
+});
+
+test("explain_more: a rule code in the text gets a retry", async () => {
+  const { gw, requests } = scripted(
+    { text: "The rule P3_HOLD keeps you in range." },
+    { text: "This rule keeps you in range." },
+  );
+  const r = await explainMore(gw, route, []);
+  expect(requests).toHaveLength(2);
+  expect(r.ok && r.output.text).toBe("This rule keeps you in range.");
 });
 
 describe("adjust_today", () => {
@@ -166,11 +227,24 @@ describe("meal_draft", () => {
     exclusions: [{ memberId: "me", kind: "lactose" as const }],
     household: [self],
     maxMinutes: 20,
-    recent: [],
+    library: [{ name: "Chicken, rice and broccoli bowl", ingredientIds: ["chicken-breast", "rice-basmati"] }],
   };
   const high = SEED_INGREDIENTS.find((i) => i.lactoseClass === "high");
-  const chicken = SEED_INGREDIENTS.find((i) => i.id.includes("chicken"));
+  const chicken = SEED_INGREDIENTS.find((i) => i.id === "chicken-breast");
   const rice = SEED_INGREDIENTS.find((i) => i.id.includes("rice"));
+
+  test("the draft is built on a picked dinner protein", async () => {
+    const { gw, requests } = scripted("x", "x");
+    await mealDraft(
+      gw,
+      route,
+      ctx,
+      () => "m1",
+      () => 0,
+    );
+    const sent = JSON.parse(requests[0]?.messages[1]?.content ?? "{}") as { protein: string };
+    expect(sent.protein).toBe("chicken-breast");
+  });
 
   test("lactose ingredients are not offered to the model", async () => {
     const { gw, requests } = scripted("x", "x");
@@ -193,9 +267,43 @@ describe("meal_draft", () => {
       ],
     });
     const { gw } = scripted(meal(high.id), meal(chicken.id));
-    const r = await mealDraft(gw, route, ctx, () => "m1");
+    const r = await mealDraft(
+      gw,
+      route,
+      ctx,
+      () => "m1",
+      () => 0,
+    );
     if (!r.ok) throw new Error(r.error);
     expect(r.output).toMatchObject({ id: "m1", origin: "ai", name: "Chicken rice" });
+  });
+
+  test("servings under the household, a name or step ingredient not in the list, and a library name fail", () => {
+    const draft = {
+      name: "Lemon chicken with rice",
+      minutes: 20,
+      servings: 2,
+      noCook: false,
+      steps: ["Cook the rice.", "Fry the chicken breast.", "Add the salt."],
+      ingredients: [
+        { ingredientId: "chicken-breast", qty: 300, unit: "g" as const, role: "pot" as const },
+        { ingredientId: "rice-basmati", qty: 150, unit: "g" as const, role: "pot" as const },
+      ],
+    };
+    const three = { ...ctx, household: [self, { ...self, id: "b" }, { ...self, id: "c" }] };
+    const problems = draftProblems(draft, three).join(" ");
+    expect(problems).toMatch(/"servings" is 2/);
+    expect(problems).toMatch(/name has Lemon/);
+    expect(problems).toMatch(/steps use Salt/);
+    expect(draftProblems({ ...draft, name: "Chicken, rice and broccoli bowl" }, ctx).join(" ")).toMatch(
+      /already in the library/,
+    );
+    const fine = {
+      ...draft,
+      name: "Chicken with rice",
+      steps: ["Cook the rice.", "Fry the chicken breast."],
+    };
+    expect(draftProblems(fine, ctx)).toEqual([]);
   });
 });
 

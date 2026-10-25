@@ -16,5 +16,8 @@ export type ReviewNumbers = {
     minutes: number;
     items: { exerciseId: string; family: string; role: string; sets: number }[];
   }[];
+  /** Only changes the engine accepts now. */
   swapOptions: { dayType: string; family: string; current: string; options: string[] }[];
+  setsOptions: { dayType: string; exerciseId: string; sets: number }[];
+  deloadAllowed: boolean;
 };

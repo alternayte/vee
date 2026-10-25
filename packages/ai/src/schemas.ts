@@ -59,4 +59,4 @@ export const MealDraftOut = z.object({
 });
 export type MealDraftOut = z.infer<typeof MealDraftOut>;
 
-export const LIMITS = { reviewWords: 120, reviewMinWords: 25, explainWords: 80, proposals: 3 } as const;
+export const LIMITS = { reviewWords: 60, reviewMinWords: 15, explainWords: 80, proposals: 3 } as const;

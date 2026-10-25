@@ -574,3 +574,26 @@ export const SEED_INGREDIENTS: Ingredient[] = rows.map(
     return ing;
   },
 );
+
+/** Proteins a dinner can be built around. A meal draft starts from one of them. */
+export const DINNER_PROTEINS = [
+  "chicken-breast",
+  "chicken-thigh",
+  "roast-chicken",
+  "turkey-breast",
+  "turkey-mince",
+  "beef-mince",
+  "beef-strips",
+  "pork-fillet",
+  "salmon-fillet",
+  "smoked-salmon",
+  "cod-fillet",
+  "prawns",
+  "tuna-can",
+  "eggs",
+  "tofu",
+  "tempeh",
+  "seitan",
+  "soy-mince",
+  "red-lentils",
+];

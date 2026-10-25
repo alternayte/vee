@@ -25,7 +25,7 @@ import {
   startTargets,
   WEEKNIGHT_MAX_MIN,
 } from "@vee/nutrition";
-import { SEED_INGREDIENTS } from "@vee/nutrition/seed";
+import { SEED_INGREDIENTS, SEED_MEALS } from "@vee/nutrition/seed";
 import {
   adjustToday,
   createGateway,
@@ -49,7 +49,7 @@ if (!key) {
 const model = process.env.AI_EVAL_MODEL ?? "deepseek/deepseek-v4.1-flash";
 const routes: Routes = {
   weekly_review: { model, effort: "high" },
-  meal_draft: { model, effort: "high" },
+  meal_draft: { model, effort: "medium" },
   adjust_today: { model, effort: "low" },
   explain_more: { model, effort: "low" },
 };
@@ -298,6 +298,10 @@ async function evalAdjust(route: Route) {
 
 // ── meal_draft: 40 households ───────────────────────────────────────────────
 async function evalMeals(route: Route) {
+  const library = SEED_MEALS.map((m) => ({
+    name: m.name,
+    ingredientIds: m.ingredients.map((i) => i.ingredientId),
+  }));
   const refusals = ["fish", "pork", "nuts", "spicy", "egg", "gluten", "beef", "shellfish", "mustard", "soy"];
   const fixtures = Array.from({ length: N }, (_, n) => {
     const self: HouseholdMember = { id: "me", name: "Nathan", isSelf: true };
@@ -321,7 +325,7 @@ async function evalMeals(route: Route) {
         exclusions: f.exclusions,
         household: f.household,
         maxMinutes: f.maxMinutes,
-        recent: [],
+        library,
       },
       () => `eval-${f.n}-${id++}`,
     );
