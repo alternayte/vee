@@ -189,6 +189,16 @@ export function SettingsScreen() {
           <ChevronRight color={color["text-muted"]} />
         </Pressable>
       </Link>
+      <Link href="/settings/coach" asChild>
+        <Pressable
+          accessibilityRole="link"
+          accessibilityLabel="Coach"
+          className="flex-row items-center justify-between rounded-lg border border-border bg-surface p-4"
+        >
+          <Text>Coach</Text>
+          <ChevronRight color={color["text-muted"]} />
+        </Pressable>
+      </Link>
       <Section title="Your data">
         <DataSection />
       </Section>

@@ -2,12 +2,14 @@
 import { Redirect, Tabs } from "expo-router";
 import { Apple, ChartLine, CircleDot, ListChecks, MessageSquare } from "lucide-react-native";
 import { useEffect, useState } from "react";
+import { useCoachAutoApply } from "@/features/coach/auto-apply";
 import { useTokens } from "@/features/theme/use-tokens";
 import { hasProfile } from "@/features/training/data";
 
 export default function TabsLayout() {
   const { color } = useTokens();
   const [onboarded, setOnboarded] = useState<boolean>();
+  useCoachAutoApply();
   useEffect(() => {
     void hasProfile().then(setOnboarded);
   }, []);

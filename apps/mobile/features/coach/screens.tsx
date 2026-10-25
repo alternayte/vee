@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-// The Coach tab (PRD "AI coach"): plan-change cards from every source, and the
-// coach chat. The chat reads the user's data only through the server's read
-// tools; a change it proposes is a card here, never applied by itself (I4).
+// The Coach tab (PRD "AI coach", "Coach with clients"): plan-change cards from
+// every source, the thread with each human coach, and the AI coach chat. The
+// chat reads the user's data only through the server's read tools; a change
+// it proposes is a card here, never applied by itself (I4).
 import { toCompilableQuery } from "@powersync/drizzle-driver";
 import { useQuery } from "@powersync/react";
 import type { Reason } from "@vee/engine";
-import { ai_proposals, chat_messages } from "@vee/schema";
-import { and, asc, desc, eq, isNull } from "drizzle-orm";
+import { ai_proposals, chat_messages, coach_links, comments, messages, uuidv7 } from "@vee/schema";
+import { and, asc, desc, eq, inArray, isNotNull, isNull, or } from "drizzle-orm";
 import { useState } from "react";
 import { View } from "react-native";
 import { EmptyState, Screen } from "@/components/screen";
@@ -27,16 +28,28 @@ const SOURCE = {
   coach: "Your coach",
 } as const;
 
-function Cards() {
+type LinkRow = typeof coach_links.$inferSelect;
+
+function Cards({ links }: { links: LinkRow[] }) {
+  // Pending cards, and coach-approved ones that auto-apply could not apply.
   const { data } = useQuery(
     toCompilableQuery(
       db
         .select()
         .from(ai_proposals)
-        .where(and(eq(ai_proposals.status, "pending"), isNull(ai_proposals.deleted_at)))
+        .where(
+          and(
+            isNull(ai_proposals.deleted_at),
+            or(
+              eq(ai_proposals.status, "pending"),
+              and(eq(ai_proposals.status, "refused"), isNotNull(ai_proposals.approved_by)),
+            ),
+          ),
+        )
         .orderBy(desc(ai_proposals.created_at)),
     ),
   );
+  const coachName = (id: string | null) => links.find((l) => l.coach_id === id)?.coach_name ?? "Your coach";
   if (data.length === 0) return null;
   return (
     <View className="gap-3">
@@ -48,11 +61,100 @@ function Cards() {
         if (!change) return null;
         return (
           <View key={p.id} className="gap-1">
-            <Text variant="label">{SOURCE[p.source as keyof typeof SOURCE] ?? p.source}</Text>
-            <ProposalCard id={p.id} change={change} reasons={parse<Reason[]>(p.validation) ?? []} />
+            <Text variant="label">
+              {p.source === "coach"
+                ? coachName(p.approved_by)
+                : (SOURCE[p.source as keyof typeof SOURCE] ?? p.source)}
+            </Text>
+            <ProposalCard
+              id={p.id}
+              change={change}
+              reasons={parse<Reason[]>(p.validation) ?? []}
+              {...(p.approved_by && p.source !== "coach"
+                ? { note: `${coachName(p.approved_by)} approves this.` }
+                : {})}
+              refused={p.status === "refused"}
+            />
           </View>
         );
       })}
+    </View>
+  );
+}
+
+/** The thread with one coach, and the coach's comments on sessions and sets. */
+function CoachThread({ link }: { link: LinkRow }) {
+  const me = useAccount((s) => s.session?.userId);
+  const [draft, setDraft] = useState("");
+  const { data: thread } = useQuery(
+    toCompilableQuery(
+      db
+        .select()
+        .from(messages)
+        .where(and(eq(messages.coach_link_id, link.id), isNull(messages.deleted_at)))
+        .orderBy(asc(messages.created_at)),
+    ),
+  );
+  const { data: notes } = useQuery(
+    toCompilableQuery(
+      db
+        .select()
+        .from(comments)
+        .where(and(eq(comments.author_id, link.coach_id), isNull(comments.deleted_at)))
+        .orderBy(desc(comments.created_at))
+        .limit(10),
+    ),
+  );
+  const name = link.coach_name ?? "Your coach";
+  const send = async () => {
+    const body = draft.trim();
+    if (!body || !me) return;
+    setDraft("");
+    const at = new Date().toISOString();
+    await db.insert(messages).values({
+      id: uuidv7(),
+      coach_link_id: link.id,
+      author_id: me,
+      body,
+      created_at: at,
+      updated_at: at,
+    });
+  };
+  return (
+    <View className="gap-3">
+      <Text variant="heading" accessibilityRole="header">
+        {name}
+      </Text>
+      {notes.map((c) => (
+        <View
+          key={c.id}
+          className="gap-1 rounded-lg border border-border bg-surface p-3"
+          testID="coach-comment"
+        >
+          <Text variant="label">Comment on a {c.target_type === "set" ? "set" : "session"}</Text>
+          <Text>{c.body}</Text>
+        </View>
+      ))}
+      {thread.length === 0 && <Text variant="muted">No messages yet. Write to {name} here.</Text>}
+      {thread.map((m) => (
+        <Bubble key={m.id} from={m.author_id === me ? "user" : "assistant"} content={m.body ?? ""} />
+      ))}
+      <Input
+        value={draft}
+        onChangeText={setDraft}
+        placeholder={`Message ${name}`}
+        accessibilityLabel={`Message to ${name}`}
+        multiline
+        className="h-auto min-h-12 py-3"
+        testID="coach-message-input"
+      />
+      <Button
+        label="Send to your coach"
+        disabled={!draft.trim()}
+        onPress={() => void send()}
+        testID="coach-message-send"
+      />
+      <Text variant="muted">Messages sync when you are online.</Text>
     </View>
   );
 }
@@ -72,6 +174,14 @@ function Bubble({ from, content, note }: { from: string; content: string; note?:
 
 export function CoachScreen() {
   const signedIn = useAccount((s) => s.status === "signed-in");
+  const { data: links } = useQuery(
+    toCompilableQuery(
+      db
+        .select()
+        .from(coach_links)
+        .where(and(inArray(coach_links.status, ["active"]), isNull(coach_links.deleted_at))),
+    ),
+  );
   const { data: messages } = useQuery(
     toCompilableQuery(db.select().from(chat_messages).orderBy(asc(chat_messages.created_at))),
   );
@@ -92,9 +202,12 @@ export function CoachScreen() {
 
   return (
     <Screen title="Coach" stickToEnd>
-      <Cards />
+      <Cards links={links} />
+      {links.map((l) => (
+        <CoachThread key={l.id} link={l} />
+      ))}
       <Text variant="heading" accessibilityRole="header">
-        Coach chat
+        AI coach chat
       </Text>
       {!signedIn ? (
         <EmptyState text="The coach chat needs an account, the plus tier and a connection. Sign in from Settings." />
