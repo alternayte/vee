@@ -5,15 +5,20 @@ import { portionsPerServing } from "@vee/nutrition";
 import { meals } from "@vee/schema";
 import { eq } from "drizzle-orm";
 import { useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
 import { EmptyState, Screen } from "@/components/screen";
 import { Text } from "@/components/ui/text";
 import { db } from "@/features/db/database";
-import { ingredients, mealById, rateMeal } from "./data";
+import { ingredients, mealById, rateMeal, refreshLibrary } from "./data";
 import { PORTION_LABEL } from "./portion-ui";
 
 export function MealScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const [, setLoaded] = useState(false);
+  useEffect(() => {
+    void refreshLibrary().then(() => setLoaded(true));
+  }, []);
   const meal = id ? mealById(id) : undefined;
   const { data: rows } = useQuery(
     toCompilableQuery(

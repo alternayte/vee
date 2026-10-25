@@ -22,13 +22,14 @@ import {
   food_logs,
   food_targets,
   household_members,
+  meal_ingredients,
   meal_plans,
   meals,
   profiles,
   shopping_items,
   uuidv7,
 } from "@vee/schema";
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull } from "drizzle-orm";
 import { db } from "@/features/db/database";
 
 const now = () => new Date().toISOString();
@@ -127,7 +128,64 @@ export async function loadRules(): Promise<{ exclusions: Exclusion[]; household:
   return { exclusions, household };
 }
 
-export const libraryMeals = (): Meal[] => SEED_MEALS;
+/** Meals the user added (accepted AI drafts). Seed meals ship in the bundle. */
+let stored: Meal[] = [];
+
+export const libraryMeals = (): Meal[] => [...SEED_MEALS, ...stored];
+
+export async function refreshLibrary(): Promise<Meal[]> {
+  const rows = await db
+    .select()
+    .from(meals)
+    .where(and(isNull(meals.deleted_at), inArray(meals.origin, ["ai", "user"])));
+  const parts = await db.select().from(meal_ingredients).where(isNull(meal_ingredients.deleted_at));
+  stored = rows.map((m) => ({
+    id: m.id,
+    name: m.name,
+    steps: m.steps ? (JSON.parse(m.steps) as string[]) : [],
+    minutes: m.minutes ?? 0,
+    servings: m.servings ?? 1,
+    noCook: m.no_cook === 1,
+    origin: m.origin === "ai" ? "ai" : "user",
+    ingredients: parts
+      .filter((p) => p.meal_id === m.id)
+      .map((p) => ({
+        ingredientId: p.ingredient_id,
+        qty: p.qty ?? 0,
+        unit: (p.unit ?? "g") as Meal["ingredients"][number]["unit"],
+        role: p.role === "plate_extra" ? "plate_extra" : "pot",
+      })),
+  }));
+  return libraryMeals();
+}
+
+/** Stores an accepted AI draft in the library. */
+export async function addMeal(meal: Meal): Promise<void> {
+  await db.transaction(async (tx) => {
+    await tx.insert(meals).values({
+      id: meal.id,
+      name: meal.name,
+      steps: JSON.stringify(meal.steps),
+      minutes: meal.minutes,
+      servings: meal.servings,
+      origin: meal.origin,
+      lactose_ok: 1,
+      no_cook: meal.noCook ? 1 : 0,
+      ...stamps(),
+    });
+    for (const i of meal.ingredients)
+      await tx.insert(meal_ingredients).values({
+        id: uuidv7(),
+        meal_id: meal.id,
+        ingredient_id: i.ingredientId,
+        qty: i.qty,
+        unit: i.unit,
+        role: i.role,
+        ...stamps(),
+      });
+  });
+  await refreshLibrary();
+}
 export const ingredients = () => SEED_INGREDIENTS;
 export const mealById = (id: string) => libraryMeals().find((m) => m.id === id);
 

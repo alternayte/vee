@@ -3,14 +3,6 @@
 // with the real screen.
 import { EmptyState, Screen } from "@/components/screen";
 
-export function BodyScreen() {
-  return (
-    <Screen title="Body">
-      <EmptyState text="Your tests, measurements and charts show here." />
-    </Screen>
-  );
-}
-
 export function CoachScreen() {
   return (
     <Screen title="Coach">

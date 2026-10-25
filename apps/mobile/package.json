@@ -12,6 +12,7 @@
     "@powersync/react-native": "2.3.3",
     "@rn-primitives/portal": "1.5.3",
     "@rn-primitives/slot": "1.5.2",
+    "@vee/ai": "workspace:*",
     "@vee/catalogue": "workspace:*",
     "@vee/engine": "workspace:*",
     "@vee/importers": "workspace:*",

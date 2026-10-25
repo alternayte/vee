@@ -225,6 +225,7 @@ export const meals = sqliteTable("meals", {
   origin: text("origin"),
   rating: integer("rating"),
   lactose_ok: integer("lactose_ok"),
+  no_cook: integer("no_cook"),
 });
 
 export const meal_ingredients = sqliteTable("meal_ingredients", {

@@ -34,6 +34,7 @@ import {
   MealDraftOut,
   WeeklyReviewOut,
 } from "./schemas";
+import type { ReviewNumbers } from "./types";
 
 /** Structured tasks wait 20 s; the weekly review is a job and waits 60 s. */
 export const TIMEOUT_MS: Record<TaskName, number> = {
@@ -53,21 +54,6 @@ function numbersProblem(where: string, text: string, input: unknown): string[] {
 }
 
 // ── weekly_review ──────────────────────────────────────────────────────────
-
-export type ReviewNumbers = {
-  week: { from: string; to: string };
-  training: Omit<TrainingWeek, "from" | "to">;
-  food: FoodWeek;
-  weight: { weighIns: number; slopeKgPerWeek: number | null };
-  minutesPerSession: number;
-  plan: {
-    dayType: string;
-    name: string;
-    minutes: number;
-    items: { exerciseId: string; family: string; role: string; sets: number }[];
-  }[];
-  swapOptions: { dayType: string; family: string; current: string; options: string[] }[];
-};
 
 export function reviewNumbers(
   input: EngineInput,

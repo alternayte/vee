@@ -3,7 +3,6 @@
 // The engine sets every number; this file only stores what it returns.
 import type { Joint, Severity } from "@vee/catalogue";
 import {
-  type DayType,
   ENGINE_VERSION,
   type EngineInput,
   emptyHistory,
@@ -13,9 +12,7 @@ import {
   type KitItem,
   type Profile,
   type Programme,
-  type ProgressState,
   rebuildProgress,
-  type SessionRecord,
   type TestItem,
   type TestResult,
 } from "@vee/engine";
@@ -27,7 +24,6 @@ import {
   programmes,
   progress_state,
   session_templates,
-  sessions as sessionsTable,
   template_items,
   test_results,
   tests,
@@ -48,7 +44,6 @@ import { catalogue } from "./catalogue";
 
 const now = () => new Date().toISOString();
 const stamps = () => ({ created_at: now(), updated_at: now() });
-const json = <T>(s: string | null): T | undefined => (s ? (JSON.parse(s) as T) : undefined);
 
 export type Onboarding = {
   body: { heightCm: number; weightKg: number; birthYear: number; sex: Profile["sex"]; waistCm?: number };
@@ -207,4 +202,17 @@ export async function saveProgramme(plan: Programme & { id: string }): Promise<v
     for (const row of rows.session_templates) await tx.insert(session_templates).values(row);
     for (const row of rows.template_items) await tx.insert(template_items).values(row);
   });
+}
+
+/** Flags from "Adjust today": active today only. */
+export async function addTodayFlags(flags: { joint: Joint; severity: Severity }[], today = localDate()) {
+  for (const f of flags)
+    await db.insert(flagsTable).values({
+      id: uuidv7(),
+      joint: f.joint,
+      severity: f.severity,
+      active_from: today,
+      active_to: today,
+      ...stamps(),
+    });
 }

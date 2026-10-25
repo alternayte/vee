@@ -36,7 +36,7 @@ sim:
     bunx turbo run sim --filter=@vee/fixtures
 
 # V7: API tests against a throwaway Postgres 17 container
-test-api:
+test-api: catalogue
     #!/usr/bin/env bash
     set -euo pipefail
     docker rm -f vee-test-pg >/dev/null 2>&1 || true
@@ -47,7 +47,7 @@ test-api:
     TEST_DATABASE_URL=postgres://postgres:vee@localhost:54391/postgres bun test apps/api/test/
 
 # V8: sync tests against Postgres and the PowerSync service in Docker
-test-sync:
+test-sync: catalogue
     #!/usr/bin/env bash
     set -euo pipefail
     compose="docker compose -f infra/compose.test.yaml"
@@ -65,7 +65,7 @@ apk: catalogue
 # V9 account flow backend: Postgres, PowerSync and the API with test mail.
 # The emulator reaches the host at 10.0.2.2. Build the APK for it with
 # EXPO_PUBLIC_API_URL=http://10.0.2.2:3998 EXPO_PUBLIC_POWERSYNC_URL=http://10.0.2.2:8089 just apk
-e2e-server:
+e2e-server: catalogue
     #!/usr/bin/env bash
     set -euo pipefail
     compose="docker compose -f infra/compose.test.yaml"
