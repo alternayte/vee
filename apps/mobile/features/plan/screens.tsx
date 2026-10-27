@@ -31,6 +31,7 @@ import { type LoggedSet, logPastSession } from "@/features/session/data";
 import { useTokens } from "@/features/theme/use-tokens";
 import { catalogue } from "@/features/training/catalogue";
 import { readProgramme, saveProgramme } from "@/features/training/data";
+import { ExerciseName, HowTo } from "@/features/training/guide";
 import { describeItem, useEngineInput } from "@/features/training/screens";
 import { addSet, editSet, markDone, moveSession, removeSession, removeSet } from "./history";
 
@@ -158,6 +159,7 @@ export function ExerciseScreen() {
       <Text variant="label">
         {familyName(e.family)} · rung {e.rung} of {ladder.length}
       </Text>
+      <HowTo id={e.id} />
       {item && (
         <View className="gap-2 rounded-lg border border-border bg-surface p-4">
           <Text variant="heading">
@@ -182,10 +184,11 @@ export function ExerciseScreen() {
         const allowed = checkAllowed(x, input.kit, input.flags, input.today).ok;
         return (
           <View key={x.id} className="flex-row justify-between gap-3">
-            <Text className={x.id === e.id ? "flex-1 font-inter-semibold" : "flex-1"}>
-              {x.rung}. {x.names.en}
-              {x.id === e.id ? " (you are here)" : ""}
-            </Text>
+            <ExerciseName
+              id={x.id}
+              label={`${x.rung}. ${x.names.en}${x.id === e.id ? " (you are here)" : ""}`}
+              className="flex-1"
+            />
             {!allowed && <Text variant="label">Not with your kit or flags</Text>}
           </View>
         );
@@ -204,7 +207,7 @@ export function ExerciseScreen() {
               className="gap-1 rounded-lg border border-border bg-surface p-3"
               testID="swap-option"
             >
-              <Text>{nameOf(c.exerciseId)}</Text>
+              <ExerciseName id={c.exerciseId} />
               <Text variant="muted">{c.reason.text}</Text>
               <Button
                 label={`Swap to ${nameOf(c.exerciseId)}`}

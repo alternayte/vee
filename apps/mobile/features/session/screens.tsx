@@ -15,6 +15,7 @@ import { Choice } from "@/components/ui/choice";
 import { Text } from "@/components/ui/text";
 import { scheduleAll } from "@/features/reminders/schedule";
 import { catalogue } from "@/features/training/catalogue";
+import { ExerciseClip, ExerciseName } from "@/features/training/guide";
 import { live } from "@/modules/vee-live";
 import { useTodayAdjust } from "./adjust";
 import {
@@ -107,8 +108,9 @@ function Warmup({ items, onDone }: { items: PrescribedItem[]; onDone: () => void
     <View className="gap-3">
       <Text variant="heading">Warm-up</Text>
       {items.map((i) => (
-        <View key={`${i.order}-${i.exerciseId}`} className="flex-row justify-between gap-3">
-          <Text className="flex-1">{nameOf(i.exerciseId)}</Text>
+        <View key={`${i.order}-${i.exerciseId}`} className="flex-row items-center gap-3">
+          <ExerciseClip id={i.exerciseId} size={56} />
+          <ExerciseName id={i.exerciseId} className="flex-1" />
           <Text variant="label">
             {i.sets} × {target(i)}
             {loadText(i) ? ` · ${loadText(i)}` : ""}
@@ -155,7 +157,7 @@ function SetCard({
       <Text variant="label">
         Step {index + 1} of {total}
       </Text>
-      <Text variant="title">{nameOf(item.exerciseId)}</Text>
+      <ExerciseName id={item.exerciseId} variant="title" />
       <Text variant="label">
         Rung {e?.rung ?? 1} · {target(item)}
         {item.tempo ? ` · tempo ${item.tempo}` : ""}
@@ -209,16 +211,31 @@ function SetCard({
           </Pressable>
         ))}
       </View>
-      {e?.cues.slice(0, 2).map((c) => (
-        <Text key={c} variant="muted">
-          {c}
-        </Text>
-      ))}
+      <View className="flex-row gap-3">
+        <ExerciseClip id={item.exerciseId} size={140} />
+        <View className="flex-1 gap-2">
+          {e?.cues.slice(0, 2).map((c) => (
+            <Text key={c} variant="muted">
+              {c}
+            </Text>
+          ))}
+        </View>
+      </View>
     </View>
   );
 }
 
-function Rest({ runner, next, onEnd }: { runner: Runner; next: string; onEnd: () => void }) {
+function Rest({
+  runner,
+  next,
+  nextId,
+  onEnd,
+}: {
+  runner: Runner;
+  next: string;
+  nextId?: string;
+  onEnd: () => void;
+}) {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 250);
@@ -246,7 +263,14 @@ function Rest({ runner, next, onEnd }: { runner: Runner; next: string; onEnd: ()
       >
         {mm}:{ss}
       </Text>
-      <Text variant="muted">Next: {next}</Text>
+      {nextId ? (
+        <View className="flex-row items-center gap-1">
+          <Text variant="muted">Next:</Text>
+          <ExerciseName id={nextId} label={next} variant="muted" />
+        </View>
+      ) : (
+        <Text variant="muted">Next: {next}</Text>
+      )}
       <View className="flex-row gap-2">
         <Button label="+30 s" variant="secondary" onPress={() => void addRest(runner, next)} />
         <Button
@@ -408,7 +432,14 @@ export function RunnerScreen() {
           onLog={log}
         />
       )}
-      {runner.phase === "rest" && <Rest runner={runner} next={nextText} onEnd={() => void endRest(runner)} />}
+      {runner.phase === "rest" && (
+        <Rest
+          runner={runner}
+          next={nextText}
+          nextId={nextStep ? session.rx.items[nextStep.item]?.exerciseId : undefined}
+          onEnd={() => void endRest(runner)}
+        />
+      )}
       {runner.phase === "summary" && (
         <Summary
           finished={runner.reasons !== undefined}

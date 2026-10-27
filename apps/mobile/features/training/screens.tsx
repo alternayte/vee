@@ -26,8 +26,8 @@ import { localDate } from "@/features/food/data";
 import { scheduleAll } from "@/features/reminders/schedule";
 import { useTodayAdjust } from "@/features/session/adjust";
 import { activeSessionId, skipNext } from "@/features/session/data";
-import { catalogue } from "./catalogue";
 import { addTodayFlags, readEngineInput } from "./data";
+import { ExerciseName } from "./guide";
 
 export function useEngineInput(): EngineInput | undefined {
   const [input, setInput] = useState<EngineInput>();
@@ -39,8 +39,6 @@ export function useEngineInput(): EngineInput | undefined {
   return input;
 }
 
-const exerciseName = (id: string) => catalogue.exercises.find((e) => e.id === id)?.names.en ?? id;
-
 export function describeItem(i: TemplateItem | PrescribedItem): string {
   const target = i.target.low === i.target.high ? `${i.target.low}` : `${i.target.low}–${i.target.high}`;
   const unit = i.target.unit === "seconds" ? "s" : "reps";
@@ -51,7 +49,7 @@ export function describeItem(i: TemplateItem | PrescribedItem): string {
 function ItemRow({ item }: { item: TemplateItem | PrescribedItem }) {
   return (
     <View className="flex-row justify-between gap-3">
-      <Text className="flex-1">{exerciseName(item.exerciseId)}</Text>
+      <ExerciseName id={item.exerciseId} className="flex-1" />
       <Text variant="label">{describeItem(item)}</Text>
     </View>
   );

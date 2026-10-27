@@ -42,3 +42,6 @@ yarn-error.*
 
 # Gradle output of the local Expo modules
 modules/*/android/build/
+
+# Exercise clips: built by `just media` from the private repo
+assets/clips/

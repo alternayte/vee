@@ -39,7 +39,12 @@ export default function RootLayout() {
               animation: "fade",
               animationDuration: 160,
             }}
-          />
+          >
+            <Stack.Screen
+              name="exercise/[id]"
+              options={{ presentation: "modal", animation: "slide_from_bottom" }}
+            />
+          </Stack>
         </PowerSyncContext.Provider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

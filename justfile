@@ -9,6 +9,7 @@ check:
     bun run typecheck
     bunx turbo run typecheck
     bun tools/drizzle-await.ts
+    bun tools/media.ts --check
 
 # Tests. No target runs all unit tests, properties and golden plans.
 # `just test engine` runs one package. `just test engine:props` runs its
@@ -66,8 +67,12 @@ eval task="": catalogue
     set -a; source infra/.env; set +a
     cd packages/ai && bun eval/run.ts {{task}}
 
+# Exercise clips from .internal/media into apps/mobile/assets/clips (cues only without .internal)
+media: catalogue
+    bun tools/media.ts
+
 # Android release APK for arm64 (bundles the JavaScript, so no Metro server)
-apk: catalogue
+apk: catalogue media
     cd apps/mobile && CI=1 bunx expo prebuild -p android --clean
     cd apps/mobile/android && ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a --console=plain
 
